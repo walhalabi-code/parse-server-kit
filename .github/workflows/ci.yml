@@ -95,8 +95,12 @@ jobs:
       - run: npm ci
       - run: npm run build
 
+      # Absolute path on purpose: `working-directory` puts us in runner.temp so
+      # the project is scaffolded outside the checkout, which means a relative
+      # `dist/cli/index.js` would resolve against runner.temp and not exist.
+      # The next step uses $GITHUB_WORKSPACE for the same reason.
       - name: Scaffold a project with the CLI
-        run: node dist/cli/index.js new my-api --yes
+        run: node "$GITHUB_WORKSPACE/dist/cli/index.js" new my-api --yes
         working-directory: ${{ runner.temp }}
 
       - name: Point it at this build instead of the published package
