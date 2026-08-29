@@ -1,0 +1,109 @@
+name: Release
+
+# Publishing is the one workflow that can affect people who are not looking at
+# this repository, so it is deliberately hard to fire by accident: it runs only
+# for a version tag, re-runs the whole suite, refuses to publish a tag that
+# disagrees with package.json, and waits for a human in the `npm` environment.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+# Read-only by default. The publish job widens this for itself alone.
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify the tag is releasable
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.check.outputs.version }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - run: npm ci
+
+      # A tag that disagrees with package.json publishes a version nobody asked
+      # for, under a name nobody expects. Cheapest possible check, and it has to
+      # come before anything irreversible.
+      - name: Tag must match package.json
+        id: check
+        run: |
+          PKG=$(node -p "require('./package.json').version")
+          echo "version=$PKG" >> "$GITHUB_OUTPUT"
+
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            TAG="${GITHUB_REF_NAME#v}"
+            if [ "$TAG" != "$PKG" ]; then
+              echo "::error::Tag v$TAG does not match package.json version $PKG"
+              exit 1
+            fi
+            echo "tag v$TAG matches package.json"
+          else
+            echo "manual run — publishing version $PKG"
+          fi
+
+      # The same gates CI runs. Duplicated on purpose: a release must not depend
+      # on someone having looked at a green tick on another workflow.
+      - run: npx tsc --noEmit
+      - run: npm run build
+      - run: npm test
+
+      - name: Integration tests
+        run: npm run test:integration
+
+      - name: Refuse to publish a version that already exists
+        run: |
+          NAME=$(node -p "require('./package.json').name")
+          if npm view "$NAME@${{ steps.check.outputs.version }}" version >/dev/null 2>&1; then
+            echo "::error::$NAME@${{ steps.check.outputs.version }} is already published. npm versions are immutable."
+            exit 1
+          fi
+          echo "$NAME@${{ steps.check.outputs.version }} is unpublished — good to go"
+
+  publish:
+    name: Publish to npm
+    needs: verify
+    runs-on: ubuntu-latest
+
+    # Gate. Configure `npm` under Settings → Environments with yourself as a
+    # required reviewer, and nothing reaches the registry until you approve it.
+    # This is also where the NPM_TOKEN secret should live rather than at repo
+    # level, so no other workflow can read it.
+    environment:
+      name: npm
+      url: https://www.npmjs.com/package/parse-server-kit
+
+    permissions:
+      contents: read
+      # Lets npm attach a provenance attestation: a signed, verifiable record of
+      # which repo, workflow and commit produced the tarball. It shows on the
+      # npm page and is what makes a published build auditable.
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          registry-url: https://registry.npmjs.org
+
+      - run: npm ci
+
+      # prepublishOnly rebuilds dist/ anyway; doing it here means a build
+      # failure stops the run before the publish step is reached.
+      - run: npm run build
+
+      - name: Publish
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

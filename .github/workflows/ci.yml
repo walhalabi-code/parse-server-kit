@@ -6,6 +6,13 @@ on:
   pull_request:
   workflow_dispatch:
 
+# Least privilege. Without this the workflow token inherits the repository
+# default, which can be read/write — far more than a test run needs, and it is
+# exposed to every dependency and action the job executes. Nothing here writes
+# to the repo, so nothing here needs to.
+permissions:
+  contents: read
+
 jobs:
   test:
     name: Node ${{ matrix.node }}

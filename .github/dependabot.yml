@@ -1,0 +1,32 @@
+version: 2
+
+updates:
+  # The library's own dependencies. Everything here is a devDependency or an
+  # optional peer — this package ships with none of its own — so an update can
+  # only break the build or the tests, never a consumer's install.
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      # One PR for the routine churn, so the interesting ones stand out.
+      dev-minor-and-patch:
+        dependency-type: development
+        update-types: [minor, patch]
+    ignore:
+      # parse-server majors move the Node floor and the adapter internals this
+      # library reaches into (MongoStorageAdapter, _adaptiveCollection). Those
+      # are deliberate, tested upgrades, not something to merge on a Tuesday.
+      - dependency-name: parse-server
+        update-types: [version-update:semver-major]
+      - dependency-name: parse
+        update-types: [version-update:semver-major]
+
+  # Actions are executable code running with access to this repo and, in the
+  # release workflow, to publishing rights. Keeping them current is the other
+  # half of pinning them.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
