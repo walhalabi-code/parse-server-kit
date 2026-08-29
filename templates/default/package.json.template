@@ -1,0 +1,28 @@
+{
+  "name": "{{PROJECT_NAME}}",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "start": "node build/src/app.js",
+    "dev": "tsc && node build/src/app.js",
+    "seed": "tsc && node build/src/seed.js",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.0",
+    "express": "^5.0.0",
+    "parse": "^8.6.0",
+    "parse-server": "^9.10.0",
+    "parse-server-kit": "^{{KIT_VERSION}}",
+    "reflect-metadata": "^0.2.2"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^20.0.0",
+    "@types/parse": "^3.0.9",
+    "typescript": "^5.5.0"
+  }
+}
+

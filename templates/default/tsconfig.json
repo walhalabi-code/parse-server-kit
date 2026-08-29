@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "commonjs",
+    "lib": ["ES2022"],
+    "outDir": "build",
+    "rootDir": ".",
+    "sourceMap": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+
+    // REQUIRED. This library uses legacy decorators; TypeScript 5 defaults to
+    // the standard (TC39) ones, which are a different feature. Without this
+    // flag every @ParseClass and @ParseField silently misbehaves and nothing
+    // is logged.
+    "experimentalDecorators": true,
+
+    // Belt and braces. Defaults to true for target ES2022 and above, which
+    // compiles `title!: string` into an own property set to undefined on every
+    // instance — shadowing the getter @ParseField installs on the prototype.
+    // @ParseClass repairs that at runtime since 3.0.0, so this is no longer
+    // load-bearing; pinning it false means the property is never created in
+    // the first place. The models below use `declare`, which sidesteps both.
+    "useDefineForClassFields": false
+  },
+  "include": ["src/**/*.ts"]
+}

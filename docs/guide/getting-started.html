@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data:; font-src 'self'; form-action 'none'; base-uri 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Getting started — parse-server-kit</title>
+<meta name="description" content="Create a Parse Server project with a working API, OpenAPI docs and a seeded user in three commands.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Getting started — parse-server-kit">
+<meta property="og:description" content="Create a Parse Server project with a working API, OpenAPI docs and a seeded user in three commands.">
+<meta property="og:url" content="https://walhalabi-code.github.io/parse-server-kit/guide/getting-started.html">
+<meta property="og:site_name" content="parse-server-kit">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="../index.html"><svg class="brand-mark" viewBox="12 10 62 72" aria-hidden="true"><g transform="translate(18, 14)" fill="none" stroke-linecap="round" stroke-linejoin="round"><path class="logo-base" pathLength="1" d="M 40 24 C 40 14, 28 12, 20 22 C 12 32, 12 44, 22 52 C 32 60, 46 52, 46 36 C 46 20, 34 10, 20 10 C 7 10, 2 22, 2 38 C 2 54, 12 64, 28 64 C 38 64, 48 57, 52 48" stroke="var(--logo-base)" stroke-width="3" opacity="0.6"/><g class="logo-layer" transform="translate(-3, -4)"><path class="logo-kit-path" pathLength="1" d="M 40 20 C 40 10, 28 8, 20 18 C 12 28, 12 40, 22 48 C 32 56, 46 48, 46 32 C 46 16, 34 6, 20 6 C 7 6, 2 18, 2 34 C 2 50, 12 60, 28 60 C 38 60, 48 53, 52 44" stroke="var(--logo-kit)" stroke-width="3.5"/><circle class="logo-dot" cx="25" cy="28" r="3.5" fill="var(--logo-kit)" stroke="none"/></g></g></svg>parse-server-kit <span class="v">3.0</span></a>
+    <nav class="nav">
+      <button class="icon-btn menu-btn" data-menu-toggle aria-expanded="false" aria-label="Toggle navigation">≡</button>
+      <a class="nav-ai" href="../guide/ai-assistants.html"><svg class="ai-spark" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 2.4 6.9 5l2.6.9-2.6.9L6 9.4 5.1 6.8 2.5 5.9l2.6-.9Z"/><path d="m11.6 8.4.6 1.7 1.7.6-1.7.6-.6 1.7-.6-1.7-1.7-.6 1.7-.6Z"/></svg>AI</a>
+      <a class="hide-sm" href="../index.html">Home</a>
+      <a class="hide-sm" href="https://github.com/walhalabi-code/parse-server-kit">GitHub</a>
+      <button class="icon-btn" data-search-open aria-label="Search">⌕</button>
+      <button class="icon-btn" data-theme-toggle aria-label="Switch theme">◐</button>
+    </nav>
+  </div>
+</header>
+
+<div class="layout">
+
+<aside class="sidebar">
+  <svg class="icon-sprite" aria-hidden="true"><symbol id="i-rocket" viewBox="0 0 16 16"><path d="M6.5 9.5 3 8.8l2.2-2.6 2.6-.3M6.5 9.5 7.2 13l2.6-2.2.3-2.6M6.5 9.5 9.5 6.5m0 0a12 12 0 0 1 3.8-3.8 5 5 0 0 1-3.8 3.8ZM4.5 11.5 3 14l2.5-1.5"/></symbol><symbol id="i-book" viewBox="0 0 16 16"><path d="M2.5 3.5h4a2 2 0 0 1 2 2v7a1.5 1.5 0 0 0-1.5-1.5h-4.5Zm11 0h-4a2 2 0 0 0-2 2v7A1.5 1.5 0 0 1 9 11h4.5Z"/></symbol><symbol id="i-play" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><path d="m6.8 5.8 3.2 2.2-3.2 2.2Z"/></symbol><symbol id="i-cart" viewBox="0 0 16 16"><path d="M2 2.5h1.6l1.6 7.4h6.6l1.3-5.2H4.2"/><circle cx="6.3" cy="12.6" r="1"/><circle cx="11.4" cy="12.6" r="1"/></symbol><symbol id="i-scales" viewBox="0 0 16 16"><path d="M8 2.5v11M4.5 4.2h7M2 10a2.5 2.5 0 0 0 5 0L4.5 4.5Zm7 0a2.5 2.5 0 0 0 5 0L11.5 4.5ZM5.5 13.5h5"/></symbol><symbol id="i-box" viewBox="0 0 16 16"><path d="M8 2 2.5 4.8v6.4L8 14l5.5-2.8V4.8Z"/><path d="M2.5 4.8 8 7.6l5.5-2.8M8 7.6V14"/></symbol><symbol id="i-transform" viewBox="0 0 16 16"><path d="M2 5.5h7m-2.2-2.2L9 5.5 6.8 7.7M14 10.5H7m2.2-2.2L7 10.5l2.2 2.2"/></symbol><symbol id="i-shield" viewBox="0 0 16 16"><path d="M8 2 3.5 3.8v3.7c0 2.6 1.9 5 4.5 5.9 2.6-.9 4.5-3.3 4.5-5.9V3.8Z"/><path d="m6.2 7.9 1.4 1.4 2.4-2.6"/></symbol><symbol id="i-search" viewBox="0 0 16 16"><circle cx="7.2" cy="7.2" r="4"/><path d="m10.2 10.2 3 3"/></symbol><symbol id="i-link" viewBox="0 0 16 16"><path d="M6.6 9.4a2.6 2.6 0 0 0 3.7 0l2-2a2.6 2.6 0 0 0-3.7-3.7l-.9.9"/><path d="M9.4 6.6a2.6 2.6 0 0 0-3.7 0l-2 2a2.6 2.6 0 0 0 3.7 3.7l.9-.9"/></symbol><symbol id="i-user" viewBox="0 0 16 16"><circle cx="8" cy="6" r="2.6"/><path d="M3.4 13.2a4.8 4.8 0 0 1 9.2 0"/></symbol><symbol id="i-image" viewBox="0 0 16 16"><rect x="2.5" y="3.5" width="11" height="9" rx="1.5"/><circle cx="6" cy="6.7" r="1"/><path d="m3.2 11.4 3-2.6 2.4 2 2-1.6 2.2 1.9"/></symbol><symbol id="i-signpost" viewBox="0 0 16 16"><path d="M8 2v12M8 4h4.2l1.3 1.6L12.2 7.2H8Zm0 4.2H3.8L2.5 9.8l1.3 1.6H8Z"/></symbol><symbol id="i-bolt" viewBox="0 0 16 16"><path d="M9 2 4 9h3.4l-.4 5 5-7H8.6Z"/></symbol><symbol id="i-broadcast" viewBox="0 0 16 16"><circle cx="8" cy="8" r="1.6"/><path d="M5.2 10.8a4 4 0 0 1 0-5.6m5.6 0a4 4 0 0 1 0 5.6M3.2 12.8a6.8 6.8 0 0 1 0-9.6m9.6 0a6.8 6.8 0 0 1 0 9.6"/></symbol><symbol id="i-exchange" viewBox="0 0 16 16"><path d="M2.8 5.5h9.1l-2-2M13.2 10.5H4.1l2 2"/></symbol><symbol id="i-lock" viewBox="0 0 16 16"><rect x="3.2" y="7" width="9.6" height="6.3" rx="1.5"/><path d="M5.5 7V5.3a2.5 2.5 0 0 1 5 0V7"/><path d="M8 9.6v1.4"/></symbol><symbol id="i-sprout" viewBox="0 0 16 16"><path d="M8 13.5V7.8m0 0C8 6 6.6 4.6 4.8 4.6H3.3c0 1.8 1.4 3.2 3.2 3.2Zm0 0c0-1.8 1.4-3.2 3.2-3.2h1.5c0 1.8-1.4 3.2-3.2 3.2Z"/></symbol><symbol id="i-gauge" viewBox="0 0 16 16"><path d="M2.8 11.6a5.9 5.9 0 1 1 10.4 0"/><path d="M8 8.8 10.6 6"/><circle cx="8" cy="9.4" r="1"/></symbol><symbol id="i-spark" viewBox="0 0 16 16"><path d="M6 2.4 6.9 5l2.6.9-2.6.9L6 9.4 5.1 6.8 2.5 5.9l2.6-.9Z"/><path d="m11.6 8.4.6 1.7 1.7.6-1.7.6-.6 1.7-.6-1.7-1.7-.6 1.7-.6Z"/></symbol><symbol id="i-alert" viewBox="0 0 16 16"><path d="M8 2.8 2.6 12.4h10.8Z"/><path d="M8 6.4v2.8M8 10.8v.1"/></symbol><symbol id="i-terminal" viewBox="0 0 16 16"><rect x="2.2" y="3" width="11.6" height="10" rx="1.5"/><path d="m5 6.4 2 1.8-2 1.8M8.6 10.4h2.6"/></symbol><symbol id="i-lifebuoy" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><circle cx="8" cy="8" r="2.2"/><path d="m4.1 4.1 2.3 2.3m3.2 3.2 2.3 2.3m0-7.8-2.3 2.3M6.4 9.6l-2.3 2.3"/></symbol><symbol id="i-at" viewBox="0 0 16 16"><circle cx="8" cy="8" r="2.3"/><path d="M10.3 5.7v3a1.8 1.8 0 0 0 3.2 1.1A5.8 5.8 0 1 0 11 13"/></symbol><symbol id="i-sliders" viewBox="0 0 16 16"><path d="M2.5 5h7m3 0h1m-11 6h1m3 0h7"/><circle cx="11" cy="5" r="1.5"/><circle cx="5" cy="11" r="1.5"/></symbol><symbol id="i-layers" viewBox="0 0 16 16"><path d="M8 2.2 2.4 5 8 7.8 13.6 5Z"/><path d="m2.4 8 5.6 2.8L13.6 8m-11.2 3 5.6 2.8L13.6 11"/></symbol><symbol id="i-wrench" viewBox="0 0 16 16"><path d="M10.4 2.6a3.4 3.4 0 0 0-3.9 4.6l-4 4a1.3 1.3 0 0 0 1.9 1.9l4-4a3.4 3.4 0 0 0 4.6-3.9l-1.9 1.9-1.9-.5-.5-1.9Z"/></symbol></svg>
+  <h5>Start here</h5>
+  <ul>
+    <li><a href="../guide/getting-started.html"><svg class="ic" aria-hidden="true"><use href="#i-rocket"/></svg><span>Getting started</span></a></li>
+    <li><a href="../guide/ai-assistants.html"><svg class="ic" aria-hidden="true"><use href="#i-spark"/></svg><span>AI assistants</span></a></li>
+    <li class="has-sub">
+      <details>
+        <summary><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg><span>Tutorials</span></summary>
+        <ul>
+        <li><a href="../guide/tutorial.html"><svg class="ic" aria-hidden="true"><use href="#i-play"/></svg><span>A first API</span></a></li>
+        <li><a href="../guide/tutorial-orders.html"><svg class="ic" aria-hidden="true"><use href="#i-cart"/></svg><span>Orders &amp; stock</span></a></li>
+        </ul>
+      </details>
+    </li>
+    <li><a href="../guide/vs-nestjs.html"><svg class="ic" aria-hidden="true"><use href="#i-scales"/></svg><span>Compared with NestJS</span></a></li>
+  </ul>
+  <h5>Guide</h5>
+  <ul>
+    <li><a href="../guide/models.html"><svg class="ic" aria-hidden="true"><use href="#i-box"/></svg><span>Models &amp; fields</span></a></li>
+    <li><a href="../guide/from-params.html"><svg class="ic" aria-hidden="true"><use href="#i-transform"/></svg><span>fromParams</span></a></li>
+    <li><a href="../guide/acl.html"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg><span>Permissions &amp; ACL</span></a></li>
+    <li><a href="../guide/queries.html"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg><span>Queries</span></a></li>
+    <li><a href="../guide/relations.html"><svg class="ic" aria-hidden="true"><use href="#i-link"/></svg><span>Relationships</span></a></li>
+    <li><a href="../guide/users.html"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg><span>Users &amp; auth</span></a></li>
+    <li><a href="../guide/files.html"><svg class="ic" aria-hidden="true"><use href="#i-image"/></svg><span>Files &amp; images</span></a></li>
+    <li><a href="../guide/endpoints.html"><svg class="ic" aria-hidden="true"><use href="#i-signpost"/></svg><span>Endpoints &amp; routing</span></a></li>
+    <li><a href="../guide/triggers.html"><svg class="ic" aria-hidden="true"><use href="#i-bolt"/></svg><span>Triggers</span></a></li>
+    <li><a href="../guide/live-query.html"><svg class="ic" aria-hidden="true"><use href="#i-broadcast"/></svg><span>Real-time</span></a></li>
+    <li><a href="../guide/transactions.html"><svg class="ic" aria-hidden="true"><use href="#i-exchange"/></svg><span>Transactions</span></a></li>
+    <li><a href="../guide/optimistic-locking.html"><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg><span>Optimistic locking</span></a></li>
+    <li><a href="../guide/seeding.html"><svg class="ic" aria-hidden="true"><use href="#i-sprout"/></svg><span>Seeding data</span></a></li>
+    <li><a href="../guide/dashboard.html"><svg class="ic" aria-hidden="true"><use href="#i-gauge"/></svg><span>Parse Dashboard</span></a></li>
+    <li><a href="../guide/errors.html"><svg class="ic" aria-hidden="true"><use href="#i-alert"/></svg><span>Errors</span></a></li>
+    <li><a href="../guide/cli.html"><svg class="ic" aria-hidden="true"><use href="#i-terminal"/></svg><span>The psk CLI</span></a></li>
+    <li><a href="../guide/troubleshooting.html"><svg class="ic" aria-hidden="true"><use href="#i-lifebuoy"/></svg><span>Troubleshooting</span></a></li>
+  </ul>
+  <h5>Reference</h5>
+  <ul>
+    <li><a href="../reference/decorators.html"><svg class="ic" aria-hidden="true"><use href="#i-at"/></svg><span>Decorators</span></a></li>
+    <li><a href="../reference/configuration.html"><svg class="ic" aria-hidden="true"><use href="#i-sliders"/></svg><span>Configuration</span></a></li>
+    <li><a href="../reference/middleware.html"><svg class="ic" aria-hidden="true"><use href="#i-layers"/></svg><span>Middleware</span></a></li>
+    <li><a href="../reference/utilities.html"><svg class="ic" aria-hidden="true"><use href="#i-wrench"/></svg><span>Utilities</span></a></li>
+  </ul>
+</aside>
+
+<main class="content">
+  <p class="eyebrow">Guide</p>
+  <h1>Getting started</h1>
+  <p class="lede">
+    Three commands to a running API with OpenAPI docs, a seeded user, and a MongoDB
+    configured so transactions actually work.
+  </p>
+
+  <h2 id="requirements">Requirements</h2>
+
+  <div class="table-wrap">
+    <table>
+      <tbody>
+        <tr><td><b>Node</b></td><td>≥ 18 — <b>≥ 20.19</b> if you are on parse-server 9</td></tr>
+        <tr><td><b>MongoDB</b></td><td>≥ 7.0.16 for parse-server 9. A <b>replica set</b> is required for transactions</td></tr>
+        <tr><td><b>TypeScript</b></td><td>Any version, with <code>experimentalDecorators: true</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 id="create">Create a project</h2>
+
+  <pre class="code-block"><code>npx parse-server-kit new my-api
+cd my-api
+docker compose up -d
+npm install
+npm run dev</code></pre>
+
+  <p>
+    The generated project prints a ready-to-paste <code>curl</code> on startup, including a
+    session token for a seeded <code>demo</code> user, so your first request works
+    immediately rather than answering <code>400</code>.
+  </p>
+
+  <div class="note">
+    <span class="note-title">Why Docker rather than a local install</span>
+    A default MongoDB install runs as a <b>standalone</b>, and standalones refuse
+    transactions — so <code>@Transactional</code> and <code>@ParseVersionField</code>
+    would fail against one. The generated <code>docker-compose.yml</code> configures a
+    single-node replica set to avoid that. Not using Docker? Put a MongoDB Atlas
+    connection string in <code>DATABASE_URI</code> and skip the compose step; Atlas is
+    already a replica set.
+  </div>
+
+  <h2 id="what-you-get">What was generated</h2>
+
+  <pre class="code-block"><code>my-api/
+├── docker-compose.yml     <span class="t-com"># MongoDB as a replica set</span>
+├── tsconfig.json          <span class="t-com"># decorator flags already set</span>
+├── .env
+└── src/
+    ├── app.ts             <span class="t-com"># boot order — the sequence matters</span>
+    ├── seed.ts            <span class="t-com"># roles, first admin, sample rows</span>
+    ├── models/Note.ts     <span class="t-com"># @ParseClass + @ParseField + a trigger</span>
+    └── functions/note.ts  <span class="t-com"># @Route + five endpoints</span></code></pre>
+
+  <p>Your API is at <code>/api/notes/*</code> and its documentation at <code>/api-docs</code>.</p>
+
+  <h2 id="first-request">Your first request</h2>
+  <p>
+    Both of these are real exchanges against a freshly generated project — the responses
+    below are what the server actually returned.
+  </p>
+
+  <div class="wire">
+    <div class="wire-step">
+      <span class="wire-tag req">Create — needs the session token printed at startup</span>
+<pre class="code-block"><code>curl -X POST <span class="t-str">"http://localhost:1337/api/notes/createNote"</span> \
+  -H <span class="t-str">"X-Parse-Application-Id: my-api"</span> \
+  -H <span class="t-str">"X-Parse-Session-Token: &lt;token&gt;"</span> \
+  -H <span class="t-str">"Content-Type: text/plain"</span> \
+  -d <span class="t-str">'{"title":"Quarterly report","body":"Revenue up.","status":"published"}'</span></code></pre>
+    </div>
+    <div class="wire-step">
+      <span class="wire-tag res">Three fields in, eight out</span>
+<pre class="code-block"><code>{ <span class="t-str">"title"</span>: <span class="t-str">"Quarterly report"</span>,
+  <span class="t-str">"body"</span>: <span class="t-str">"Revenue up."</span>,
+  <span class="t-str">"status"</span>: <span class="t-str">"published"</span>,
+  <span class="t-str">"slug"</span>: <span class="t-str">"quarterly-report"</span>,          <span class="t-com">// derived</span>
+  <span class="t-str">"views"</span>: <span class="t-num">0</span>,                          <span class="t-com">// defaulted</span>
+  <span class="t-str">"objectId"</span>: <span class="t-str">"21R47fDVEB"</span>,
+  <span class="t-str">"createdAt"</span>: <span class="t-str">"2026-08-24T09:17:13.202Z"</span>,
+  <span class="t-str">"updatedAt"</span>: <span class="t-str">"2026-08-24T09:17:13.202Z"</span> }</code></pre>
+      <p class="wire-note">
+        <code>slug</code> was derived and <code>views</code> defaulted by the model's
+        <code>@BeforeSave</code> trigger, which also validated the whole object. That happens
+        on every save path, not only this endpoint.
+      </p>
+    </div>
+    <div class="wire-step">
+      <span class="wire-tag req">List — no auth needed</span>
+<pre class="code-block"><code>curl <span class="t-str">"http://localhost:1337/api/notes/listNotes?limit=2&amp;status=published"</span> \
+  -H <span class="t-str">"X-Parse-Application-Id: my-api"</span></code></pre>
+      <p class="wire-note">
+        Query-string values arrive as <b>strings</b> — <code>validateEntityRoutes</code>
+        merges them into the body. Declare them <code>{type: String}</code> and convert:
+        <code>Number(req.params.limit)</code>.
+      </p>
+    </div>
+    <div class="wire-step">
+      <span class="wire-tag res">Only rows this caller may read</span>
+<pre class="code-block"><code>{ <span class="t-str">"results"</span>: [
+    { <span class="t-str">"objectId"</span>: <span class="t-str">"MJq00knE1O"</span>, <span class="t-str">"title"</span>: <span class="t-str">"Welcome"</span>,
+      <span class="t-str">"slug"</span>: <span class="t-str">"welcome"</span>, <span class="t-str">"status"</span>: <span class="t-str">"published"</span>, <span class="t-str">"views"</span>: <span class="t-num">0</span>,
+      <span class="t-str">"ACL"</span>: { <span class="t-str">"*"</span>: { <span class="t-str">"read"</span>: <span class="t-key">true</span> },
+               <span class="t-str">"role:Editor"</span>: { <span class="t-str">"read"</span>: <span class="t-key">true</span>, <span class="t-str">"write"</span>: <span class="t-key">true</span> } } }
+  ], <span class="t-str">"count"</span>: <span class="t-num">1</span> }</code></pre>
+      <p class="wire-note">
+        The seeded draft note exists too and is simply invisible here — no
+        <code>where</code> clause did that, the row's ACL did. See
+        <a href="acl.html">Permissions &amp; ACL</a>.
+      </p>
+    </div>
+  </div>
+
+  <h2 id="dashboard">Parse Dashboard</h2>
+  <p>
+    Parse has an official admin console &mdash; browse and edit every class, run queries,
+    inspect users and roles, send push. It is <b>not installed by default</b>, and getting it
+    is one command:
+  </p>
+<pre class="code-block"><code>npm install parse-dashboard
+npm run dev</code></pre>
+  <p>
+    Restart and it is at <code>http://localhost:1337/dashboard</code>. The generated
+    <code>app.ts</code> already detects it, so there is nothing to wire, and the startup
+    banner tells you whether it came up.
+  </p>
+  <div class="note warn">
+    <span class="note-title">It holds the master key</span>
+    Which is what lets it read and write every class regardless of CLP or ACL &mdash; so set
+    <code>DASHBOARD_USER</code> and <code>DASHBOARD_PASS</code> in <code>.env</code> before it
+    goes anywhere. Unset in production it refuses to mount at all.
+    <a href="dashboard.html">The full page on the dashboard</a> covers read-only operators,
+    HTTPS, and how to expose it safely.
+  </div>
+  <h2 id="adding">Adding your own entity</h2>
+
+  <pre class="code-block"><code>psk g resource Product</code></pre>
+
+  <p>
+    Writes <code>src/models/Product.ts</code> and <code>src/functions/product.ts</code>
+    with the edit points marked, and <b>changes nothing else</b> — there is no module to
+    register into, because <code>importFiles</code> discovers both at boot.
+  </p>
+
+  <h2 id="tsconfig">TypeScript setup</h2>
+
+  <p>
+    If you are adding this to an existing project rather than generating one, one compiler
+    flag is mandatory:
+  </p>
+
+  <pre class="code-block"><code>{
+  <span class="t-str">"compilerOptions"</span>: {
+    <span class="t-str">"experimentalDecorators"</span>: <span class="t-key">true</span>
+  }
+}</code></pre>
+
+  <p>
+    This library uses <b>legacy</b> decorators. TypeScript 5 defaults to the standard
+    (TC39) ones, which are a different feature — without the flag every decorator
+    misbehaves. <code>emitDecoratorMetadata</code> is <em>not</em> needed.
+  </p>
+
+  <div class="note">
+    <span class="note-title">Declaring fields</span>
+    Write model fields as <code>declare name: string</code> rather than
+    <code>name!: string</code>. <code>@ParseField</code> installs an accessor on the
+    prototype, and a real class field would shadow it. <code>@ParseClass</code> repairs
+    that automatically, but <code>declare</code> states what is actually true: the storage
+    belongs to Parse, not the instance. <a href="troubleshooting.html#fixed">The full
+    explanation</a>.
+  </div>
+
+  <h2 id="parse-docs">Where Parse's own docs take over</h2>
+
+  <p>
+    This site covers what <em>this library</em> adds. For Parse Server itself — query
+    operators, ACL semantics, LiveQuery, file adapters, push, authentication providers —
+    the <a href="https://docs.parseplatform.org/">Parse Platform documentation</a> remains
+    the reference, and nothing here replaces it.
+  </p>
+
+  <div class="pager">
+    <a href="../index.html"><span>Back</span>Overview</a>
+    <a class="next" href="ai-assistants.html"><span>Next</span>AI assistants</a>
+  </div>
+</main>
+
+</div>
+
+<footer class="site-footer">
+  <div class="inner">
+    <span>MIT licensed</span>
+    <a href="https://www.npmjs.com/package/parse-server-kit">npm</a>
+    <a href="https://github.com/walhalabi-code/parse-server-kit">GitHub</a>
+    <span class="spacer">For Parse concepts, <a href="https://docs.parseplatform.org/">its docs</a> remain the reference.</span>
+  </div>
+</footer>
+
+<script src="../assets/docs.js"></script>
+</body>
+</html>

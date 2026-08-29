@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data:; font-src 'self'; form-action 'none'; base-uri 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Utilities — parse-server-kit</title>
+<meta name="description" content="Helpers, constants and types the package exports.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Utilities — parse-server-kit">
+<meta property="og:description" content="Helpers, constants and types the package exports.">
+<meta property="og:url" content="https://walhalabi-code.github.io/parse-server-kit/reference/utilities.html">
+<meta property="og:site_name" content="parse-server-kit">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="../index.html"><svg class="brand-mark" viewBox="12 10 62 72" aria-hidden="true"><g transform="translate(18, 14)" fill="none" stroke-linecap="round" stroke-linejoin="round"><path class="logo-base" pathLength="1" d="M 40 24 C 40 14, 28 12, 20 22 C 12 32, 12 44, 22 52 C 32 60, 46 52, 46 36 C 46 20, 34 10, 20 10 C 7 10, 2 22, 2 38 C 2 54, 12 64, 28 64 C 38 64, 48 57, 52 48" stroke="var(--logo-base)" stroke-width="3" opacity="0.6"/><g class="logo-layer" transform="translate(-3, -4)"><path class="logo-kit-path" pathLength="1" d="M 40 20 C 40 10, 28 8, 20 18 C 12 28, 12 40, 22 48 C 32 56, 46 48, 46 32 C 46 16, 34 6, 20 6 C 7 6, 2 18, 2 34 C 2 50, 12 60, 28 60 C 38 60, 48 53, 52 44" stroke="var(--logo-kit)" stroke-width="3.5"/><circle class="logo-dot" cx="25" cy="28" r="3.5" fill="var(--logo-kit)" stroke="none"/></g></g></svg>parse-server-kit <span class="v">3.0</span></a>
+    <nav class="nav">
+      <button class="icon-btn menu-btn" data-menu-toggle aria-expanded="false" aria-label="Toggle navigation">≡</button>
+      <a class="nav-ai" href="../guide/ai-assistants.html"><svg class="ai-spark" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 2.4 6.9 5l2.6.9-2.6.9L6 9.4 5.1 6.8 2.5 5.9l2.6-.9Z"/><path d="m11.6 8.4.6 1.7 1.7.6-1.7.6-.6 1.7-.6-1.7-1.7-.6 1.7-.6Z"/></svg>AI</a>
+      <a class="hide-sm" href="../index.html">Home</a>
+      <a class="hide-sm" href="https://github.com/walhalabi-code/parse-server-kit">GitHub</a>
+      <button class="icon-btn" data-search-open aria-label="Search">⌕</button>
+      <button class="icon-btn" data-theme-toggle aria-label="Switch theme">◐</button>
+    </nav>
+  </div>
+</header>
+
+<div class="layout">
+
+<aside class="sidebar">
+  <svg class="icon-sprite" aria-hidden="true"><symbol id="i-rocket" viewBox="0 0 16 16"><path d="M6.5 9.5 3 8.8l2.2-2.6 2.6-.3M6.5 9.5 7.2 13l2.6-2.2.3-2.6M6.5 9.5 9.5 6.5m0 0a12 12 0 0 1 3.8-3.8 5 5 0 0 1-3.8 3.8ZM4.5 11.5 3 14l2.5-1.5"/></symbol><symbol id="i-book" viewBox="0 0 16 16"><path d="M2.5 3.5h4a2 2 0 0 1 2 2v7a1.5 1.5 0 0 0-1.5-1.5h-4.5Zm11 0h-4a2 2 0 0 0-2 2v7A1.5 1.5 0 0 1 9 11h4.5Z"/></symbol><symbol id="i-play" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><path d="m6.8 5.8 3.2 2.2-3.2 2.2Z"/></symbol><symbol id="i-cart" viewBox="0 0 16 16"><path d="M2 2.5h1.6l1.6 7.4h6.6l1.3-5.2H4.2"/><circle cx="6.3" cy="12.6" r="1"/><circle cx="11.4" cy="12.6" r="1"/></symbol><symbol id="i-scales" viewBox="0 0 16 16"><path d="M8 2.5v11M4.5 4.2h7M2 10a2.5 2.5 0 0 0 5 0L4.5 4.5Zm7 0a2.5 2.5 0 0 0 5 0L11.5 4.5ZM5.5 13.5h5"/></symbol><symbol id="i-box" viewBox="0 0 16 16"><path d="M8 2 2.5 4.8v6.4L8 14l5.5-2.8V4.8Z"/><path d="M2.5 4.8 8 7.6l5.5-2.8M8 7.6V14"/></symbol><symbol id="i-transform" viewBox="0 0 16 16"><path d="M2 5.5h7m-2.2-2.2L9 5.5 6.8 7.7M14 10.5H7m2.2-2.2L7 10.5l2.2 2.2"/></symbol><symbol id="i-shield" viewBox="0 0 16 16"><path d="M8 2 3.5 3.8v3.7c0 2.6 1.9 5 4.5 5.9 2.6-.9 4.5-3.3 4.5-5.9V3.8Z"/><path d="m6.2 7.9 1.4 1.4 2.4-2.6"/></symbol><symbol id="i-search" viewBox="0 0 16 16"><circle cx="7.2" cy="7.2" r="4"/><path d="m10.2 10.2 3 3"/></symbol><symbol id="i-link" viewBox="0 0 16 16"><path d="M6.6 9.4a2.6 2.6 0 0 0 3.7 0l2-2a2.6 2.6 0 0 0-3.7-3.7l-.9.9"/><path d="M9.4 6.6a2.6 2.6 0 0 0-3.7 0l-2 2a2.6 2.6 0 0 0 3.7 3.7l.9-.9"/></symbol><symbol id="i-user" viewBox="0 0 16 16"><circle cx="8" cy="6" r="2.6"/><path d="M3.4 13.2a4.8 4.8 0 0 1 9.2 0"/></symbol><symbol id="i-image" viewBox="0 0 16 16"><rect x="2.5" y="3.5" width="11" height="9" rx="1.5"/><circle cx="6" cy="6.7" r="1"/><path d="m3.2 11.4 3-2.6 2.4 2 2-1.6 2.2 1.9"/></symbol><symbol id="i-signpost" viewBox="0 0 16 16"><path d="M8 2v12M8 4h4.2l1.3 1.6L12.2 7.2H8Zm0 4.2H3.8L2.5 9.8l1.3 1.6H8Z"/></symbol><symbol id="i-bolt" viewBox="0 0 16 16"><path d="M9 2 4 9h3.4l-.4 5 5-7H8.6Z"/></symbol><symbol id="i-broadcast" viewBox="0 0 16 16"><circle cx="8" cy="8" r="1.6"/><path d="M5.2 10.8a4 4 0 0 1 0-5.6m5.6 0a4 4 0 0 1 0 5.6M3.2 12.8a6.8 6.8 0 0 1 0-9.6m9.6 0a6.8 6.8 0 0 1 0 9.6"/></symbol><symbol id="i-exchange" viewBox="0 0 16 16"><path d="M2.8 5.5h9.1l-2-2M13.2 10.5H4.1l2 2"/></symbol><symbol id="i-lock" viewBox="0 0 16 16"><rect x="3.2" y="7" width="9.6" height="6.3" rx="1.5"/><path d="M5.5 7V5.3a2.5 2.5 0 0 1 5 0V7"/><path d="M8 9.6v1.4"/></symbol><symbol id="i-sprout" viewBox="0 0 16 16"><path d="M8 13.5V7.8m0 0C8 6 6.6 4.6 4.8 4.6H3.3c0 1.8 1.4 3.2 3.2 3.2Zm0 0c0-1.8 1.4-3.2 3.2-3.2h1.5c0 1.8-1.4 3.2-3.2 3.2Z"/></symbol><symbol id="i-gauge" viewBox="0 0 16 16"><path d="M2.8 11.6a5.9 5.9 0 1 1 10.4 0"/><path d="M8 8.8 10.6 6"/><circle cx="8" cy="9.4" r="1"/></symbol><symbol id="i-spark" viewBox="0 0 16 16"><path d="M6 2.4 6.9 5l2.6.9-2.6.9L6 9.4 5.1 6.8 2.5 5.9l2.6-.9Z"/><path d="m11.6 8.4.6 1.7 1.7.6-1.7.6-.6 1.7-.6-1.7-1.7-.6 1.7-.6Z"/></symbol><symbol id="i-alert" viewBox="0 0 16 16"><path d="M8 2.8 2.6 12.4h10.8Z"/><path d="M8 6.4v2.8M8 10.8v.1"/></symbol><symbol id="i-terminal" viewBox="0 0 16 16"><rect x="2.2" y="3" width="11.6" height="10" rx="1.5"/><path d="m5 6.4 2 1.8-2 1.8M8.6 10.4h2.6"/></symbol><symbol id="i-lifebuoy" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><circle cx="8" cy="8" r="2.2"/><path d="m4.1 4.1 2.3 2.3m3.2 3.2 2.3 2.3m0-7.8-2.3 2.3M6.4 9.6l-2.3 2.3"/></symbol><symbol id="i-at" viewBox="0 0 16 16"><circle cx="8" cy="8" r="2.3"/><path d="M10.3 5.7v3a1.8 1.8 0 0 0 3.2 1.1A5.8 5.8 0 1 0 11 13"/></symbol><symbol id="i-sliders" viewBox="0 0 16 16"><path d="M2.5 5h7m3 0h1m-11 6h1m3 0h7"/><circle cx="11" cy="5" r="1.5"/><circle cx="5" cy="11" r="1.5"/></symbol><symbol id="i-layers" viewBox="0 0 16 16"><path d="M8 2.2 2.4 5 8 7.8 13.6 5Z"/><path d="m2.4 8 5.6 2.8L13.6 8m-11.2 3 5.6 2.8L13.6 11"/></symbol><symbol id="i-wrench" viewBox="0 0 16 16"><path d="M10.4 2.6a3.4 3.4 0 0 0-3.9 4.6l-4 4a1.3 1.3 0 0 0 1.9 1.9l4-4a3.4 3.4 0 0 0 4.6-3.9l-1.9 1.9-1.9-.5-.5-1.9Z"/></symbol></svg>
+  <h5>Start here</h5>
+  <ul>
+    <li><a href="../guide/getting-started.html"><svg class="ic" aria-hidden="true"><use href="#i-rocket"/></svg><span>Getting started</span></a></li>
+    <li><a href="../guide/ai-assistants.html"><svg class="ic" aria-hidden="true"><use href="#i-spark"/></svg><span>AI assistants</span></a></li>
+    <li class="has-sub">
+      <details>
+        <summary><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg><span>Tutorials</span></summary>
+        <ul>
+        <li><a href="../guide/tutorial.html"><svg class="ic" aria-hidden="true"><use href="#i-play"/></svg><span>A first API</span></a></li>
+        <li><a href="../guide/tutorial-orders.html"><svg class="ic" aria-hidden="true"><use href="#i-cart"/></svg><span>Orders &amp; stock</span></a></li>
+        </ul>
+      </details>
+    </li>
+    <li><a href="../guide/vs-nestjs.html"><svg class="ic" aria-hidden="true"><use href="#i-scales"/></svg><span>Compared with NestJS</span></a></li>
+  </ul>
+  <h5>Guide</h5>
+  <ul>
+    <li><a href="../guide/models.html"><svg class="ic" aria-hidden="true"><use href="#i-box"/></svg><span>Models &amp; fields</span></a></li>
+    <li><a href="../guide/from-params.html"><svg class="ic" aria-hidden="true"><use href="#i-transform"/></svg><span>fromParams</span></a></li>
+    <li><a href="../guide/acl.html"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg><span>Permissions &amp; ACL</span></a></li>
+    <li><a href="../guide/queries.html"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg><span>Queries</span></a></li>
+    <li><a href="../guide/relations.html"><svg class="ic" aria-hidden="true"><use href="#i-link"/></svg><span>Relationships</span></a></li>
+    <li><a href="../guide/users.html"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg><span>Users &amp; auth</span></a></li>
+    <li><a href="../guide/files.html"><svg class="ic" aria-hidden="true"><use href="#i-image"/></svg><span>Files &amp; images</span></a></li>
+    <li><a href="../guide/endpoints.html"><svg class="ic" aria-hidden="true"><use href="#i-signpost"/></svg><span>Endpoints &amp; routing</span></a></li>
+    <li><a href="../guide/triggers.html"><svg class="ic" aria-hidden="true"><use href="#i-bolt"/></svg><span>Triggers</span></a></li>
+    <li><a href="../guide/live-query.html"><svg class="ic" aria-hidden="true"><use href="#i-broadcast"/></svg><span>Real-time</span></a></li>
+    <li><a href="../guide/transactions.html"><svg class="ic" aria-hidden="true"><use href="#i-exchange"/></svg><span>Transactions</span></a></li>
+    <li><a href="../guide/optimistic-locking.html"><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg><span>Optimistic locking</span></a></li>
+    <li><a href="../guide/seeding.html"><svg class="ic" aria-hidden="true"><use href="#i-sprout"/></svg><span>Seeding data</span></a></li>
+    <li><a href="../guide/dashboard.html"><svg class="ic" aria-hidden="true"><use href="#i-gauge"/></svg><span>Parse Dashboard</span></a></li>
+    <li><a href="../guide/errors.html"><svg class="ic" aria-hidden="true"><use href="#i-alert"/></svg><span>Errors</span></a></li>
+    <li><a href="../guide/cli.html"><svg class="ic" aria-hidden="true"><use href="#i-terminal"/></svg><span>The psk CLI</span></a></li>
+    <li><a href="../guide/troubleshooting.html"><svg class="ic" aria-hidden="true"><use href="#i-lifebuoy"/></svg><span>Troubleshooting</span></a></li>
+  </ul>
+  <h5>Reference</h5>
+  <ul>
+    <li><a href="../reference/decorators.html"><svg class="ic" aria-hidden="true"><use href="#i-at"/></svg><span>Decorators</span></a></li>
+    <li><a href="../reference/configuration.html"><svg class="ic" aria-hidden="true"><use href="#i-sliders"/></svg><span>Configuration</span></a></li>
+    <li><a href="../reference/middleware.html"><svg class="ic" aria-hidden="true"><use href="#i-layers"/></svg><span>Middleware</span></a></li>
+    <li><a href="../reference/utilities.html"><svg class="ic" aria-hidden="true"><use href="#i-wrench"/></svg><span>Utilities</span></a></li>
+  </ul>
+</aside>
+
+<main class="content">
+  <p class="eyebrow">Reference</p>
+  <h1>Utilities</h1>
+  <p class="lede">Helpers, constants and types the package exports.</p>
+
+
+  <h2 id="catcherror">catchError</h2>
+  <p>The error convention throughout the library — a rejected promise becomes a tuple rather than a <code>try/catch</code> around every <code>await</code>.</p>
+<pre class="code-block"><code><span class="t-key">import</span> {
+  catchError, importFiles, getUserRoles, getUsersRoles, roleKey,
+} <span class="t-key">from</span> <span class="t-str">'parse-server-kit'</span>;
+
+<span class="t-key">const</span> [err, saved] = <span class="t-key">await</span> catchError(product.save(<span class="t-key">null</span>, { sessionToken }));
+<span class="t-key">if</span> (err) <span class="t-key">throw</span> err;</code></pre>
+
+  <h2 id="importfiles">importFiles</h2>
+<pre class="code-block"><code>importFiles(dir);                                    <span class="t-com">// .js only</span>
+importFiles(dir, { extensions: [<span class="t-str">'.js'</span>, <span class="t-str">'.ts'</span>] });      <span class="t-com">// ts-node / tsx</span>
+importFiles(dir, { verbose: <span class="t-key">false</span> });</code></pre>
+  <p>Defaults to <code>.js</code>, the compiled output a production server runs. Importing nothing produces a server that starts perfectly with no models and no routes, so since 3.0 it warns when it finds a directory of <code>.ts</code> files and was told to load <code>.js</code>.</p>
+  <p>Never point it at a tree holding both compiled and source copies — every class would register twice, and which one wins depends on directory order. That now warns too.</p>
+
+  <h2 id="roles">Roles</h2>
+<pre class="code-block"><code><span class="t-key">await</span> getUserRoles(user);      <span class="t-com">// string[]</span>
+<span class="t-key">await</span> getUsersRoles(users);    <span class="t-com">// Map<userId, string[]></span>
+
+roleKey(<span class="t-str">'Editor'</span>);             <span class="t-com">// 'role:Editor', typed as that literal</span></code></pre>
+  <p><code>getUsersRoles</code> costs one query per role rather than per user, so a page of 500 users costs the same as a page of five.</p>
+
+  <h2 id="misc">Everything else</h2>
+  <div class="table-wrap"><table>
+    <tbody>
+      <tr><td><code>syncImageAcl(parent, fields, acl?)</code></td><td>Copies a parent's ACL onto nested image pointers</td></tr>
+      <tr><td><code>cloneAcl(acl)</code></td><td>Deep copy of a <code>Parse.ACL</code></td></tr>
+      <tr><td><code>validateObject(object)</code></td><td><code>{valid, errors[]}</code> against the declared field rules</td></tr>
+      <tr><td><code>validateOrThrow(object)</code></td><td>Throws a Parse <code>VALIDATION_ERROR</code> listing every failure</td></tr>
+      <tr><td><code>generateRandomString(n)</code></td><td>Not cryptographic — do not use for secrets</td></tr>
+      <tr><td><code>generateRandomPassword(…)</code></td><td>A placeholder password, same caveat</td></tr>
+      <tr><td><code>sleep(ms)</code></td><td></td></tr>
+      <tr><td><code>formatCount(n, locale?)</code></td><td>Compact notation — <code>1.2K</code></td></tr>
+      <tr><td><code>MAX_QUERY_LIMIT</code></td><td><code>10000</code></td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="deprecated">Deprecated</h2>
+  <p>Still exported so existing imports resolve; to be removed in the next major.</p>
+  <div class="table-wrap"><table>
+    <tbody>
+      <tr><td><code>UserRoles</code></td><td>Two example role names from one project. Declare your own enum and pass it to <code>roleKey</code>, which accepts any string</td></tr>
+      <tr><td><code>AuthRole</code>, <code>Filter</code></td><td>Application types that describe nothing this library does</td></tr>
+      <tr><td><code>MultiLangs</code></td><td>Hardcodes Arabic and English. Prefer <code>Record&lt;string, string&gt;</code></td></tr>
+      <tr><td><code>applyUniqueIndexes</code></td><td>A permanent alias for <code>applyAllIndexes</code>, which now applies every index kind</td></tr>
+    </tbody>
+  </table></div>
+
+
+  <div class="pager">
+    <a href="middleware.html"><span>Back</span>Middleware</a>
+    
+  </div>
+</main>
+
+</div>
+
+<footer class="site-footer">
+  <div class="inner">
+    <span>MIT licensed</span>
+    <a href="https://www.npmjs.com/package/parse-server-kit">npm</a>
+    <a href="https://github.com/walhalabi-code/parse-server-kit">GitHub</a>
+    <span class="spacer">For Parse concepts, <a href="https://docs.parseplatform.org/">its docs</a> remain the reference.</span>
+  </div>
+</footer>
+
+<script src="../assets/docs.js"></script>
+</body>
+</html>

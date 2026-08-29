@@ -1,0 +1,40 @@
+# DEVELOPMENT ONLY.
+#
+# A single-node replica set: real MongoDB, data kept in a named volume, and
+# transactions work. It has no backups, no failover and no monitoring, so do
+# not run it in production — use MongoDB Atlas or a managed cluster there and
+# point DATABASE_URI at it.
+#
+# The replica set matters: a standalone mongod REFUSES transactions, so
+# @Transactional and @ParseVersionField fail against a default install. That is
+# what this file exists to solve.
+#
+#   docker compose up -d      start
+#   docker compose down       stop
+#   docker compose down -v    stop and delete the data
+
+services:
+  mongo:
+    image: mongo:8
+    container_name: {{PROJECT_NAME}}-mongo
+    restart: unless-stopped
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo-data:/data/db
+    command: ['--replSet', 'rs0', '--bind_ip_all']
+    healthcheck:
+      # Initiates the replica set on first boot, then reports healthy once the
+      # node has become primary. Safe to re-run: rs.initiate throws if already
+      # configured, and rs.status() then answers normally.
+      test: >
+        mongosh --quiet --eval "
+          try { rs.status().ok } catch (e) { rs.initiate({_id:'rs0',members:[{_id:0,host:'localhost:27017'}]}).ok }
+        "
+      interval: 5s
+      timeout: 10s
+      retries: 20
+      start_period: 10s
+
+volumes:
+  mongo-data:

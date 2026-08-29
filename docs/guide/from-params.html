@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data:; font-src 'self'; form-action 'none'; base-uri 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>fromParams — parse-server-kit</title>
+<meta name="description" content="Building a typed Parse object from a request body: what it converts, what it refuses to write, and why it is safe to point at raw user input.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="fromParams — parse-server-kit">
+<meta property="og:description" content="Building a typed Parse object from a request body: what it converts, what it refuses to write, and why it is safe to point at raw user input.">
+<meta property="og:url" content="https://walhalabi-code.github.io/parse-server-kit/guide/from-params.html">
+<meta property="og:site_name" content="parse-server-kit">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="../index.html"><svg class="brand-mark" viewBox="12 10 62 72" aria-hidden="true"><g transform="translate(18, 14)" fill="none" stroke-linecap="round" stroke-linejoin="round"><path class="logo-base" pathLength="1" d="M 40 24 C 40 14, 28 12, 20 22 C 12 32, 12 44, 22 52 C 32 60, 46 52, 46 36 C 46 20, 34 10, 20 10 C 7 10, 2 22, 2 38 C 2 54, 12 64, 28 64 C 38 64, 48 57, 52 48" stroke="var(--logo-base)" stroke-width="3" opacity="0.6"/><g class="logo-layer" transform="translate(-3, -4)"><path class="logo-kit-path" pathLength="1" d="M 40 20 C 40 10, 28 8, 20 18 C 12 28, 12 40, 22 48 C 32 56, 46 48, 46 32 C 46 16, 34 6, 20 6 C 7 6, 2 18, 2 34 C 2 50, 12 60, 28 60 C 38 60, 48 53, 52 44" stroke="var(--logo-kit)" stroke-width="3.5"/><circle class="logo-dot" cx="25" cy="28" r="3.5" fill="var(--logo-kit)" stroke="none"/></g></g></svg>parse-server-kit <span class="v">3.0</span></a>
+    <nav class="nav">
+      <button class="icon-btn menu-btn" data-menu-toggle aria-expanded="false" aria-label="Toggle navigation">≡</button>
+      <a class="nav-ai" href="../guide/ai-assistants.html"><svg class="ai-spark" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 2.4 6.9 5l2.6.9-2.6.9L6 9.4 5.1 6.8 2.5 5.9l2.6-.9Z"/><path d="m11.6 8.4.6 1.7 1.7.6-1.7.6-.6 1.7-.6-1.7-1.7-.6 1.7-.6Z"/></svg>AI</a>
+      <a class="hide-sm" href="../index.html">Home</a>
+      <a class="hide-sm" href="https://github.com/walhalabi-code/parse-server-kit">GitHub</a>
+      <button class="icon-btn" data-search-open aria-label="Search">⌕</button>
+      <button class="icon-btn" data-theme-toggle aria-label="Switch theme">◐</button>
+    </nav>
+  </div>
+</header>
+
+<div class="layout">
+
+<aside class="sidebar">
+  <svg class="icon-sprite" aria-hidden="true"><symbol id="i-rocket" viewBox="0 0 16 16"><path d="M6.5 9.5 3 8.8l2.2-2.6 2.6-.3M6.5 9.5 7.2 13l2.6-2.2.3-2.6M6.5 9.5 9.5 6.5m0 0a12 12 0 0 1 3.8-3.8 5 5 0 0 1-3.8 3.8ZM4.5 11.5 3 14l2.5-1.5"/></symbol><symbol id="i-book" viewBox="0 0 16 16"><path d="M2.5 3.5h4a2 2 0 0 1 2 2v7a1.5 1.5 0 0 0-1.5-1.5h-4.5Zm11 0h-4a2 2 0 0 0-2 2v7A1.5 1.5 0 0 1 9 11h4.5Z"/></symbol><symbol id="i-play" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><path d="m6.8 5.8 3.2 2.2-3.2 2.2Z"/></symbol><symbol id="i-cart" viewBox="0 0 16 16"><path d="M2 2.5h1.6l1.6 7.4h6.6l1.3-5.2H4.2"/><circle cx="6.3" cy="12.6" r="1"/><circle cx="11.4" cy="12.6" r="1"/></symbol><symbol id="i-scales" viewBox="0 0 16 16"><path d="M8 2.5v11M4.5 4.2h7M2 10a2.5 2.5 0 0 0 5 0L4.5 4.5Zm7 0a2.5 2.5 0 0 0 5 0L11.5 4.5ZM5.5 13.5h5"/></symbol><symbol id="i-box" viewBox="0 0 16 16"><path d="M8 2 2.5 4.8v6.4L8 14l5.5-2.8V4.8Z"/><path d="M2.5 4.8 8 7.6l5.5-2.8M8 7.6V14"/></symbol><symbol id="i-transform" viewBox="0 0 16 16"><path d="M2 5.5h7m-2.2-2.2L9 5.5 6.8 7.7M14 10.5H7m2.2-2.2L7 10.5l2.2 2.2"/></symbol><symbol id="i-shield" viewBox="0 0 16 16"><path d="M8 2 3.5 3.8v3.7c0 2.6 1.9 5 4.5 5.9 2.6-.9 4.5-3.3 4.5-5.9V3.8Z"/><path d="m6.2 7.9 1.4 1.4 2.4-2.6"/></symbol><symbol id="i-search" viewBox="0 0 16 16"><circle cx="7.2" cy="7.2" r="4"/><path d="m10.2 10.2 3 3"/></symbol><symbol id="i-link" viewBox="0 0 16 16"><path d="M6.6 9.4a2.6 2.6 0 0 0 3.7 0l2-2a2.6 2.6 0 0 0-3.7-3.7l-.9.9"/><path d="M9.4 6.6a2.6 2.6 0 0 0-3.7 0l-2 2a2.6 2.6 0 0 0 3.7 3.7l.9-.9"/></symbol><symbol id="i-user" viewBox="0 0 16 16"><circle cx="8" cy="6" r="2.6"/><path d="M3.4 13.2a4.8 4.8 0 0 1 9.2 0"/></symbol><symbol id="i-image" viewBox="0 0 16 16"><rect x="2.5" y="3.5" width="11" height="9" rx="1.5"/><circle cx="6" cy="6.7" r="1"/><path d="m3.2 11.4 3-2.6 2.4 2 2-1.6 2.2 1.9"/></symbol><symbol id="i-signpost" viewBox="0 0 16 16"><path d="M8 2v12M8 4h4.2l1.3 1.6L12.2 7.2H8Zm0 4.2H3.8L2.5 9.8l1.3 1.6H8Z"/></symbol><symbol id="i-bolt" viewBox="0 0 16 16"><path d="M9 2 4 9h3.4l-.4 5 5-7H8.6Z"/></symbol><symbol id="i-broadcast" viewBox="0 0 16 16"><circle cx="8" cy="8" r="1.6"/><path d="M5.2 10.8a4 4 0 0 1 0-5.6m5.6 0a4 4 0 0 1 0 5.6M3.2 12.8a6.8 6.8 0 0 1 0-9.6m9.6 0a6.8 6.8 0 0 1 0 9.6"/></symbol><symbol id="i-exchange" viewBox="0 0 16 16"><path d="M2.8 5.5h9.1l-2-2M13.2 10.5H4.1l2 2"/></symbol><symbol id="i-lock" viewBox="0 0 16 16"><rect x="3.2" y="7" width="9.6" height="6.3" rx="1.5"/><path d="M5.5 7V5.3a2.5 2.5 0 0 1 5 0V7"/><path d="M8 9.6v1.4"/></symbol><symbol id="i-sprout" viewBox="0 0 16 16"><path d="M8 13.5V7.8m0 0C8 6 6.6 4.6 4.8 4.6H3.3c0 1.8 1.4 3.2 3.2 3.2Zm0 0c0-1.8 1.4-3.2 3.2-3.2h1.5c0 1.8-1.4 3.2-3.2 3.2Z"/></symbol><symbol id="i-gauge" viewBox="0 0 16 16"><path d="M2.8 11.6a5.9 5.9 0 1 1 10.4 0"/><path d="M8 8.8 10.6 6"/><circle cx="8" cy="9.4" r="1"/></symbol><symbol id="i-spark" viewBox="0 0 16 16"><path d="M6 2.4 6.9 5l2.6.9-2.6.9L6 9.4 5.1 6.8 2.5 5.9l2.6-.9Z"/><path d="m11.6 8.4.6 1.7 1.7.6-1.7.6-.6 1.7-.6-1.7-1.7-.6 1.7-.6Z"/></symbol><symbol id="i-alert" viewBox="0 0 16 16"><path d="M8 2.8 2.6 12.4h10.8Z"/><path d="M8 6.4v2.8M8 10.8v.1"/></symbol><symbol id="i-terminal" viewBox="0 0 16 16"><rect x="2.2" y="3" width="11.6" height="10" rx="1.5"/><path d="m5 6.4 2 1.8-2 1.8M8.6 10.4h2.6"/></symbol><symbol id="i-lifebuoy" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><circle cx="8" cy="8" r="2.2"/><path d="m4.1 4.1 2.3 2.3m3.2 3.2 2.3 2.3m0-7.8-2.3 2.3M6.4 9.6l-2.3 2.3"/></symbol><symbol id="i-at" viewBox="0 0 16 16"><circle cx="8" cy="8" r="2.3"/><path d="M10.3 5.7v3a1.8 1.8 0 0 0 3.2 1.1A5.8 5.8 0 1 0 11 13"/></symbol><symbol id="i-sliders" viewBox="0 0 16 16"><path d="M2.5 5h7m3 0h1m-11 6h1m3 0h7"/><circle cx="11" cy="5" r="1.5"/><circle cx="5" cy="11" r="1.5"/></symbol><symbol id="i-layers" viewBox="0 0 16 16"><path d="M8 2.2 2.4 5 8 7.8 13.6 5Z"/><path d="m2.4 8 5.6 2.8L13.6 8m-11.2 3 5.6 2.8L13.6 11"/></symbol><symbol id="i-wrench" viewBox="0 0 16 16"><path d="M10.4 2.6a3.4 3.4 0 0 0-3.9 4.6l-4 4a1.3 1.3 0 0 0 1.9 1.9l4-4a3.4 3.4 0 0 0 4.6-3.9l-1.9 1.9-1.9-.5-.5-1.9Z"/></symbol></svg>
+  <h5>Start here</h5>
+  <ul>
+    <li><a href="../guide/getting-started.html"><svg class="ic" aria-hidden="true"><use href="#i-rocket"/></svg><span>Getting started</span></a></li>
+    <li><a href="../guide/ai-assistants.html"><svg class="ic" aria-hidden="true"><use href="#i-spark"/></svg><span>AI assistants</span></a></li>
+    <li class="has-sub">
+      <details>
+        <summary><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg><span>Tutorials</span></summary>
+        <ul>
+        <li><a href="../guide/tutorial.html"><svg class="ic" aria-hidden="true"><use href="#i-play"/></svg><span>A first API</span></a></li>
+        <li><a href="../guide/tutorial-orders.html"><svg class="ic" aria-hidden="true"><use href="#i-cart"/></svg><span>Orders &amp; stock</span></a></li>
+        </ul>
+      </details>
+    </li>
+    <li><a href="../guide/vs-nestjs.html"><svg class="ic" aria-hidden="true"><use href="#i-scales"/></svg><span>Compared with NestJS</span></a></li>
+  </ul>
+  <h5>Guide</h5>
+  <ul>
+    <li><a href="../guide/models.html"><svg class="ic" aria-hidden="true"><use href="#i-box"/></svg><span>Models &amp; fields</span></a></li>
+    <li><a href="../guide/from-params.html"><svg class="ic" aria-hidden="true"><use href="#i-transform"/></svg><span>fromParams</span></a></li>
+    <li><a href="../guide/acl.html"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg><span>Permissions &amp; ACL</span></a></li>
+    <li><a href="../guide/queries.html"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg><span>Queries</span></a></li>
+    <li><a href="../guide/relations.html"><svg class="ic" aria-hidden="true"><use href="#i-link"/></svg><span>Relationships</span></a></li>
+    <li><a href="../guide/users.html"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg><span>Users &amp; auth</span></a></li>
+    <li><a href="../guide/files.html"><svg class="ic" aria-hidden="true"><use href="#i-image"/></svg><span>Files &amp; images</span></a></li>
+    <li><a href="../guide/endpoints.html"><svg class="ic" aria-hidden="true"><use href="#i-signpost"/></svg><span>Endpoints &amp; routing</span></a></li>
+    <li><a href="../guide/triggers.html"><svg class="ic" aria-hidden="true"><use href="#i-bolt"/></svg><span>Triggers</span></a></li>
+    <li><a href="../guide/live-query.html"><svg class="ic" aria-hidden="true"><use href="#i-broadcast"/></svg><span>Real-time</span></a></li>
+    <li><a href="../guide/transactions.html"><svg class="ic" aria-hidden="true"><use href="#i-exchange"/></svg><span>Transactions</span></a></li>
+    <li><a href="../guide/optimistic-locking.html"><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg><span>Optimistic locking</span></a></li>
+    <li><a href="../guide/seeding.html"><svg class="ic" aria-hidden="true"><use href="#i-sprout"/></svg><span>Seeding data</span></a></li>
+    <li><a href="../guide/dashboard.html"><svg class="ic" aria-hidden="true"><use href="#i-gauge"/></svg><span>Parse Dashboard</span></a></li>
+    <li><a href="../guide/errors.html"><svg class="ic" aria-hidden="true"><use href="#i-alert"/></svg><span>Errors</span></a></li>
+    <li><a href="../guide/cli.html"><svg class="ic" aria-hidden="true"><use href="#i-terminal"/></svg><span>The psk CLI</span></a></li>
+    <li><a href="../guide/troubleshooting.html"><svg class="ic" aria-hidden="true"><use href="#i-lifebuoy"/></svg><span>Troubleshooting</span></a></li>
+  </ul>
+  <h5>Reference</h5>
+  <ul>
+    <li><a href="../reference/decorators.html"><svg class="ic" aria-hidden="true"><use href="#i-at"/></svg><span>Decorators</span></a></li>
+    <li><a href="../reference/configuration.html"><svg class="ic" aria-hidden="true"><use href="#i-sliders"/></svg><span>Configuration</span></a></li>
+    <li><a href="../reference/middleware.html"><svg class="ic" aria-hidden="true"><use href="#i-layers"/></svg><span>Middleware</span></a></li>
+    <li><a href="../reference/utilities.html"><svg class="ic" aria-hidden="true"><use href="#i-wrench"/></svg><span>Utilities</span></a></li>
+  </ul>
+</aside>
+
+<main class="content">
+  <p class="eyebrow">Guide</p>
+  <h1>fromParams</h1>
+  <p class="lede">
+    Turns a request body into a typed Parse object, reading your
+    <code>@ParseField</code> declarations to convert pointers, dates and
+    geopoints. It is designed to be pointed straight at raw user input.
+  </p>
+
+  <h2 id="why">The alternative</h2>
+
+  <p>Without it, every create and update is a run of <code>set()</code> calls that drift from the model each time a field is added:</p>
+
+<pre class="code-block"><code><span class="t-com">// Twelve lines that must be edited every time the model changes,</span>
+<span class="t-com">// in both createProduct and updateProduct.</span>
+<span class="t-key">const</span> product = <span class="t-key">new</span> Product();
+product.set(<span class="t-str">'name'</span>, req.params.name);
+product.set(<span class="t-str">'price'</span>, req.params.price);
+product.set(<span class="t-str">'releasedAt'</span>, <span class="t-key">new</span> Date(req.params.releasedAt));
+<span class="t-key">const</span> Category = Parse.Object.extend(<span class="t-str">'Category'</span>);
+<span class="t-key">const</span> category = <span class="t-key">new</span> Category();
+category.id = req.params.category.objectId;
+product.set(<span class="t-str">'category'</span>, category);
+<span class="t-com">// … and so on</span></code></pre>
+
+<pre class="code-block"><code><span class="t-com">// The same thing, and it stays correct when the model changes.</span>
+<span class="t-key">const</span> product = Product.fromParams(req.params);</code></pre>
+
+  <h2 id="conversions">What it converts</h2>
+
+  <p>It walks your declared fields and converts each according to its <code>type</code>.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Declared type</th><th>Sent as</th><th>Becomes</th></tr></thead>
+      <tbody>
+        <tr><td><code>String</code>, <code>Number</code>, <code>Boolean</code></td><td><code>"Widget"</code>, <code>12</code></td><td>the value, unchanged</td></tr>
+        <tr><td><code>Date</code></td><td><code>"2026-03-01T00:00:00Z"</code></td><td>a real <code>Date</code></td></tr>
+        <tr><td><code>Object</code></td><td><code>{"colour":"red"}</code></td><td>passed through untouched</td></tr>
+        <tr><td><code>GeoPoint</code></td><td><code>{latitude, longitude}</code></td><td>a <code>Parse.GeoPoint</code></td></tr>
+        <tr><td><code>Pointer</code></td><td><code>{"objectId":"abc"}</code> or <code>{"id":"abc"}</code></td><td>a pointer to <code>targetClass</code></td></tr>
+        <tr><td><code>Array</code> <em>with</em> <code>targetClass</code></td><td><code>[{"objectId":"t1"}, …]</code></td><td>an array of pointers</td></tr>
+        <tr><td><code>Array</code> <em>without</em> <code>targetClass</code></td><td>anything</td><td>stored exactly as sent</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note warn">
+    <span class="note-title">An Array of pointers needs targetClass</span>
+    Without it there is nothing to build a pointer <em>to</em>, so the array is stored raw
+    — a list of plain objects rather than references. The field appears to save and the
+    relationships are not there. A <code>Pointer</code> without <code>targetClass</code>
+    throws at import, but an <code>Array</code> cannot, because a plain array is legitimate.
+  </div>
+
+  <h3 id="clearing">Clearing a pointer</h3>
+
+  <p>Both <code>null</code> and <code>{}</code> mean <em>remove this relationship</em>, so a form that submits an empty select works without special handling:</p>
+
+<pre class="code-block"><code>{ <span class="t-str">"category"</span>: <span class="t-key">null</span> }   <span class="t-com">// cleared</span>
+{ <span class="t-str">"category"</span>: {} }     <span class="t-com">// cleared</span></code></pre>
+
+  <p>A field that is simply <b>absent</b> from the body is left alone — which is what makes a partial update work.</p>
+
+  <h3 id="files">File and image fields are skipped</h3>
+
+  <p>
+    Pointer fields whose target is an excluded class — <code>IMG</code> and
+    <code>File</code> by default — are deliberately not converted. An uploaded file has to
+    be saved and processed before it can be attached, so a pointer built from raw params
+    would reference nothing. Nothing is written for those fields; handle them explicitly.
+    See <a href="files.html#upload-endpoint">Files &amp; images</a>. The list is
+    configurable through
+    <a href="../reference/configuration.html#configurekit"><code>configureKit</code></a>.
+  </p>
+
+  <h2 id="create-update">One call for create and update</h2>
+
+<pre class="code-block"><code><span class="t-com">// No id in the body -&gt; insert</span>
+Product.fromParams({ name: <span class="t-str">'New'</span> });
+
+<span class="t-com">// id present -&gt; the same call updates that row</span>
+Product.fromParams({ id: <span class="t-str">'prod789'</span>, name: <span class="t-str">'Edited'</span> });</code></pre>
+
+  <p>
+    That is why <code>createProduct</code> and <code>updateProduct</code> can share a body.
+    It also has a consequence worth understanding — see
+    <a href="#clp-switch">the CLP note</a> below.
+  </p>
+
+  <h2 id="safety">Why it is safe on raw input</h2>
+
+  <p>
+    The obvious worry about mapping a request body onto a model is over-posting: a caller
+    adding <code>{"isAdmin": true}</code> and having it stored. That does not happen, and
+    the reason is worth knowing because it is not obvious from the code.
+  </p>
+
+<pre class="code-block"><code>Product.fromParams({ name: <span class="t-str">'ok'</span>, isAdmin: <span class="t-key">true</span>, role: <span class="t-str">'root'</span> });
+
+<span class="t-com">// present on the object:  ["name", "isAdmin", "role"]</span>
+<span class="t-com">// sent to the database:   { "name": "ok" }</span></code></pre>
+
+  <p>
+    <code>Parse.Object.fromJSON</code> seeds the object with the whole payload, but marks
+    those values <b>clean</b> — as though they had been fetched from the database. Only the
+    fields the conversion loop explicitly sets become <b>dirty</b>, and Parse sends dirty
+    fields only.
+  </p>
+
+  <div class="note good">
+    <span class="note-title">Undeclared input is never written</span>
+    If a field is not declared with <code>@ParseField</code>, no caller can store it through
+    this path — whatever they send. That is asserted by the test suite against the real save
+    payload, not merely assumed.
+  </div>
+
+  <p>
+    One consequence to keep in mind: undeclared values <em>are</em> readable in memory. A
+    <code>@BeforeSave</code> doing <code>req.object.get('isAdmin')</code> would see caller
+    input even though it is never stored. Read only fields you declared.
+  </p>
+
+  <h2 id="control">What you do still control</h2>
+
+  <p>
+    Two things are worth being deliberate about. Neither is a flaw — both are the natural
+    consequence of mapping a body onto a model.
+  </p>
+
+  <h3 id="server-fields">Server-controlled fields</h3>
+
+  <p>
+    If a field is declared, a caller can set it. A <code>status</code>,
+    <code>isApproved</code> or <code>ownerId</code> that your server means to own will be
+    taken from the body if it is there.
+  </p>
+
+<pre class="code-block"><code><span class="t-key">const</span> product = Product.fromParams(req.params);
+
+<span class="t-com">// Overwrite anything the caller must not decide.</span>
+product.set(<span class="t-str">'status'</span>, <span class="t-str">'pending'</span>);
+product.set(<span class="t-str">'owner'</span>, req.user!);</code></pre>
+
+  <p>
+    A <code>@BeforeSave</code> trigger is the stronger place for this, because it applies on
+    every save path rather than only this endpoint:
+  </p>
+
+<pre class="code-block"><code><span class="t-key">import</span> {
+  BeforeSave, validateOrThrow, roleKey, implementACL, syncImageAcl,
+  CloudFunction, catchError,
+} <span class="t-key">from</span> <span class="t-str">'parse-server-kit'</span>;
+
+<span class="t-dec">@BeforeSave</span>()
+<span class="t-key">static async</span> onBeforeSave(req: Parse.Cloud.BeforeSaveRequest&lt;Product&gt;) {
+  <span class="t-key">const</span> product = req.object <span class="t-key">as</span> Product;
+
+  <span class="t-com">// A new row always starts pending, whoever asked.</span>
+  <span class="t-key">if</span> (!product.existed()) product.status = <span class="t-str">'pending'</span>;
+
+  validateOrThrow(product);
+}</code></pre>
+
+  <h3 id="clp-switch">An id changes which permission applies</h3>
+
+  <p>
+    Because an <code>id</code> in the body turns the save into an update, Parse checks the
+    <b>update</b> permission rather than <b>create</b> — the row's ACL write access, and the
+    class's <code>update</code> CLP.
+  </p>
+
+  <p>
+    <b>That protection is real.</b> With a session token, a caller can only update rows they
+    were already allowed to update; sending someone else's id gains them nothing. There is
+    no guard to add here, because the platform already applies one.
+  </p>
+
+  <p>It is worth one check, though — that your <code>update</code> rule is not looser than your <code>create</code> rule:</p>
+
+<pre class="code-block"><code>clp: {
+  create: { [roleKey(<span class="t-str">'Admin'</span>)]: <span class="t-key">true</span> },      <span class="t-com">// strict</span>
+  update: { requiresAuthentication: <span class="t-key">true</span> },  <span class="t-com">// looser</span>
+}
+<span class="t-com">// A body carrying an id reaches the looser rule, so "create is</span>
+<span class="t-com">// admin-only" is not the whole story for that endpoint.</span></code></pre>
+
+  <div class="note danger">
+    <span class="note-title">The master key removes all of this</span>
+    <code>save(null, {useMasterKey: true})</code> bypasses CLP and ACL entirely, so a create
+    endpoint built that way <em>can</em> be turned into an update of any row by a body
+    carrying an <code>id</code>.
+    <br><br>
+    That is not specific to <code>fromParams</code> — passing user input to anything with
+    the master key has the same effect. Use <code>{sessionToken}</code> for request
+    handling, and keep the master key for migrations, seeds and cron jobs. See
+    <a href="acl.html#master-key">Permissions &amp; ACL</a>.
+  </div>
+
+  <h2 id="acl-in-body">An ACL sent in the body</h2>
+
+  <p>
+    A caller can include <code>ACL</code> in the payload. It is <b>not saved</b> — like any
+    undeclared value it stays clean — but <code>getACL()</code> will return it until you set
+    your own.
+  </p>
+
+  <p>
+    That only matters in one sequence: calling <code>syncImageAcl(parent, [...])</code>
+    <em>before</em> setting the parent's ACL would copy the caller's ACL onto the images,
+    and those are saved. Setting the ACL first, as
+    <a href="files.html#cascade">documented</a>, removes the question entirely.
+  </p>
+
+<pre class="code-block"><code>product.setACL(implementACL({ … }));   <span class="t-com">// yours, first</span>
+syncImageAcl(product, [<span class="t-str">'cover'</span>]);        <span class="t-com">// then cascade</span>
+<span class="t-key">await</span> product.save(<span class="t-key">null</span>, { sessionToken });</code></pre>
+
+  <h2 id="complete">A complete create endpoint</h2>
+
+<pre class="code-block"><code><span class="t-dec">@CloudFunction</span>({
+  methods: [<span class="t-str">'POST'</span>],
+  validation: { requireUser: <span class="t-key">true</span>, fields: { name: { required: <span class="t-key">true</span> } } },
+})
+<span class="t-key">static async</span> createProduct(req: Parse.Cloud.FunctionRequest) {
+  <span class="t-key">const</span> user = req.user!;
+
+  <span class="t-com">// Converts pointers, dates and geopoints from the declared fields.</span>
+  <span class="t-key">const</span> product = Product.fromParams(req.params);
+
+  <span class="t-com">// Anything the caller must not decide.</span>
+  product.set(<span class="t-str">'owner'</span>, user);
+  product.set(<span class="t-str">'status'</span>, <span class="t-str">'pending'</span>);
+
+  <span class="t-com">// Who may see and change it.</span>
+  product.setACL(implementACL({
+    owner: [{ user: user.id, read: <span class="t-key">true</span>, write: <span class="t-key">true</span> }],
+    roleRules: [{ role: <span class="t-str">'Admin'</span>, read: <span class="t-key">true</span>, write: <span class="t-key">true</span> }],
+  }));
+
+  <span class="t-com">// The session token, not the master key - so ACL and CLP apply.</span>
+  <span class="t-key">const</span> [err, saved] = <span class="t-key">await</span> catchError(
+    product.save(<span class="t-key">null</span>, { sessionToken: user.getSessionToken() })
+  );
+  <span class="t-key">if</span> (err) <span class="t-key">throw</span> err;
+  <span class="t-key">return</span> saved;
+}</code></pre>
+
+  <h2 id="notes">Smaller things</h2>
+
+  <div class="table-wrap">
+    <table>
+      <tbody>
+        <tr><td><b>It mutates the params object</b></td><td>Sets <code>className</code> on the input so Parse can build from it. Harmless for <code>req.params</code>, surprising if you reuse the same object</td></tr>
+        <tr><td><b>Absent means untouched</b></td><td>A declared field not present in the body is not set, which is what makes partial updates work</td></tr>
+        <tr><td><b>Query results still need a cast</b></td><td><code>fromParams</code> returns your typed class; <code>Parse.Query</code> does not</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 id="summary">In short</h2>
+
+  <ul>
+    <li>Converts pointers, arrays of pointers, dates and geopoints from your declarations.</li>
+    <li><b>Never writes a field you did not declare</b>, whatever the caller sends.</li>
+    <li>Skips file and image pointers, which need handling of their own.</li>
+    <li>An <code>id</code> in the body makes it an update — and the ACL and <code>update</code> CLP apply to that, so it is protected.</li>
+    <li>Overwrite server-controlled fields afterwards, or in a <code>@BeforeSave</code>.</li>
+    <li>Save with a session token; keep the master key for administrative work.</li>
+  </ul>
+
+  <div class="pager">
+    <a href="models.html"><span>Back</span>Models &amp; fields</a>
+    <a class="next" href="acl.html"><span>Next</span>Permissions &amp; ACL</a>
+  </div>
+</main>
+
+</div>
+
+<footer class="site-footer">
+  <div class="inner">
+    <span>MIT licensed</span>
+    <a href="https://www.npmjs.com/package/parse-server-kit">npm</a>
+    <a href="https://github.com/walhalabi-code/parse-server-kit">GitHub</a>
+    <span class="spacer">For Parse concepts, <a href="https://docs.parseplatform.org/">its docs</a> remain the reference.</span>
+  </div>
+</footer>
+
+<script src="../assets/docs.js"></script>
+</body>
+</html>

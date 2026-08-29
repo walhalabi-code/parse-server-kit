@@ -1,0 +1,128 @@
+import {
+  ParseClass,
+  ParseField,
+  BaseModel,
+  BeforeSave,
+  validateOrThrow,
+  roleKey,
+} from 'parse-server-kit';
+
+/**
+ * {{ClassName}}
+ *
+ * This one class is the whole definition: the database schema, the indexes,
+ * the MongoDB validators, the class-level permissions and the OpenAPI schema
+ * are all derived from it. There is no migration to write and no DTO to keep
+ * in step.
+ */
+@ParseClass('{{ClassName}}', {
+  description: '{{ClassName}}',
+
+  // -- Who may do what ======================================================
+  // Signed-in users only, to start with. Deliberately not role-based yet: a
+  // role that does not exist in your database refuses everything, and the
+  // refusal looks like a bug rather than a permission.
+  //
+  // Tighten this as soon as you know your roles - `roleKey` takes any string:
+  //
+  //   create: {[roleKey('Admin')]: true},
+  //   delete: {[roleKey('Admin')]: true},
+  //
+  // Other forms: `{}` is master key only, `'*'` is everyone including
+  // anonymous, and `{[roleKey('A')]: true, [roleKey('B')]: true}` is either.
+  clp: {
+    find: {requiresAuthentication: true},
+    get: {requiresAuthentication: true},
+    count: {requiresAuthentication: true},
+    create: {requiresAuthentication: true},
+    update: {requiresAuthentication: true},
+    delete: {requiresAuthentication: true},
+  },
+
+  // -- Compound indexes =====================================================
+  // Uncomment and adjust for the queries you actually run.
+  // compoundIndexes: [{fields: ['status', 'createdAt']}],
+})
+export default class {{ClassName}} extends BaseModel {
+  constructor() {
+    super('{{ClassName}}');
+  }
+
+  // =========================================================================
+  //  YOUR FIELDS GO HERE
+  //
+  //  Prefer `declare` over `name!: string`. @ParseField installs a
+  //  getter/setter on the prototype, and a real class field would shadow it.
+  //  @ParseClass repairs that automatically, but `declare` says what is
+  //  actually true: the storage is Parse's, not the instance's.
+  // =========================================================================
+
+  @ParseField({type: 'String', required: true, maxLength: 200})
+  declare name: string;
+
+  // -- Copy what you need, delete the rest ==================================
+  //
+  // @ParseField({type: 'String', unique: true})
+  // declare slug: string;
+  //
+  // @ParseField({type: 'String', enum: ['draft', 'active', 'archived']})
+  // declare status: string;
+  //
+  // @ParseField({type: 'Number', min: 0})
+  // declare price: number;
+  //
+  // @ParseField({type: 'Boolean'})
+  // declare isActive: boolean;
+  //
+  // @ParseField({type: 'Date', index: true})
+  // declare publishedAt: Date;
+  //
+  // A Pointer MUST name its targetClass, or fromParams() silently skips it.
+  // @ParseField({type: 'Pointer', targetClass: 'Category'})
+  // declare category: any;
+  //
+  // An Array of pointers also needs targetClass, for the same reason.
+  // @ParseField({type: 'Array', targetClass: 'Tag'})
+  // declare tags: any[];
+  //
+  // @ParseField({type: 'Object'})
+  // declare metadata: Record<string, unknown>;
+  //
+  // @ParseField({type: 'GeoPoint', geo: true})
+  // declare location: any;
+  //
+  // Expires the row N seconds after this date.
+  // @ParseField({type: 'Date', ttlSeconds: 60 * 60 * 24 * 30})
+  // declare expiresAt: Date;
+
+  // =======================================================================
+  //  TRIGGERS - defaults, derived values and validation belong here, because
+  //  this runs on every save path: cloud function, REST, dashboard or script.
+  // =======================================================================
+
+  @BeforeSave()
+  static async onBeforeSave(
+    req: Parse.Cloud.BeforeSaveRequest<{{ClassName}}>
+  ) {
+    const {{instanceName}} = req.object as {{ClassName}};
+
+    // Defaults and derived values go here, before validation.
+    // if (!{{instanceName}}.status) {{instanceName}}.status = 'draft';
+
+    // Enforces required / min / max / minLength / maxLength / enum / pattern
+    // exactly as declared above, and throws a Parse VALIDATION_ERROR listing
+    // every failure.
+    validateOrThrow({{instanceName}});
+  }
+
+  // Other triggers available - uncomment what you need:
+  //
+  // @AfterSave()
+  // static async onAfterSave(req: Parse.Cloud.AfterSaveRequest<{{ClassName}}>) {}
+  //
+  // @BeforeDelete()
+  // static async onBeforeDelete(req: Parse.Cloud.BeforeDeleteRequest<{{ClassName}}>) {}
+  //
+  // @AfterDelete()
+  // static async onAfterDelete(req: Parse.Cloud.AfterDeleteRequest<{{ClassName}}>) {}
+}

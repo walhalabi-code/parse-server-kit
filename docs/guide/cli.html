@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data:; font-src 'self'; form-action 'none'; base-uri 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The psk CLI — parse-server-kit</title>
+<meta name="description" content="Create a project that already runs, and add entities to it without touching a registration file.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="The psk CLI — parse-server-kit">
+<meta property="og:description" content="Create a project that already runs, and add entities to it without touching a registration file.">
+<meta property="og:url" content="https://walhalabi-code.github.io/parse-server-kit/guide/cli.html">
+<meta property="og:site_name" content="parse-server-kit">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="../index.html"><svg class="brand-mark" viewBox="12 10 62 72" aria-hidden="true"><g transform="translate(18, 14)" fill="none" stroke-linecap="round" stroke-linejoin="round"><path class="logo-base" pathLength="1" d="M 40 24 C 40 14, 28 12, 20 22 C 12 32, 12 44, 22 52 C 32 60, 46 52, 46 36 C 46 20, 34 10, 20 10 C 7 10, 2 22, 2 38 C 2 54, 12 64, 28 64 C 38 64, 48 57, 52 48" stroke="var(--logo-base)" stroke-width="3" opacity="0.6"/><g class="logo-layer" transform="translate(-3, -4)"><path class="logo-kit-path" pathLength="1" d="M 40 20 C 40 10, 28 8, 20 18 C 12 28, 12 40, 22 48 C 32 56, 46 48, 46 32 C 46 16, 34 6, 20 6 C 7 6, 2 18, 2 34 C 2 50, 12 60, 28 60 C 38 60, 48 53, 52 44" stroke="var(--logo-kit)" stroke-width="3.5"/><circle class="logo-dot" cx="25" cy="28" r="3.5" fill="var(--logo-kit)" stroke="none"/></g></g></svg>parse-server-kit <span class="v">3.0</span></a>
+    <nav class="nav">
+      <button class="icon-btn menu-btn" data-menu-toggle aria-expanded="false" aria-label="Toggle navigation">≡</button>
+      <a class="nav-ai" href="../guide/ai-assistants.html"><svg class="ai-spark" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 2.4 6.9 5l2.6.9-2.6.9L6 9.4 5.1 6.8 2.5 5.9l2.6-.9Z"/><path d="m11.6 8.4.6 1.7 1.7.6-1.7.6-.6 1.7-.6-1.7-1.7-.6 1.7-.6Z"/></svg>AI</a>
+      <a class="hide-sm" href="../index.html">Home</a>
+      <a class="hide-sm" href="https://github.com/walhalabi-code/parse-server-kit">GitHub</a>
+      <button class="icon-btn" data-search-open aria-label="Search">⌕</button>
+      <button class="icon-btn" data-theme-toggle aria-label="Switch theme">◐</button>
+    </nav>
+  </div>
+</header>
+
+<div class="layout">
+
+<aside class="sidebar">
+  <svg class="icon-sprite" aria-hidden="true"><symbol id="i-rocket" viewBox="0 0 16 16"><path d="M6.5 9.5 3 8.8l2.2-2.6 2.6-.3M6.5 9.5 7.2 13l2.6-2.2.3-2.6M6.5 9.5 9.5 6.5m0 0a12 12 0 0 1 3.8-3.8 5 5 0 0 1-3.8 3.8ZM4.5 11.5 3 14l2.5-1.5"/></symbol><symbol id="i-book" viewBox="0 0 16 16"><path d="M2.5 3.5h4a2 2 0 0 1 2 2v7a1.5 1.5 0 0 0-1.5-1.5h-4.5Zm11 0h-4a2 2 0 0 0-2 2v7A1.5 1.5 0 0 1 9 11h4.5Z"/></symbol><symbol id="i-play" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><path d="m6.8 5.8 3.2 2.2-3.2 2.2Z"/></symbol><symbol id="i-cart" viewBox="0 0 16 16"><path d="M2 2.5h1.6l1.6 7.4h6.6l1.3-5.2H4.2"/><circle cx="6.3" cy="12.6" r="1"/><circle cx="11.4" cy="12.6" r="1"/></symbol><symbol id="i-scales" viewBox="0 0 16 16"><path d="M8 2.5v11M4.5 4.2h7M2 10a2.5 2.5 0 0 0 5 0L4.5 4.5Zm7 0a2.5 2.5 0 0 0 5 0L11.5 4.5ZM5.5 13.5h5"/></symbol><symbol id="i-box" viewBox="0 0 16 16"><path d="M8 2 2.5 4.8v6.4L8 14l5.5-2.8V4.8Z"/><path d="M2.5 4.8 8 7.6l5.5-2.8M8 7.6V14"/></symbol><symbol id="i-transform" viewBox="0 0 16 16"><path d="M2 5.5h7m-2.2-2.2L9 5.5 6.8 7.7M14 10.5H7m2.2-2.2L7 10.5l2.2 2.2"/></symbol><symbol id="i-shield" viewBox="0 0 16 16"><path d="M8 2 3.5 3.8v3.7c0 2.6 1.9 5 4.5 5.9 2.6-.9 4.5-3.3 4.5-5.9V3.8Z"/><path d="m6.2 7.9 1.4 1.4 2.4-2.6"/></symbol><symbol id="i-search" viewBox="0 0 16 16"><circle cx="7.2" cy="7.2" r="4"/><path d="m10.2 10.2 3 3"/></symbol><symbol id="i-link" viewBox="0 0 16 16"><path d="M6.6 9.4a2.6 2.6 0 0 0 3.7 0l2-2a2.6 2.6 0 0 0-3.7-3.7l-.9.9"/><path d="M9.4 6.6a2.6 2.6 0 0 0-3.7 0l-2 2a2.6 2.6 0 0 0 3.7 3.7l.9-.9"/></symbol><symbol id="i-user" viewBox="0 0 16 16"><circle cx="8" cy="6" r="2.6"/><path d="M3.4 13.2a4.8 4.8 0 0 1 9.2 0"/></symbol><symbol id="i-image" viewBox="0 0 16 16"><rect x="2.5" y="3.5" width="11" height="9" rx="1.5"/><circle cx="6" cy="6.7" r="1"/><path d="m3.2 11.4 3-2.6 2.4 2 2-1.6 2.2 1.9"/></symbol><symbol id="i-signpost" viewBox="0 0 16 16"><path d="M8 2v12M8 4h4.2l1.3 1.6L12.2 7.2H8Zm0 4.2H3.8L2.5 9.8l1.3 1.6H8Z"/></symbol><symbol id="i-bolt" viewBox="0 0 16 16"><path d="M9 2 4 9h3.4l-.4 5 5-7H8.6Z"/></symbol><symbol id="i-broadcast" viewBox="0 0 16 16"><circle cx="8" cy="8" r="1.6"/><path d="M5.2 10.8a4 4 0 0 1 0-5.6m5.6 0a4 4 0 0 1 0 5.6M3.2 12.8a6.8 6.8 0 0 1 0-9.6m9.6 0a6.8 6.8 0 0 1 0 9.6"/></symbol><symbol id="i-exchange" viewBox="0 0 16 16"><path d="M2.8 5.5h9.1l-2-2M13.2 10.5H4.1l2 2"/></symbol><symbol id="i-lock" viewBox="0 0 16 16"><rect x="3.2" y="7" width="9.6" height="6.3" rx="1.5"/><path d="M5.5 7V5.3a2.5 2.5 0 0 1 5 0V7"/><path d="M8 9.6v1.4"/></symbol><symbol id="i-sprout" viewBox="0 0 16 16"><path d="M8 13.5V7.8m0 0C8 6 6.6 4.6 4.8 4.6H3.3c0 1.8 1.4 3.2 3.2 3.2Zm0 0c0-1.8 1.4-3.2 3.2-3.2h1.5c0 1.8-1.4 3.2-3.2 3.2Z"/></symbol><symbol id="i-gauge" viewBox="0 0 16 16"><path d="M2.8 11.6a5.9 5.9 0 1 1 10.4 0"/><path d="M8 8.8 10.6 6"/><circle cx="8" cy="9.4" r="1"/></symbol><symbol id="i-spark" viewBox="0 0 16 16"><path d="M6 2.4 6.9 5l2.6.9-2.6.9L6 9.4 5.1 6.8 2.5 5.9l2.6-.9Z"/><path d="m11.6 8.4.6 1.7 1.7.6-1.7.6-.6 1.7-.6-1.7-1.7-.6 1.7-.6Z"/></symbol><symbol id="i-alert" viewBox="0 0 16 16"><path d="M8 2.8 2.6 12.4h10.8Z"/><path d="M8 6.4v2.8M8 10.8v.1"/></symbol><symbol id="i-terminal" viewBox="0 0 16 16"><rect x="2.2" y="3" width="11.6" height="10" rx="1.5"/><path d="m5 6.4 2 1.8-2 1.8M8.6 10.4h2.6"/></symbol><symbol id="i-lifebuoy" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><circle cx="8" cy="8" r="2.2"/><path d="m4.1 4.1 2.3 2.3m3.2 3.2 2.3 2.3m0-7.8-2.3 2.3M6.4 9.6l-2.3 2.3"/></symbol><symbol id="i-at" viewBox="0 0 16 16"><circle cx="8" cy="8" r="2.3"/><path d="M10.3 5.7v3a1.8 1.8 0 0 0 3.2 1.1A5.8 5.8 0 1 0 11 13"/></symbol><symbol id="i-sliders" viewBox="0 0 16 16"><path d="M2.5 5h7m3 0h1m-11 6h1m3 0h7"/><circle cx="11" cy="5" r="1.5"/><circle cx="5" cy="11" r="1.5"/></symbol><symbol id="i-layers" viewBox="0 0 16 16"><path d="M8 2.2 2.4 5 8 7.8 13.6 5Z"/><path d="m2.4 8 5.6 2.8L13.6 8m-11.2 3 5.6 2.8L13.6 11"/></symbol><symbol id="i-wrench" viewBox="0 0 16 16"><path d="M10.4 2.6a3.4 3.4 0 0 0-3.9 4.6l-4 4a1.3 1.3 0 0 0 1.9 1.9l4-4a3.4 3.4 0 0 0 4.6-3.9l-1.9 1.9-1.9-.5-.5-1.9Z"/></symbol></svg>
+  <h5>Start here</h5>
+  <ul>
+    <li><a href="../guide/getting-started.html"><svg class="ic" aria-hidden="true"><use href="#i-rocket"/></svg><span>Getting started</span></a></li>
+    <li><a href="../guide/ai-assistants.html"><svg class="ic" aria-hidden="true"><use href="#i-spark"/></svg><span>AI assistants</span></a></li>
+    <li class="has-sub">
+      <details>
+        <summary><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg><span>Tutorials</span></summary>
+        <ul>
+        <li><a href="../guide/tutorial.html"><svg class="ic" aria-hidden="true"><use href="#i-play"/></svg><span>A first API</span></a></li>
+        <li><a href="../guide/tutorial-orders.html"><svg class="ic" aria-hidden="true"><use href="#i-cart"/></svg><span>Orders &amp; stock</span></a></li>
+        </ul>
+      </details>
+    </li>
+    <li><a href="../guide/vs-nestjs.html"><svg class="ic" aria-hidden="true"><use href="#i-scales"/></svg><span>Compared with NestJS</span></a></li>
+  </ul>
+  <h5>Guide</h5>
+  <ul>
+    <li><a href="../guide/models.html"><svg class="ic" aria-hidden="true"><use href="#i-box"/></svg><span>Models &amp; fields</span></a></li>
+    <li><a href="../guide/from-params.html"><svg class="ic" aria-hidden="true"><use href="#i-transform"/></svg><span>fromParams</span></a></li>
+    <li><a href="../guide/acl.html"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg><span>Permissions &amp; ACL</span></a></li>
+    <li><a href="../guide/queries.html"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg><span>Queries</span></a></li>
+    <li><a href="../guide/relations.html"><svg class="ic" aria-hidden="true"><use href="#i-link"/></svg><span>Relationships</span></a></li>
+    <li><a href="../guide/users.html"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg><span>Users &amp; auth</span></a></li>
+    <li><a href="../guide/files.html"><svg class="ic" aria-hidden="true"><use href="#i-image"/></svg><span>Files &amp; images</span></a></li>
+    <li><a href="../guide/endpoints.html"><svg class="ic" aria-hidden="true"><use href="#i-signpost"/></svg><span>Endpoints &amp; routing</span></a></li>
+    <li><a href="../guide/triggers.html"><svg class="ic" aria-hidden="true"><use href="#i-bolt"/></svg><span>Triggers</span></a></li>
+    <li><a href="../guide/live-query.html"><svg class="ic" aria-hidden="true"><use href="#i-broadcast"/></svg><span>Real-time</span></a></li>
+    <li><a href="../guide/transactions.html"><svg class="ic" aria-hidden="true"><use href="#i-exchange"/></svg><span>Transactions</span></a></li>
+    <li><a href="../guide/optimistic-locking.html"><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg><span>Optimistic locking</span></a></li>
+    <li><a href="../guide/seeding.html"><svg class="ic" aria-hidden="true"><use href="#i-sprout"/></svg><span>Seeding data</span></a></li>
+    <li><a href="../guide/dashboard.html"><svg class="ic" aria-hidden="true"><use href="#i-gauge"/></svg><span>Parse Dashboard</span></a></li>
+    <li><a href="../guide/errors.html"><svg class="ic" aria-hidden="true"><use href="#i-alert"/></svg><span>Errors</span></a></li>
+    <li><a href="../guide/cli.html"><svg class="ic" aria-hidden="true"><use href="#i-terminal"/></svg><span>The psk CLI</span></a></li>
+    <li><a href="../guide/troubleshooting.html"><svg class="ic" aria-hidden="true"><use href="#i-lifebuoy"/></svg><span>Troubleshooting</span></a></li>
+  </ul>
+  <h5>Reference</h5>
+  <ul>
+    <li><a href="../reference/decorators.html"><svg class="ic" aria-hidden="true"><use href="#i-at"/></svg><span>Decorators</span></a></li>
+    <li><a href="../reference/configuration.html"><svg class="ic" aria-hidden="true"><use href="#i-sliders"/></svg><span>Configuration</span></a></li>
+    <li><a href="../reference/middleware.html"><svg class="ic" aria-hidden="true"><use href="#i-layers"/></svg><span>Middleware</span></a></li>
+    <li><a href="../reference/utilities.html"><svg class="ic" aria-hidden="true"><use href="#i-wrench"/></svg><span>Utilities</span></a></li>
+  </ul>
+</aside>
+
+<main class="content">
+  <p class="eyebrow">Guide</p>
+  <h1>The psk CLI</h1>
+  <p class="lede">Create a project that already runs, and add entities to it without touching a registration file.</p>
+
+
+  <h2 id="commands">Commands</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Command</th><th>Does</th></tr></thead>
+    <tbody>
+      <tr><td><code>psk new &lt;name&gt;</code></td><td>Create a project that boots and serves</td></tr>
+      <tr><td><code>psk g resource &lt;Name&gt;</code></td><td>Add a model and five CRUD endpoints</td></tr>
+      <tr><td><code>psk g model &lt;Name&gt;</code></td><td>Add a model only</td></tr>
+      <tr><td><code>psk ai [targets]</code></td><td>Write AI assistant instructions into this project</td></tr>
+      <tr><td><code>psk --version</code> / <code>--help</code></td><td></td></tr>
+    </tbody>
+  </table></div>
+  <p><code>generate</code> abbreviates to <code>g</code>; <code>-y</code> accepts defaults, <code>-f</code> overwrites existing files. Before installing anything, <code>npx parse-server-kit</code> works in place of <code>psk</code>.</p>
+
+  <h2 id="new">Creating a project</h2>
+<pre class="code-block"><code>npx parse-server-kit new my-api
+cd my-api
+docker compose up -d
+npm install
+npm run dev</code></pre>
+  <p>Ten files, and every one of them removes a trap that is otherwise easy to hit:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>What it sets</th><th>What that avoids</th></tr></thead>
+    <tbody>
+      <tr><td><code>experimentalDecorators</code></td><td>Decorators quietly doing nothing</td></tr>
+      <tr><td><code>declare</code> fields</td><td>Values never reaching the database</td></tr>
+      <tr><td>The boot order</td><td>Models not registering, empty schema</td></tr>
+      <tr><td>A <b>replica set</b> in <code>docker-compose.yml</code></td><td>Transactions failing on a default MongoDB install</td></tr>
+      <tr><td>A seeded user, token printed at startup</td><td>The first write answering <code>400</code></td></tr>
+      <tr><td>Keys from <code>crypto.randomBytes</code></td><td>Placeholder secrets reaching production</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 id="ai">It asks which assistant you use</h3>
+  <p>
+    Before writing anything, because the same traps in that table are the ones a language
+    model walks into by default — <code>title!: string</code> is correct in every other
+    library and silently breaks a model here:
+  </p>
+<pre class="code-block"><code>  Which AI coding assistants do you use?
+
+   • <span class="t-com">1</span>  Claude Code       CLAUDE.md, plus two skills and a review agent
+     <span class="t-com">2</span>  Cursor            .cursor/rules/parse-server-kit.mdc
+     <span class="t-com">3</span>  GitHub Copilot    .github/copilot-instructions.md
+     <span class="t-com">4</span>  Windsurf          .windsurf/rules/parse-server-kit.md
+     <span class="t-com">5</span>  Gemini CLI        GEMINI.md
+     <span class="t-com">6</span>  AGENTS.md         the cross-tool convention
+     <span class="t-com">0</span>  none
+
+  Numbers, comma separated <span class="t-com">(6)</span></code></pre>
+  <p>
+    Pick several, or none. Already have a project? <code>psk ai claude cursor</code> adds
+    them later without touching anything else. Unattended:
+    <code>--ai=claude,agents</code> or <code>--ai=none</code>.
+    <a href="ai-assistants.html">The full page on AI assistants →</a>
+  </p>
+
+  <h2 id="resource">Adding an entity</h2>
+<pre class="code-block"><code>psk g resource Product
+
+  ✓ src/models/Product.ts
+  ✓ src/functions/product.ts
+
+  Routes now available:
+    POST  /api/products/createProduct
+    GET   /api/products/listProducts
+    GET   /api/products/getProduct
+    POST  /api/products/updateProduct
+    POST  /api/products/deleteProduct</code></pre>
+  <p>The generated files are a working skeleton with the edit points marked — one real field, and the rest commented and ready to uncomment. Fill in your own fields; the wiring is already correct.</p>
+
+  <div class="note good">
+    <span class="note-title">Nothing existing is modified</span>
+    <code>importFiles</code> discovers models and functions at boot, so there is no module
+    to register into and no file to patch. <code>psk g</code> only ever creates, and
+    refuses when a file already exists.
+  </div>
+
+  <h3 id="layout">It follows your layout</h3>
+  <p>The generator looks for where your models already live and writes alongside them, including a per-entity <code>modules/{Name}/functions.ts</code> arrangement. A fresh project gets <code>models/</code> and <code>functions/</code>.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Existing layout</th><th>Where it writes</th></tr></thead>
+    <tbody>
+      <tr><td><code>src/models/</code> + <code>src/functions/</code></td><td><code>models/Product.ts</code>, <code>functions/product.ts</code></td></tr>
+      <tr><td><code>src/cloudCode/models/</code> + <code>modules/</code></td><td><code>models/Product.ts</code>, <code>modules/Product/functions.ts</code></td></tr>
+    </tbody>
+  </table></div>
+  <p>Route prefixes come from the same function <code>@Route</code> uses, so <code>Category</code> yields <code>listCategories</code> and <code>/api/categories/</code> — the generated comments cannot drift from what the server serves.</p>
+
+
+  <div class="pager">
+    <a href="errors.html"><span>Back</span>Errors</a>
+    <a class="next" href="troubleshooting.html"><span>Next</span>Troubleshooting</a>
+  </div>
+</main>
+
+</div>
+
+<footer class="site-footer">
+  <div class="inner">
+    <span>MIT licensed</span>
+    <a href="https://www.npmjs.com/package/parse-server-kit">npm</a>
+    <a href="https://github.com/walhalabi-code/parse-server-kit">GitHub</a>
+    <span class="spacer">For Parse concepts, <a href="https://docs.parseplatform.org/">its docs</a> remain the reference.</span>
+  </div>
+</footer>
+
+<script src="../assets/docs.js"></script>
+</body>
+</html>

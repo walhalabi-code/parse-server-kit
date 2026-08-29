@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://walhalabi-code.github.io/parse-server-kit/</loc></url>
+  <url><loc>https://walhalabi-code.github.io/parse-server-kit/guide/acl.html</loc></url>
+  <url><loc>https://walhalabi-code.github.io/parse-server-kit/guide/ai-assistants.html</loc></url>
+  <url><loc>https://walhalabi-code.github.io/parse-server-kit/guide/cli.html</loc></url>
+  <url><loc>https://walhalabi-code.github.io/parse-server-kit/guide/dashboard.html</loc></url>
+  <url><loc>https://walhalabi-code.github.io/parse-server-kit/guide/endpoints.html</loc></url>
+  <url><loc>https://walhalabi-code.github.io/parse-server-kit/guide/errors.html</loc></url>
+  <url><loc>https://walhalabi-code.github.io/parse-server-kit/guide/files.html</loc></url>
+  <url><loc>https://walhalabi-code.github.io/parse-server-kit/guide/from-params.html</loc></url>
+  <url><loc>https://walhalabi-code.github.io/parse-server-kit/guide/getting-started.html</loc></url>
+  <url><loc>https://walhalabi-code.github.io/parse-server-kit/guide/live-query.html</loc></url>
+  <url><loc>https://walhalabi-code.github.io/parse-server-kit/guide/models.html</loc></url>
+  <url><loc>https://walhalabi-code.github.io/parse-server-kit/guide/optimistic-locking.html</loc></url>
+  <url><loc>https://walhalabi-code.github.io/parse-server-kit/guide/queries.html</loc></url>
+  <url><loc>https://walhalabi-code.github.io/parse-server-kit/guide/relations.html</loc></url>
+  <url><loc>https://walhalabi-code.github.io/parse-server-kit/guide/seeding.html</loc></url>
+  <url><loc>https://walhalabi-code.github.io/parse-server-kit/guide/transactions.html</loc></url>
+  <url><loc>https://walhalabi-code.github.io/parse-server-kit/guide/triggers.html</loc></url>
+  <url><loc>https://walhalabi-code.github.io/parse-server-kit/guide/troubleshooting.html</loc></url>
+  <url><loc>https://walhalabi-code.github.io/parse-server-kit/guide/tutorial-orders.html</loc></url>
+  <url><loc>https://walhalabi-code.github.io/parse-server-kit/guide/tutorial.html</loc></url>
+  <url><loc>https://walhalabi-code.github.io/parse-server-kit/guide/users.html</loc></url>
+  <url><loc>https://walhalabi-code.github.io/parse-server-kit/guide/vs-nestjs.html</loc></url>
+  <url><loc>https://walhalabi-code.github.io/parse-server-kit/reference/configuration.html</loc></url>
+  <url><loc>https://walhalabi-code.github.io/parse-server-kit/reference/decorators.html</loc></url>
+  <url><loc>https://walhalabi-code.github.io/parse-server-kit/reference/middleware.html</loc></url>
+  <url><loc>https://walhalabi-code.github.io/parse-server-kit/reference/utilities.html</loc></url>
+</urlset>

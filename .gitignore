@@ -1,0 +1,13 @@
+﻿node_modules/
+dist/
+build/
+*.tgz
+logs
+*.log
+.env
+.env.local
+coverage/
+.DS_Store
+
+# Internal snapshot — travels with the working copy, not the public repo.
+HANDOFF.md

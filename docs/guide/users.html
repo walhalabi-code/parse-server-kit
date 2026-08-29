@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data:; font-src 'self'; form-action 'none'; base-uri 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Users & authentication — parse-server-kit</title>
+<meta name="description" content="Signup, login, sessions, roles and password reset — the part you would otherwise spend a fortnight building.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Users & authentication — parse-server-kit">
+<meta property="og:description" content="Signup, login, sessions, roles and password reset — the part you would otherwise spend a fortnight building.">
+<meta property="og:url" content="https://walhalabi-code.github.io/parse-server-kit/guide/users.html">
+<meta property="og:site_name" content="parse-server-kit">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="../index.html"><svg class="brand-mark" viewBox="12 10 62 72" aria-hidden="true"><g transform="translate(18, 14)" fill="none" stroke-linecap="round" stroke-linejoin="round"><path class="logo-base" pathLength="1" d="M 40 24 C 40 14, 28 12, 20 22 C 12 32, 12 44, 22 52 C 32 60, 46 52, 46 36 C 46 20, 34 10, 20 10 C 7 10, 2 22, 2 38 C 2 54, 12 64, 28 64 C 38 64, 48 57, 52 48" stroke="var(--logo-base)" stroke-width="3" opacity="0.6"/><g class="logo-layer" transform="translate(-3, -4)"><path class="logo-kit-path" pathLength="1" d="M 40 20 C 40 10, 28 8, 20 18 C 12 28, 12 40, 22 48 C 32 56, 46 48, 46 32 C 46 16, 34 6, 20 6 C 7 6, 2 18, 2 34 C 2 50, 12 60, 28 60 C 38 60, 48 53, 52 44" stroke="var(--logo-kit)" stroke-width="3.5"/><circle class="logo-dot" cx="25" cy="28" r="3.5" fill="var(--logo-kit)" stroke="none"/></g></g></svg>parse-server-kit <span class="v">3.0</span></a>
+    <nav class="nav">
+      <button class="icon-btn menu-btn" data-menu-toggle aria-expanded="false" aria-label="Toggle navigation">≡</button>
+      <a class="nav-ai" href="../guide/ai-assistants.html"><svg class="ai-spark" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 2.4 6.9 5l2.6.9-2.6.9L6 9.4 5.1 6.8 2.5 5.9l2.6-.9Z"/><path d="m11.6 8.4.6 1.7 1.7.6-1.7.6-.6 1.7-.6-1.7-1.7-.6 1.7-.6Z"/></svg>AI</a>
+      <a class="hide-sm" href="../index.html">Home</a>
+      <a class="hide-sm" href="https://github.com/walhalabi-code/parse-server-kit">GitHub</a>
+      <button class="icon-btn" data-search-open aria-label="Search">⌕</button>
+      <button class="icon-btn" data-theme-toggle aria-label="Switch theme">◐</button>
+    </nav>
+  </div>
+</header>
+
+<div class="layout">
+
+<aside class="sidebar">
+  <svg class="icon-sprite" aria-hidden="true"><symbol id="i-rocket" viewBox="0 0 16 16"><path d="M6.5 9.5 3 8.8l2.2-2.6 2.6-.3M6.5 9.5 7.2 13l2.6-2.2.3-2.6M6.5 9.5 9.5 6.5m0 0a12 12 0 0 1 3.8-3.8 5 5 0 0 1-3.8 3.8ZM4.5 11.5 3 14l2.5-1.5"/></symbol><symbol id="i-book" viewBox="0 0 16 16"><path d="M2.5 3.5h4a2 2 0 0 1 2 2v7a1.5 1.5 0 0 0-1.5-1.5h-4.5Zm11 0h-4a2 2 0 0 0-2 2v7A1.5 1.5 0 0 1 9 11h4.5Z"/></symbol><symbol id="i-play" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><path d="m6.8 5.8 3.2 2.2-3.2 2.2Z"/></symbol><symbol id="i-cart" viewBox="0 0 16 16"><path d="M2 2.5h1.6l1.6 7.4h6.6l1.3-5.2H4.2"/><circle cx="6.3" cy="12.6" r="1"/><circle cx="11.4" cy="12.6" r="1"/></symbol><symbol id="i-scales" viewBox="0 0 16 16"><path d="M8 2.5v11M4.5 4.2h7M2 10a2.5 2.5 0 0 0 5 0L4.5 4.5Zm7 0a2.5 2.5 0 0 0 5 0L11.5 4.5ZM5.5 13.5h5"/></symbol><symbol id="i-box" viewBox="0 0 16 16"><path d="M8 2 2.5 4.8v6.4L8 14l5.5-2.8V4.8Z"/><path d="M2.5 4.8 8 7.6l5.5-2.8M8 7.6V14"/></symbol><symbol id="i-transform" viewBox="0 0 16 16"><path d="M2 5.5h7m-2.2-2.2L9 5.5 6.8 7.7M14 10.5H7m2.2-2.2L7 10.5l2.2 2.2"/></symbol><symbol id="i-shield" viewBox="0 0 16 16"><path d="M8 2 3.5 3.8v3.7c0 2.6 1.9 5 4.5 5.9 2.6-.9 4.5-3.3 4.5-5.9V3.8Z"/><path d="m6.2 7.9 1.4 1.4 2.4-2.6"/></symbol><symbol id="i-search" viewBox="0 0 16 16"><circle cx="7.2" cy="7.2" r="4"/><path d="m10.2 10.2 3 3"/></symbol><symbol id="i-link" viewBox="0 0 16 16"><path d="M6.6 9.4a2.6 2.6 0 0 0 3.7 0l2-2a2.6 2.6 0 0 0-3.7-3.7l-.9.9"/><path d="M9.4 6.6a2.6 2.6 0 0 0-3.7 0l-2 2a2.6 2.6 0 0 0 3.7 3.7l.9-.9"/></symbol><symbol id="i-user" viewBox="0 0 16 16"><circle cx="8" cy="6" r="2.6"/><path d="M3.4 13.2a4.8 4.8 0 0 1 9.2 0"/></symbol><symbol id="i-image" viewBox="0 0 16 16"><rect x="2.5" y="3.5" width="11" height="9" rx="1.5"/><circle cx="6" cy="6.7" r="1"/><path d="m3.2 11.4 3-2.6 2.4 2 2-1.6 2.2 1.9"/></symbol><symbol id="i-signpost" viewBox="0 0 16 16"><path d="M8 2v12M8 4h4.2l1.3 1.6L12.2 7.2H8Zm0 4.2H3.8L2.5 9.8l1.3 1.6H8Z"/></symbol><symbol id="i-bolt" viewBox="0 0 16 16"><path d="M9 2 4 9h3.4l-.4 5 5-7H8.6Z"/></symbol><symbol id="i-broadcast" viewBox="0 0 16 16"><circle cx="8" cy="8" r="1.6"/><path d="M5.2 10.8a4 4 0 0 1 0-5.6m5.6 0a4 4 0 0 1 0 5.6M3.2 12.8a6.8 6.8 0 0 1 0-9.6m9.6 0a6.8 6.8 0 0 1 0 9.6"/></symbol><symbol id="i-exchange" viewBox="0 0 16 16"><path d="M2.8 5.5h9.1l-2-2M13.2 10.5H4.1l2 2"/></symbol><symbol id="i-lock" viewBox="0 0 16 16"><rect x="3.2" y="7" width="9.6" height="6.3" rx="1.5"/><path d="M5.5 7V5.3a2.5 2.5 0 0 1 5 0V7"/><path d="M8 9.6v1.4"/></symbol><symbol id="i-sprout" viewBox="0 0 16 16"><path d="M8 13.5V7.8m0 0C8 6 6.6 4.6 4.8 4.6H3.3c0 1.8 1.4 3.2 3.2 3.2Zm0 0c0-1.8 1.4-3.2 3.2-3.2h1.5c0 1.8-1.4 3.2-3.2 3.2Z"/></symbol><symbol id="i-gauge" viewBox="0 0 16 16"><path d="M2.8 11.6a5.9 5.9 0 1 1 10.4 0"/><path d="M8 8.8 10.6 6"/><circle cx="8" cy="9.4" r="1"/></symbol><symbol id="i-spark" viewBox="0 0 16 16"><path d="M6 2.4 6.9 5l2.6.9-2.6.9L6 9.4 5.1 6.8 2.5 5.9l2.6-.9Z"/><path d="m11.6 8.4.6 1.7 1.7.6-1.7.6-.6 1.7-.6-1.7-1.7-.6 1.7-.6Z"/></symbol><symbol id="i-alert" viewBox="0 0 16 16"><path d="M8 2.8 2.6 12.4h10.8Z"/><path d="M8 6.4v2.8M8 10.8v.1"/></symbol><symbol id="i-terminal" viewBox="0 0 16 16"><rect x="2.2" y="3" width="11.6" height="10" rx="1.5"/><path d="m5 6.4 2 1.8-2 1.8M8.6 10.4h2.6"/></symbol><symbol id="i-lifebuoy" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><circle cx="8" cy="8" r="2.2"/><path d="m4.1 4.1 2.3 2.3m3.2 3.2 2.3 2.3m0-7.8-2.3 2.3M6.4 9.6l-2.3 2.3"/></symbol><symbol id="i-at" viewBox="0 0 16 16"><circle cx="8" cy="8" r="2.3"/><path d="M10.3 5.7v3a1.8 1.8 0 0 0 3.2 1.1A5.8 5.8 0 1 0 11 13"/></symbol><symbol id="i-sliders" viewBox="0 0 16 16"><path d="M2.5 5h7m3 0h1m-11 6h1m3 0h7"/><circle cx="11" cy="5" r="1.5"/><circle cx="5" cy="11" r="1.5"/></symbol><symbol id="i-layers" viewBox="0 0 16 16"><path d="M8 2.2 2.4 5 8 7.8 13.6 5Z"/><path d="m2.4 8 5.6 2.8L13.6 8m-11.2 3 5.6 2.8L13.6 11"/></symbol><symbol id="i-wrench" viewBox="0 0 16 16"><path d="M10.4 2.6a3.4 3.4 0 0 0-3.9 4.6l-4 4a1.3 1.3 0 0 0 1.9 1.9l4-4a3.4 3.4 0 0 0 4.6-3.9l-1.9 1.9-1.9-.5-.5-1.9Z"/></symbol></svg>
+  <h5>Start here</h5>
+  <ul>
+    <li><a href="../guide/getting-started.html"><svg class="ic" aria-hidden="true"><use href="#i-rocket"/></svg><span>Getting started</span></a></li>
+    <li><a href="../guide/ai-assistants.html"><svg class="ic" aria-hidden="true"><use href="#i-spark"/></svg><span>AI assistants</span></a></li>
+    <li class="has-sub">
+      <details>
+        <summary><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg><span>Tutorials</span></summary>
+        <ul>
+        <li><a href="../guide/tutorial.html"><svg class="ic" aria-hidden="true"><use href="#i-play"/></svg><span>A first API</span></a></li>
+        <li><a href="../guide/tutorial-orders.html"><svg class="ic" aria-hidden="true"><use href="#i-cart"/></svg><span>Orders &amp; stock</span></a></li>
+        </ul>
+      </details>
+    </li>
+    <li><a href="../guide/vs-nestjs.html"><svg class="ic" aria-hidden="true"><use href="#i-scales"/></svg><span>Compared with NestJS</span></a></li>
+  </ul>
+  <h5>Guide</h5>
+  <ul>
+    <li><a href="../guide/models.html"><svg class="ic" aria-hidden="true"><use href="#i-box"/></svg><span>Models &amp; fields</span></a></li>
+    <li><a href="../guide/from-params.html"><svg class="ic" aria-hidden="true"><use href="#i-transform"/></svg><span>fromParams</span></a></li>
+    <li><a href="../guide/acl.html"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg><span>Permissions &amp; ACL</span></a></li>
+    <li><a href="../guide/queries.html"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg><span>Queries</span></a></li>
+    <li><a href="../guide/relations.html"><svg class="ic" aria-hidden="true"><use href="#i-link"/></svg><span>Relationships</span></a></li>
+    <li><a href="../guide/users.html"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg><span>Users &amp; auth</span></a></li>
+    <li><a href="../guide/files.html"><svg class="ic" aria-hidden="true"><use href="#i-image"/></svg><span>Files &amp; images</span></a></li>
+    <li><a href="../guide/endpoints.html"><svg class="ic" aria-hidden="true"><use href="#i-signpost"/></svg><span>Endpoints &amp; routing</span></a></li>
+    <li><a href="../guide/triggers.html"><svg class="ic" aria-hidden="true"><use href="#i-bolt"/></svg><span>Triggers</span></a></li>
+    <li><a href="../guide/live-query.html"><svg class="ic" aria-hidden="true"><use href="#i-broadcast"/></svg><span>Real-time</span></a></li>
+    <li><a href="../guide/transactions.html"><svg class="ic" aria-hidden="true"><use href="#i-exchange"/></svg><span>Transactions</span></a></li>
+    <li><a href="../guide/optimistic-locking.html"><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg><span>Optimistic locking</span></a></li>
+    <li><a href="../guide/seeding.html"><svg class="ic" aria-hidden="true"><use href="#i-sprout"/></svg><span>Seeding data</span></a></li>
+    <li><a href="../guide/dashboard.html"><svg class="ic" aria-hidden="true"><use href="#i-gauge"/></svg><span>Parse Dashboard</span></a></li>
+    <li><a href="../guide/errors.html"><svg class="ic" aria-hidden="true"><use href="#i-alert"/></svg><span>Errors</span></a></li>
+    <li><a href="../guide/cli.html"><svg class="ic" aria-hidden="true"><use href="#i-terminal"/></svg><span>The psk CLI</span></a></li>
+    <li><a href="../guide/troubleshooting.html"><svg class="ic" aria-hidden="true"><use href="#i-lifebuoy"/></svg><span>Troubleshooting</span></a></li>
+  </ul>
+  <h5>Reference</h5>
+  <ul>
+    <li><a href="../reference/decorators.html"><svg class="ic" aria-hidden="true"><use href="#i-at"/></svg><span>Decorators</span></a></li>
+    <li><a href="../reference/configuration.html"><svg class="ic" aria-hidden="true"><use href="#i-sliders"/></svg><span>Configuration</span></a></li>
+    <li><a href="../reference/middleware.html"><svg class="ic" aria-hidden="true"><use href="#i-layers"/></svg><span>Middleware</span></a></li>
+    <li><a href="../reference/utilities.html"><svg class="ic" aria-hidden="true"><use href="#i-wrench"/></svg><span>Utilities</span></a></li>
+  </ul>
+</aside>
+
+<main class="content">
+  <p class="eyebrow">Guide</p>
+  <h1>Users &amp; authentication</h1>
+  <p class="lede">Signup, login, sessions, roles and password reset — the part you would otherwise spend a fortnight building.</p>
+
+
+  <h2 id="why">What you get without writing it</h2>
+  <p>
+    Parse ships a <code>_User</code> class, hashed passwords, session tokens with
+    revocation, email verification, password reset, and a <code>_Role</code> system that the
+    ACL layer already understands. None of it needs building — it needs configuring.
+  </p>
+
+  <h2 id="model">Extending the user</h2>
+  <p>Add your own fields by declaring a model against the built-in class.</p>
+<pre class="code-block"><code><span class="t-key">import</span> {
+  ParseClass, ParseField, CloudFunction, catchError, invalidateRoles,
+  getUserRoles, getUsersRoles, BeforePasswordResetRequest, roleKey,
+  BeforeLogin, AfterLogin,
+} <span class="t-key">from</span> <span class="t-str">'parse-server-kit'</span>;
+
+<span class="t-dec">@ParseClass</span>(<span class="t-str">'_User'</span>)
+<span class="t-key">export default class</span> User <span class="t-key">extends</span> Parse.User {
+  <span class="t-dec">@ParseField</span>({ type: <span class="t-str">'String'</span> })
+  <span class="t-key">declare</span> displayName: <span class="t-key">string</span>;
+
+  <span class="t-dec">@ParseField</span>({ type: <span class="t-str">'String'</span>, enum: [<span class="t-str">'en'</span>, <span class="t-str">'ar'</span>] })
+  <span class="t-key">declare</span> locale: <span class="t-key">string</span>;
+
+  <span class="t-dec">@ParseField</span>({ type: <span class="t-str">'Pointer'</span>, targetClass: <span class="t-str">'IMG'</span> })
+  <span class="t-key">declare</span> avatar: <span class="t-key">any</span>;
+}</code></pre>
+  <p>
+    The class name is <code>_User</code>, with the underscore — that is Parse's own class,
+    not a new one. Extend <code>Parse.User</code> rather than <code>BaseModel</code> so you
+    keep <code>setUsername</code>, <code>setPassword</code> and the rest.
+  </p>
+
+  <h2 id="signup">Signing up</h2>
+<pre class="code-block"><code><span class="t-dec">@CloudFunction</span>({
+  methods: [<span class="t-str">'POST'</span>],
+  validation: { fields: {
+    username: { required: <span class="t-key">true</span> },
+    password: { required: <span class="t-key">true</span> },
+    email:    { required: <span class="t-key">true</span> },
+  } },
+})
+<span class="t-key">static async</span> signUp(req: Parse.Cloud.FunctionRequest) {
+  <span class="t-key">const</span> user = <span class="t-key">new</span> Parse.User();
+  user.setUsername(req.params.username);
+  user.setPassword(req.params.password);
+  user.setEmail(req.params.email);
+  user.set(<span class="t-str">'displayName'</span>, req.params.displayName);
+
+  <span class="t-key">const</span> [err, created] = <span class="t-key">await</span> catchError(user.signUp());
+  <span class="t-key">if</span> (err) <span class="t-key">throw</span> err;
+
+  <span class="t-com">// signUp logs them in - hand the token back to the client.</span>
+  <span class="t-key">return</span> {
+    objectId: created!.id,
+    sessionToken: created!.getSessionToken(),
+  };
+}</code></pre>
+  <div class="note">
+    <span class="note-title">Duplicate username and email are handled for you</span>
+    Parse answers <code>202</code> for a taken username and <code>203</code> for a taken
+    email, before anything is written. You do not need to check first — catch the code and
+    translate it for your client.
+  </div>
+
+  <h2 id="login">Logging in</h2>
+<pre class="code-block"><code><span class="t-key">const</span> [err, user] = <span class="t-key">await</span> catchError(
+  Parse.User.logIn(req.params.username, req.params.password)
+);
+<span class="t-key">if</span> (err) <span class="t-key">throw</span> err;   <span class="t-com">// 101 for wrong username or password</span>
+
+<span class="t-key">return</span> { sessionToken: user!.getSessionToken(), objectId: user!.id };</code></pre>
+  <p>
+    Parse deliberately returns the same error for an unknown username and a wrong password,
+    so the endpoint cannot be used to discover which accounts exist. Keep that property in
+    whatever message you show.
+  </p>
+
+  <h2 id="sessions">Sessions</h2>
+  <p>A session token identifies the caller on every later request. Clients send it as a header:</p>
+<pre class="code-block"><code>X-Parse-Application-Id: my-api
+X-Parse-Session-Token: r:8f2c…</code></pre>
+  <p>Inside a cloud function it arrives as <code>req.user</code>:</p>
+<pre class="code-block"><code><span class="t-dec">@CloudFunction</span>({ methods: [<span class="t-str">'POST'</span>], validation: { requireUser: <span class="t-key">true</span> } })
+<span class="t-key">static async</span> updateProfile(req: Parse.Cloud.FunctionRequest) {
+  <span class="t-key">const</span> user = req.user! <span class="t-key">as</span> User;   <span class="t-com">// cast for typed fields</span>
+
+  user.displayName = req.params.displayName;
+
+  <span class="t-com">// Save AS that user, so the ACL applies to the write.</span>
+  <span class="t-key">const</span> [err] = <span class="t-key">await</span> catchError(
+    user.save(<span class="t-key">null</span>, { sessionToken: user.getSessionToken() })
+  );
+  <span class="t-key">if</span> (err) <span class="t-key">throw</span> err;
+  <span class="t-key">return</span> user;
+}</code></pre>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Need</th><th>Use</th></tr></thead>
+    <tbody>
+      <tr><td>Require a signed-in caller</td><td><code>validation: {requireUser: true}</code></td></tr>
+      <tr><td>Require a role</td><td><code>requireRoles: ['Admin']</code></td></tr>
+      <tr><td>Require every listed role</td><td><code>requireAllRoles: true</code></td></tr>
+      <tr><td>Log out</td><td><code>Parse.User.logOut()</code>, which revokes the token</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="roles">Roles</h2>
+  <p>A role is a named set of users, and it is what an ACL and a CLP refer to.</p>
+<pre class="code-block"><code><span class="t-com">// Create once, at setup or in a seed.</span>
+<span class="t-key">const</span> acl = <span class="t-key">new</span> Parse.ACL();
+acl.setPublicReadAccess(<span class="t-key">true</span>);         <span class="t-com">// so ACLs can resolve it</span>
+<span class="t-key">const</span> role = <span class="t-key">new</span> Parse.Role(<span class="t-str">'Editor'</span>, acl);
+<span class="t-key">await</span> role.save(<span class="t-key">null</span>, { useMasterKey: <span class="t-key">true</span> });
+
+<span class="t-com">// Add and remove members</span>
+role.getUsers().add(user);
+<span class="t-key">await</span> role.save(<span class="t-key">null</span>, { useMasterKey: <span class="t-key">true</span> });
+
+role.getUsers().remove(user);
+<span class="t-key">await</span> role.save(<span class="t-key">null</span>, { useMasterKey: <span class="t-key">true</span> });
+invalidateRoles(user.id);   <span class="t-com">// if the role cache is on</span></code></pre>
+
+<pre class="code-block"><code><span class="t-com">// Reading membership</span>
+<span class="t-key">const</span> roles = <span class="t-key">await</span> getUserRoles(user);        <span class="t-com">// ['Editor', 'Member']</span>
+<span class="t-key">const</span> many  = <span class="t-key">await</span> getUsersRoles(users);      <span class="t-com">// Map<userId, string[]></span></code></pre>
+
+  <div class="note">
+    <span class="note-title">Roles can contain roles</span>
+    <code>role.getRoles().add(otherRole)</code> makes every member of the inner role a
+    member of the outer one. That is how "Admin implies Editor" is expressed without listing
+    people twice — and it is how per-tenant roles scale.
+  </div>
+
+  <h2 id="password-reset">Password reset and email</h2>
+<pre class="code-block"><code><span class="t-key">await</span> Parse.User.requestPasswordReset(email);</code></pre>
+  <p>Parse sends the mail, hosts the reset page and expires the link. It needs an email adapter and a <code>publicServerURL</code> configured on the server; without them the call succeeds and no message arrives.</p>
+<pre class="code-block"><code><span class="t-dec">@BeforePasswordResetRequest</span>()
+<span class="t-key">static async</span> onReset(req: <span class="t-key">any</span>) {
+  <span class="t-com">// Audit it, rate-limit it, or refuse for a suspended account.</span>
+  <span class="t-key">if</span> (req.object.get(<span class="t-str">'suspended'</span>)) {
+    <span class="t-key">throw new</span> Parse.Error(<span class="t-num">101</span>, <span class="t-str">'Account unavailable'</span>);
+  }
+}</code></pre>
+
+  <h2 id="protecting">Protecting user data</h2>
+  <p>
+    <code>_User</code> rows are readable by default in many setups. Two things to decide
+    deliberately:
+  </p>
+<pre class="code-block"><code><span class="t-dec">@ParseClass</span>(<span class="t-str">'_User'</span>, {
+  clp: {
+    find:  { requiresAuthentication: <span class="t-key">true</span> },
+    get:   { requiresAuthentication: <span class="t-key">true</span> },
+    count: {},                                  <span class="t-com">// master key only</span>
+    create: <span class="t-str">'*'</span>,                                 <span class="t-com">// anyone may sign up</span>
+    update: { requiresAuthentication: <span class="t-key">true</span> },
+    delete: { [roleKey(<span class="t-str">'Admin'</span>)]: <span class="t-key">true</span> },
+  },
+  protectedFields: {
+    <span class="t-str">'*'</span>: [<span class="t-str">'email'</span>, <span class="t-str">'phone'</span>],      <span class="t-com">// hidden from other users</span>
+    [roleKey(<span class="t-str">'Admin'</span>)]: [],
+  },
+})</code></pre>
+  <p>
+    <code>create: '*'</code> has to stay open if you want public signup — that is the one
+    operation anonymous callers need. Everything else can be tightened.
+  </p>
+
+  <h2 id="hooks">Reacting to auth events</h2>
+<pre class="code-block"><code><span class="t-dec">@BeforeLogin</span>()
+<span class="t-key">static async</span> onBeforeLogin(req: <span class="t-key">any</span>) {
+  <span class="t-key">if</span> (req.object.get(<span class="t-str">'suspended'</span>)) {
+    <span class="t-key">throw new</span> Parse.Error(<span class="t-num">101</span>, <span class="t-str">'Account suspended'</span>);
+  }
+}
+
+<span class="t-dec">@AfterLogin</span>()
+<span class="t-key">static async</span> onAfterLogin(req: <span class="t-key">any</span>) {
+  req.object.set(<span class="t-str">'lastLoginAt'</span>, <span class="t-key">new</span> Date());
+  <span class="t-key">await</span> req.object.save(<span class="t-key">null</span>, { useMasterKey: <span class="t-key">true</span> });
+}</code></pre>
+  <p><code>@BeforeLogin</code> is the right place to block an account — it runs after the password is verified but before a session exists.</p>
+
+  <h2 id="mistakes">Common mistakes</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Symptom</th><th>Cause</th></tr></thead>
+    <tbody>
+      <tr><td>Typed fields on <code>req.user</code> are unavailable</td><td>Not cast — <code>req.user! as User</code></td></tr>
+      <tr><td>A user can edit another user</td><td>Saved with <code>useMasterKey</code> instead of the caller's session token</td></tr>
+      <tr><td>Password reset email never arrives</td><td>No email adapter, or <code>publicServerURL</code> unset</td></tr>
+      <tr><td>A role grants nothing</td><td>The role row does not exist, or the ACL cannot read it</td></tr>
+      <tr><td>A revoked role still works</td><td>The role cache is on — call <code>invalidateRoles(userId)</code> when you revoke</td></tr>
+      <tr><td>Everyone can list all users</td><td><code>_User</code> CLP left at its default</td></tr>
+      <tr><td>Signup fails with 202 or 203</td><td>Username or email already taken — expected, translate it</td></tr>
+    </tbody>
+  </table></div>
+
+  <p>
+    For OAuth providers, anonymous users, session security options and email adapter setup,
+    the <a href="https://docs.parseplatform.org/js/guide/#users">Parse users guide</a> is the
+    reference.
+  </p>
+
+
+  <div class="pager">
+    <a href="relations.html"><span>Back</span>Relationships</a>
+    <a class="next" href="files.html"><span>Next</span>Files &amp; images</a>
+  </div>
+</main>
+
+</div>
+
+<footer class="site-footer">
+  <div class="inner">
+    <span>MIT licensed</span>
+    <a href="https://www.npmjs.com/package/parse-server-kit">npm</a>
+    <a href="https://github.com/walhalabi-code/parse-server-kit">GitHub</a>
+    <span class="spacer">For Parse concepts, <a href="https://docs.parseplatform.org/">its docs</a> remain the reference.</span>
+  </div>
+</footer>
+
+<script src="../assets/docs.js"></script>
+</body>
+</html>

@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data:; font-src 'self'; form-action 'none'; base-uri 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Queries — parse-server-kit</title>
+<meta name="description" content="Finding things. Filters, sorting, pagination, pointers, sub-queries and counting — with the permission model doing the filtering you would otherwise write ">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Queries — parse-server-kit">
+<meta property="og:description" content="Finding things. Filters, sorting, pagination, pointers, sub-queries and counting — with the permission model doing the filtering you would otherwise write ">
+<meta property="og:url" content="https://walhalabi-code.github.io/parse-server-kit/guide/queries.html">
+<meta property="og:site_name" content="parse-server-kit">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="../index.html"><svg class="brand-mark" viewBox="12 10 62 72" aria-hidden="true"><g transform="translate(18, 14)" fill="none" stroke-linecap="round" stroke-linejoin="round"><path class="logo-base" pathLength="1" d="M 40 24 C 40 14, 28 12, 20 22 C 12 32, 12 44, 22 52 C 32 60, 46 52, 46 36 C 46 20, 34 10, 20 10 C 7 10, 2 22, 2 38 C 2 54, 12 64, 28 64 C 38 64, 48 57, 52 48" stroke="var(--logo-base)" stroke-width="3" opacity="0.6"/><g class="logo-layer" transform="translate(-3, -4)"><path class="logo-kit-path" pathLength="1" d="M 40 20 C 40 10, 28 8, 20 18 C 12 28, 12 40, 22 48 C 32 56, 46 48, 46 32 C 46 16, 34 6, 20 6 C 7 6, 2 18, 2 34 C 2 50, 12 60, 28 60 C 38 60, 48 53, 52 44" stroke="var(--logo-kit)" stroke-width="3.5"/><circle class="logo-dot" cx="25" cy="28" r="3.5" fill="var(--logo-kit)" stroke="none"/></g></g></svg>parse-server-kit <span class="v">3.0</span></a>
+    <nav class="nav">
+      <button class="icon-btn menu-btn" data-menu-toggle aria-expanded="false" aria-label="Toggle navigation">≡</button>
+      <a class="nav-ai" href="../guide/ai-assistants.html"><svg class="ai-spark" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 2.4 6.9 5l2.6.9-2.6.9L6 9.4 5.1 6.8 2.5 5.9l2.6-.9Z"/><path d="m11.6 8.4.6 1.7 1.7.6-1.7.6-.6 1.7-.6-1.7-1.7-.6 1.7-.6Z"/></svg>AI</a>
+      <a class="hide-sm" href="../index.html">Home</a>
+      <a class="hide-sm" href="https://github.com/walhalabi-code/parse-server-kit">GitHub</a>
+      <button class="icon-btn" data-search-open aria-label="Search">⌕</button>
+      <button class="icon-btn" data-theme-toggle aria-label="Switch theme">◐</button>
+    </nav>
+  </div>
+</header>
+
+<div class="layout">
+
+<aside class="sidebar">
+  <svg class="icon-sprite" aria-hidden="true"><symbol id="i-rocket" viewBox="0 0 16 16"><path d="M6.5 9.5 3 8.8l2.2-2.6 2.6-.3M6.5 9.5 7.2 13l2.6-2.2.3-2.6M6.5 9.5 9.5 6.5m0 0a12 12 0 0 1 3.8-3.8 5 5 0 0 1-3.8 3.8ZM4.5 11.5 3 14l2.5-1.5"/></symbol><symbol id="i-book" viewBox="0 0 16 16"><path d="M2.5 3.5h4a2 2 0 0 1 2 2v7a1.5 1.5 0 0 0-1.5-1.5h-4.5Zm11 0h-4a2 2 0 0 0-2 2v7A1.5 1.5 0 0 1 9 11h4.5Z"/></symbol><symbol id="i-play" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><path d="m6.8 5.8 3.2 2.2-3.2 2.2Z"/></symbol><symbol id="i-cart" viewBox="0 0 16 16"><path d="M2 2.5h1.6l1.6 7.4h6.6l1.3-5.2H4.2"/><circle cx="6.3" cy="12.6" r="1"/><circle cx="11.4" cy="12.6" r="1"/></symbol><symbol id="i-scales" viewBox="0 0 16 16"><path d="M8 2.5v11M4.5 4.2h7M2 10a2.5 2.5 0 0 0 5 0L4.5 4.5Zm7 0a2.5 2.5 0 0 0 5 0L11.5 4.5ZM5.5 13.5h5"/></symbol><symbol id="i-box" viewBox="0 0 16 16"><path d="M8 2 2.5 4.8v6.4L8 14l5.5-2.8V4.8Z"/><path d="M2.5 4.8 8 7.6l5.5-2.8M8 7.6V14"/></symbol><symbol id="i-transform" viewBox="0 0 16 16"><path d="M2 5.5h7m-2.2-2.2L9 5.5 6.8 7.7M14 10.5H7m2.2-2.2L7 10.5l2.2 2.2"/></symbol><symbol id="i-shield" viewBox="0 0 16 16"><path d="M8 2 3.5 3.8v3.7c0 2.6 1.9 5 4.5 5.9 2.6-.9 4.5-3.3 4.5-5.9V3.8Z"/><path d="m6.2 7.9 1.4 1.4 2.4-2.6"/></symbol><symbol id="i-search" viewBox="0 0 16 16"><circle cx="7.2" cy="7.2" r="4"/><path d="m10.2 10.2 3 3"/></symbol><symbol id="i-link" viewBox="0 0 16 16"><path d="M6.6 9.4a2.6 2.6 0 0 0 3.7 0l2-2a2.6 2.6 0 0 0-3.7-3.7l-.9.9"/><path d="M9.4 6.6a2.6 2.6 0 0 0-3.7 0l-2 2a2.6 2.6 0 0 0 3.7 3.7l.9-.9"/></symbol><symbol id="i-user" viewBox="0 0 16 16"><circle cx="8" cy="6" r="2.6"/><path d="M3.4 13.2a4.8 4.8 0 0 1 9.2 0"/></symbol><symbol id="i-image" viewBox="0 0 16 16"><rect x="2.5" y="3.5" width="11" height="9" rx="1.5"/><circle cx="6" cy="6.7" r="1"/><path d="m3.2 11.4 3-2.6 2.4 2 2-1.6 2.2 1.9"/></symbol><symbol id="i-signpost" viewBox="0 0 16 16"><path d="M8 2v12M8 4h4.2l1.3 1.6L12.2 7.2H8Zm0 4.2H3.8L2.5 9.8l1.3 1.6H8Z"/></symbol><symbol id="i-bolt" viewBox="0 0 16 16"><path d="M9 2 4 9h3.4l-.4 5 5-7H8.6Z"/></symbol><symbol id="i-broadcast" viewBox="0 0 16 16"><circle cx="8" cy="8" r="1.6"/><path d="M5.2 10.8a4 4 0 0 1 0-5.6m5.6 0a4 4 0 0 1 0 5.6M3.2 12.8a6.8 6.8 0 0 1 0-9.6m9.6 0a6.8 6.8 0 0 1 0 9.6"/></symbol><symbol id="i-exchange" viewBox="0 0 16 16"><path d="M2.8 5.5h9.1l-2-2M13.2 10.5H4.1l2 2"/></symbol><symbol id="i-lock" viewBox="0 0 16 16"><rect x="3.2" y="7" width="9.6" height="6.3" rx="1.5"/><path d="M5.5 7V5.3a2.5 2.5 0 0 1 5 0V7"/><path d="M8 9.6v1.4"/></symbol><symbol id="i-sprout" viewBox="0 0 16 16"><path d="M8 13.5V7.8m0 0C8 6 6.6 4.6 4.8 4.6H3.3c0 1.8 1.4 3.2 3.2 3.2Zm0 0c0-1.8 1.4-3.2 3.2-3.2h1.5c0 1.8-1.4 3.2-3.2 3.2Z"/></symbol><symbol id="i-gauge" viewBox="0 0 16 16"><path d="M2.8 11.6a5.9 5.9 0 1 1 10.4 0"/><path d="M8 8.8 10.6 6"/><circle cx="8" cy="9.4" r="1"/></symbol><symbol id="i-spark" viewBox="0 0 16 16"><path d="M6 2.4 6.9 5l2.6.9-2.6.9L6 9.4 5.1 6.8 2.5 5.9l2.6-.9Z"/><path d="m11.6 8.4.6 1.7 1.7.6-1.7.6-.6 1.7-.6-1.7-1.7-.6 1.7-.6Z"/></symbol><symbol id="i-alert" viewBox="0 0 16 16"><path d="M8 2.8 2.6 12.4h10.8Z"/><path d="M8 6.4v2.8M8 10.8v.1"/></symbol><symbol id="i-terminal" viewBox="0 0 16 16"><rect x="2.2" y="3" width="11.6" height="10" rx="1.5"/><path d="m5 6.4 2 1.8-2 1.8M8.6 10.4h2.6"/></symbol><symbol id="i-lifebuoy" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><circle cx="8" cy="8" r="2.2"/><path d="m4.1 4.1 2.3 2.3m3.2 3.2 2.3 2.3m0-7.8-2.3 2.3M6.4 9.6l-2.3 2.3"/></symbol><symbol id="i-at" viewBox="0 0 16 16"><circle cx="8" cy="8" r="2.3"/><path d="M10.3 5.7v3a1.8 1.8 0 0 0 3.2 1.1A5.8 5.8 0 1 0 11 13"/></symbol><symbol id="i-sliders" viewBox="0 0 16 16"><path d="M2.5 5h7m3 0h1m-11 6h1m3 0h7"/><circle cx="11" cy="5" r="1.5"/><circle cx="5" cy="11" r="1.5"/></symbol><symbol id="i-layers" viewBox="0 0 16 16"><path d="M8 2.2 2.4 5 8 7.8 13.6 5Z"/><path d="m2.4 8 5.6 2.8L13.6 8m-11.2 3 5.6 2.8L13.6 11"/></symbol><symbol id="i-wrench" viewBox="0 0 16 16"><path d="M10.4 2.6a3.4 3.4 0 0 0-3.9 4.6l-4 4a1.3 1.3 0 0 0 1.9 1.9l4-4a3.4 3.4 0 0 0 4.6-3.9l-1.9 1.9-1.9-.5-.5-1.9Z"/></symbol></svg>
+  <h5>Start here</h5>
+  <ul>
+    <li><a href="../guide/getting-started.html"><svg class="ic" aria-hidden="true"><use href="#i-rocket"/></svg><span>Getting started</span></a></li>
+    <li><a href="../guide/ai-assistants.html"><svg class="ic" aria-hidden="true"><use href="#i-spark"/></svg><span>AI assistants</span></a></li>
+    <li class="has-sub">
+      <details>
+        <summary><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg><span>Tutorials</span></summary>
+        <ul>
+        <li><a href="../guide/tutorial.html"><svg class="ic" aria-hidden="true"><use href="#i-play"/></svg><span>A first API</span></a></li>
+        <li><a href="../guide/tutorial-orders.html"><svg class="ic" aria-hidden="true"><use href="#i-cart"/></svg><span>Orders &amp; stock</span></a></li>
+        </ul>
+      </details>
+    </li>
+    <li><a href="../guide/vs-nestjs.html"><svg class="ic" aria-hidden="true"><use href="#i-scales"/></svg><span>Compared with NestJS</span></a></li>
+  </ul>
+  <h5>Guide</h5>
+  <ul>
+    <li><a href="../guide/models.html"><svg class="ic" aria-hidden="true"><use href="#i-box"/></svg><span>Models &amp; fields</span></a></li>
+    <li><a href="../guide/from-params.html"><svg class="ic" aria-hidden="true"><use href="#i-transform"/></svg><span>fromParams</span></a></li>
+    <li><a href="../guide/acl.html"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg><span>Permissions &amp; ACL</span></a></li>
+    <li><a href="../guide/queries.html"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg><span>Queries</span></a></li>
+    <li><a href="../guide/relations.html"><svg class="ic" aria-hidden="true"><use href="#i-link"/></svg><span>Relationships</span></a></li>
+    <li><a href="../guide/users.html"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg><span>Users &amp; auth</span></a></li>
+    <li><a href="../guide/files.html"><svg class="ic" aria-hidden="true"><use href="#i-image"/></svg><span>Files &amp; images</span></a></li>
+    <li><a href="../guide/endpoints.html"><svg class="ic" aria-hidden="true"><use href="#i-signpost"/></svg><span>Endpoints &amp; routing</span></a></li>
+    <li><a href="../guide/triggers.html"><svg class="ic" aria-hidden="true"><use href="#i-bolt"/></svg><span>Triggers</span></a></li>
+    <li><a href="../guide/live-query.html"><svg class="ic" aria-hidden="true"><use href="#i-broadcast"/></svg><span>Real-time</span></a></li>
+    <li><a href="../guide/transactions.html"><svg class="ic" aria-hidden="true"><use href="#i-exchange"/></svg><span>Transactions</span></a></li>
+    <li><a href="../guide/optimistic-locking.html"><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg><span>Optimistic locking</span></a></li>
+    <li><a href="../guide/seeding.html"><svg class="ic" aria-hidden="true"><use href="#i-sprout"/></svg><span>Seeding data</span></a></li>
+    <li><a href="../guide/dashboard.html"><svg class="ic" aria-hidden="true"><use href="#i-gauge"/></svg><span>Parse Dashboard</span></a></li>
+    <li><a href="../guide/errors.html"><svg class="ic" aria-hidden="true"><use href="#i-alert"/></svg><span>Errors</span></a></li>
+    <li><a href="../guide/cli.html"><svg class="ic" aria-hidden="true"><use href="#i-terminal"/></svg><span>The psk CLI</span></a></li>
+    <li><a href="../guide/troubleshooting.html"><svg class="ic" aria-hidden="true"><use href="#i-lifebuoy"/></svg><span>Troubleshooting</span></a></li>
+  </ul>
+  <h5>Reference</h5>
+  <ul>
+    <li><a href="../reference/decorators.html"><svg class="ic" aria-hidden="true"><use href="#i-at"/></svg><span>Decorators</span></a></li>
+    <li><a href="../reference/configuration.html"><svg class="ic" aria-hidden="true"><use href="#i-sliders"/></svg><span>Configuration</span></a></li>
+    <li><a href="../reference/middleware.html"><svg class="ic" aria-hidden="true"><use href="#i-layers"/></svg><span>Middleware</span></a></li>
+    <li><a href="../reference/utilities.html"><svg class="ic" aria-hidden="true"><use href="#i-wrench"/></svg><span>Utilities</span></a></li>
+  </ul>
+</aside>
+
+<main class="content">
+  <p class="eyebrow">Guide</p>
+  <h1>Queries</h1>
+  <p class="lede">Finding things. Filters, sorting, pagination, pointers, sub-queries and counting — with the permission model doing the filtering you would otherwise write by hand.</p>
+
+
+  <h2 id="basics">The shape of a query</h2>
+  <p>Build it, constrain it, run it. Always pass a <code>sessionToken</code> so the ACL applies — see <a href="#permissions">permissions</a> below.</p>
+<pre class="code-block"><code><span class="t-key">import</span> {catchError, ParseClass, CloudFunction} <span class="t-key">from</span> <span class="t-str">'parse-server-kit'</span>;
+
+<span class="t-key">const</span> query = <span class="t-key">new</span> Parse.Query(Product);
+query.equalTo(<span class="t-str">'status'</span>, <span class="t-str">'active'</span>);
+query.descending(<span class="t-str">'createdAt'</span>);
+query.limit(<span class="t-num">20</span>);
+
+<span class="t-key">const</span> [err, rows] = <span class="t-key">await</span> catchError(query.find({ sessionToken }));
+<span class="t-key">if</span> (err) <span class="t-key">throw</span> err;
+
+<span class="t-com">// Cast - Parse.Query returns Parse.Object, not your class.</span>
+<span class="t-key">const</span> products = rows <span class="t-key">as</span> Product[];</code></pre>
+
+  <div class="note warn">
+    <span class="note-title">Always pass the model class, never the name</span>
+    <code>new Parse.Query(Product)</code>, not <code>new Parse.Query('Product')</code>.
+    The string form works but returns plain <code>Parse.Object</code>s with no relationship
+    to your class, so nothing type-checks and <code>instanceof</code> fails.
+  </div>
+
+  <h2 id="filters">Filtering</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Method</th><th>Finds rows where</th></tr></thead>
+    <tbody>
+      <tr><td><code>equalTo(k, v)</code></td><td>the field equals <code>v</code></td></tr>
+      <tr><td><code>notEqualTo(k, v)</code></td><td>it does not</td></tr>
+      <tr><td><code>greaterThan(k, v)</code> / <code>lessThan(k, v)</code></td><td>numeric or date comparison</td></tr>
+      <tr><td><code>greaterThanOrEqualTo</code> / <code>lessThanOrEqualTo</code></td><td>inclusive versions</td></tr>
+      <tr><td><code>containedIn(k, [v])</code></td><td>the value is one of the list</td></tr>
+      <tr><td><code>notContainedIn(k, [v])</code></td><td>it is not</td></tr>
+      <tr><td><code>exists(k)</code> / <code>doesNotExist(k)</code></td><td>the field is set at all</td></tr>
+      <tr><td><code>containsAll(k, [v])</code></td><td>an Array field holds every listed value</td></tr>
+      <tr><td><code>matches(k, regex)</code></td><td>a String matches a regular expression</td></tr>
+      <tr><td><code>startsWith(k, prefix)</code></td><td>prefix match — <b>uses an index</b>, unlike a general regex</td></tr>
+    </tbody>
+  </table></div>
+
+<pre class="code-block"><code><span class="t-com">// A date range - both ends, or you will get everything since 1970.</span>
+<span class="t-key">const</span> start = <span class="t-key">new</span> Date(<span class="t-str">'2026-01-01'</span>);
+<span class="t-key">const</span> end   = <span class="t-key">new</span> Date(<span class="t-str">'2026-02-01'</span>);
+query.greaterThanOrEqualTo(<span class="t-str">'createdAt'</span>, start);
+query.lessThan(<span class="t-str">'createdAt'</span>, end);
+
+<span class="t-com">// One of several values</span>
+query.containedIn(<span class="t-str">'status'</span>, [<span class="t-str">'active'</span>, <span class="t-str">'featured'</span>]);
+
+<span class="t-com">// Only rows that have the field at all</span>
+query.exists(<span class="t-str">'publishedAt'</span>);</code></pre>
+
+  <h3 id="search">Text search</h3>
+<pre class="code-block"><code><span class="t-com">// Case-insensitive substring. Simple, but it cannot use an index -</span>
+<span class="t-com">// fine for admin screens, poor for large public listings.</span>
+query.matches(<span class="t-str">'name'</span>, <span class="t-key">new</span> RegExp(search, <span class="t-str">'i'</span>));
+
+<span class="t-com">// Prefix search DOES use an index. Prefer it where it fits.</span>
+query.startsWith(<span class="t-str">'name'</span>, search);
+
+<span class="t-com">// Full-text, if the field has a text index declared:</span>
+<span class="t-com">//   @ParseClass('Product', {compoundIndexes: [</span>
+<span class="t-com">//     {fields: ['name'], fieldTypes: {name: 'text'}} ]})</span>
+query.fullText(<span class="t-str">'name'</span>, search);</code></pre>
+
+  <div class="note warn">
+    <span class="note-title">Escape user input before building a regex</span>
+    A search box passed straight into <code>new RegExp()</code> lets a caller send
+    <code>.*.*.*.*</code> and make the database work very hard. Escape it, or use
+    <code>startsWith</code> / <code>fullText</code>. parse-server 9.8+ can also disable the
+    <code>$regex</code> operator entirely via <code>requestComplexity.allowRegex</code>.
+  </div>
+
+  <h2 id="combining">Combining conditions</h2>
+  <p>Conditions on one query are combined with AND. For OR, build several queries and join them.</p>
+<pre class="code-block"><code><span class="t-key">const</span> byName = <span class="t-key">new</span> Parse.Query(Product);
+byName.matches(<span class="t-str">'name'</span>, <span class="t-key">new</span> RegExp(term, <span class="t-str">'i'</span>));
+
+<span class="t-key">const</span> bySku = <span class="t-key">new</span> Parse.Query(Product);
+bySku.matches(<span class="t-str">'sku'</span>, <span class="t-key">new</span> RegExp(term, <span class="t-str">'i'</span>));
+
+<span class="t-key">const</span> search = Parse.Query.or(byName, bySku);
+search.equalTo(<span class="t-str">'status'</span>, <span class="t-str">'active'</span>);   <span class="t-com">// applies to the whole OR</span>
+search.limit(<span class="t-num">20</span>);</code></pre>
+  <p><code>Parse.Query.and(...)</code> exists too, for when you need an AND of two OR groups.</p>
+
+  <h2 id="pointers">Pointers and related data</h2>
+  <p>A Pointer stores only a reference. Ask for the related row explicitly, or you get <code>{__type, className, objectId}</code> and nothing else.</p>
+<pre class="code-block"><code><span class="t-com">// Fetch the category along with each product</span>
+query.include(<span class="t-str">'category'</span>);
+
+<span class="t-com">// Two levels deep</span>
+query.include(<span class="t-str">'category.parent'</span>);
+
+<span class="t-com">// Several at once</span>
+query.include([<span class="t-str">'category'</span>, <span class="t-str">'brand'</span>]);
+
+<span class="t-com">// Only some fields, to keep the payload small</span>
+query.select([<span class="t-str">'name'</span>, <span class="t-str">'price'</span>, <span class="t-str">'category.name'</span>]);</code></pre>
+
+<pre class="code-block"><code><span class="t-com">// Filter BY a pointer - pass the object or a pointer to it</span>
+query.equalTo(<span class="t-str">'category'</span>, Category.pointer(categoryId));
+
+<span class="t-com">// Filter by a property OF the pointed-to row, with a sub-query</span>
+<span class="t-key">const</span> cheapCategories = <span class="t-key">new</span> Parse.Query(Category);
+cheapCategories.lessThan(<span class="t-str">'averagePrice'</span>, <span class="t-num">100</span>);
+query.matchesQuery(<span class="t-str">'category'</span>, cheapCategories);</code></pre>
+
+  <div class="note">
+    <span class="note-title">include() costs a lookup per level</span>
+    It is the right tool for a detail screen and the wrong one for a list of 500 rows with
+    three includes. parse-server 8.5+ fetches same-level pointers in parallel, which helps,
+    but the cheapest include is the one you do not need — consider denormalising a name or
+    two onto the row.
+  </div>
+
+  <h2 id="sorting">Sorting and pagination</h2>
+<pre class="code-block"><code>query.descending(<span class="t-str">'createdAt'</span>);          <span class="t-com">// newest first</span>
+query.ascending(<span class="t-str">'name'</span>);                <span class="t-com">// A to Z</span>
+query.addDescending(<span class="t-str">'price'</span>);           <span class="t-com">// then by price, within that</span>
+
+<span class="t-key">const</span> page  = Number(req.params.page) || <span class="t-num">1</span>;
+<span class="t-key">const</span> limit = Math.min(Number(req.params.limit) || <span class="t-num">20</span>, MAX_QUERY_LIMIT);
+query.limit(limit).skip((page - <span class="t-num">1</span>) * limit);</code></pre>
+  <p>
+    <code>limit</code> defaults to 100 and is capped at 1000 by parse-server;
+    <code>MAX_QUERY_LIMIT</code> (10000) is the ceiling this library exports for the
+    master-key paths that allow it. <b>Always sort when you paginate</b> — without an order,
+    "page 2" is not guaranteed to exclude what was on page 1.
+  </p>
+
+  <h3 id="deep-paging">Paging deeply</h3>
+  <p><code>skip</code> gets slower the further in you go, because the database still walks the skipped rows. For a large export, page on a sort key instead:</p>
+<pre class="code-block"><code><span class="t-key">let</span> cursor: Date | <span class="t-key">undefined</span>;
+<span class="t-key">while</span> (<span class="t-key">true</span>) {
+  <span class="t-key">const</span> q = <span class="t-key">new</span> Parse.Query(Product).ascending(<span class="t-str">'createdAt'</span>).limit(<span class="t-num">500</span>);
+  <span class="t-key">if</span> (cursor) q.greaterThan(<span class="t-str">'createdAt'</span>, cursor);
+
+  <span class="t-key">const</span> batch = <span class="t-key">await</span> q.find({ useMasterKey: <span class="t-key">true</span> });
+  <span class="t-key">if</span> (batch.length === <span class="t-num">0</span>) <span class="t-key">break</span>;
+
+  <span class="t-com">// … process the batch …</span>
+  cursor = batch[batch.length - <span class="t-num">1</span>].get(<span class="t-str">'createdAt'</span>);
+}</code></pre>
+
+  <h2 id="single">Fetching one row</h2>
+<pre class="code-block"><code><span class="t-com">// By id. Throws 101 when missing OR when the ACL hides it.</span>
+<span class="t-key">const</span> [err, product] = <span class="t-key">await</span> catchError(query.get(id, { sessionToken }));
+
+<span class="t-com">// First match, or undefined - no throw</span>
+<span class="t-key">const</span> [err2, maybe] = <span class="t-key">await</span> catchError(query.first({ sessionToken }));
+<span class="t-key">if</span> (!maybe) <span class="t-key">throw new</span> Parse.Error(<span class="t-num">101</span>, <span class="t-str">'Not found'</span>);</code></pre>
+  <p>Use <code>first()</code> when absence is normal and <code>get()</code> when it is an error — it saves you writing the check.</p>
+
+  <h2 id="counting">Counting</h2>
+<pre class="code-block"><code><span class="t-key">const</span> [err, total] = <span class="t-key">await</span> catchError(query.count({ sessionToken }));
+
+<span class="t-com">// A list endpoint usually wants both, from the same constraints.</span>
+<span class="t-key">const</span> rows  = <span class="t-key">await</span> query.find({ sessionToken });
+<span class="t-key">const</span> total2 = <span class="t-key">await</span> query.count({ sessionToken });
+<span class="t-key">return</span> { results: rows <span class="t-key">as</span> Product[], count: total2 };</code></pre>
+  <div class="note warn">
+    <span class="note-title">count has its own permission</span>
+    <code>count</code> is a separate CLP operation from <code>find</code>, because a count
+    leaks how much data exists even when the rows are hidden. If a count works and a find
+    returns nothing, that is the ACL — not a bug.
+  </div>
+
+  <h2 id="permissions">Queries and permissions</h2>
+  <p>This is the part that removes work rather than adding it.</p>
+<pre class="code-block"><code><span class="t-com">// Filtered by the ACL - only rows this user may read come back.</span>
+<span class="t-key">await</span> query.find({ sessionToken: user.getSessionToken() });
+
+<span class="t-com">// Bypasses CLP and ACL entirely. Administrative use only.</span>
+<span class="t-key">await</span> query.find({ useMasterKey: <span class="t-key">true</span> });</code></pre>
+  <p>
+    With an ACL set when the record was created, a "my items" endpoint needs no
+    <code>equalTo('owner', user)</code> at all — the database returns only what the caller
+    may see. See <a href="acl.html#pattern-owner">Permissions &amp; ACL</a>.
+  </p>
+  <p>
+    Which means: a query returning fewer rows than you expect is usually correct.
+    Re-run it with <code>useMasterKey</code>; if the rows appear, it is the ACL.
+  </p>
+
+  <h2 id="aggregate">Aggregation and distinct</h2>
+<pre class="code-block"><code><span class="t-com">// Master key required for both.</span>
+<span class="t-key">const</span> distinct = <span class="t-key">await</span> query.distinct(<span class="t-str">'status'</span>);
+
+<span class="t-key">const</span> pipeline = [
+  { match: { status: <span class="t-str">'active'</span> } },
+  { group: { objectId: <span class="t-str">'$category'</span>, total: { $sum: <span class="t-str">'$price'</span> } } },
+];
+<span class="t-key">const</span> totals = <span class="t-key">await</span> <span class="t-key">new</span> Parse.Query(Product).aggregate(pipeline);</code></pre>
+  <p>Aggregation is raw MongoDB and skips the ACL, so treat its results as privileged and filter before returning them.</p>
+
+  <h2 id="patterns">A complete list endpoint</h2>
+<pre class="code-block"><code><span class="t-dec">@CloudFunction</span>({
+  methods: [<span class="t-str">'GET'</span>],
+  description: <span class="t-str">'List products'</span>,
+  validation: { fields: {
+    page:   { type: String },
+    limit:  { type: String },
+    status: { type: String },
+    search: { type: String },
+  } },
+})
+<span class="t-key">static async</span> listProducts(req: Parse.Cloud.FunctionRequest) {
+  <span class="t-key">const</span> sessionToken = req.user?.getSessionToken();
+
+  <span class="t-key">const</span> build = () => {
+    <span class="t-key">const</span> q = <span class="t-key">new</span> Parse.Query(Product);
+    <span class="t-key">if</span> (req.params.status) q.equalTo(<span class="t-str">'status'</span>, req.params.status);
+    <span class="t-key">if</span> (req.params.search) {
+      q.matches(<span class="t-str">'name'</span>, <span class="t-key">new</span> RegExp(req.params.search, <span class="t-str">'i'</span>));
+    }
+    <span class="t-key">return</span> q;
+  };
+
+  <span class="t-key">const</span> page  = Math.max(Number(req.params.page) || <span class="t-num">1</span>, <span class="t-num">1</span>);
+  <span class="t-key">const</span> limit = Math.min(Number(req.params.limit) || <span class="t-num">20</span>, <span class="t-num">100</span>);
+
+  <span class="t-key">const</span> rows = build()
+    .include(<span class="t-str">'category'</span>)
+    .descending(<span class="t-str">'createdAt'</span>)
+    .limit(limit)
+    .skip((page - <span class="t-num">1</span>) * limit);
+
+  <span class="t-key">const</span> [err, results] = <span class="t-key">await</span> catchError(rows.find({ sessionToken }));
+  <span class="t-key">if</span> (err) <span class="t-key">throw</span> err;
+
+  <span class="t-com">// A fresh query - find() and count() cannot share one that has</span>
+  <span class="t-com">// had limit and skip applied.</span>
+  <span class="t-key">const</span> [countErr, total] = <span class="t-key">await</span> catchError(build().count({ sessionToken }));
+
+  <span class="t-key">return</span> {
+    results: results <span class="t-key">as</span> Product[],
+    page,
+    limit,
+    total: countErr ? <span class="t-num">0</span> : total,
+  };
+}</code></pre>
+
+  <h2 id="mistakes">Common mistakes</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Symptom</th><th>Cause</th></tr></thead>
+    <tbody>
+      <tr><td>Typed property access is unavailable</td><td>The result was not cast — <code>rows as Product[]</code></td></tr>
+      <tr><td>A pointer field is <code>{__type: 'Pointer'}</code></td><td>No <code>include()</code> for it</td></tr>
+      <tr><td>Only 100 rows come back</td><td>That is the default <code>limit</code></td></tr>
+      <tr><td>Rows repeat across pages</td><td>Paginating without a sort</td></tr>
+      <tr><td>Nothing comes back, but data exists</td><td>The ACL filtered it. Re-run with <code>useMasterKey</code> to confirm</td></tr>
+      <tr><td>Count and list disagree</td><td>Separate CLP entries, or <code>limit</code>/<code>skip</code> left on the counted query</td></tr>
+      <tr><td>Search is slow</td><td>An unanchored regex cannot use an index. Use <code>startsWith</code> or a text index</td></tr>
+      <tr><td>Date filter returns everything</td><td>Only one end of the range was set</td></tr>
+    </tbody>
+  </table></div>
+
+  <p>
+    For the full list of query operators, geo queries and relational constraints, the
+    <a href="https://docs.parseplatform.org/js/guide/#queries">Parse query guide</a> is the
+    complete reference. This page covers what you will reach for daily.
+  </p>
+
+
+  <div class="pager">
+    <a href="acl.html"><span>Back</span>Permissions &amp; ACL</a>
+    <a class="next" href="relations.html"><span>Next</span>Relationships</a>
+  </div>
+</main>
+
+</div>
+
+<footer class="site-footer">
+  <div class="inner">
+    <span>MIT licensed</span>
+    <a href="https://www.npmjs.com/package/parse-server-kit">npm</a>
+    <a href="https://github.com/walhalabi-code/parse-server-kit">GitHub</a>
+    <span class="spacer">For Parse concepts, <a href="https://docs.parseplatform.org/">its docs</a> remain the reference.</span>
+  </div>
+</footer>
+
+<script src="../assets/docs.js"></script>
+</body>
+</html>

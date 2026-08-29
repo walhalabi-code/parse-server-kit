@@ -1,0 +1,164 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # 18 is the declared floor; 20.19 is what parse-server 9 requires;
+        # 22 catches anything that breaks on the current LTS.
+        node: ['18', '20', '22']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Build
+        run: npm run build
+
+      - name: Unit tests
+        run: npm test
+
+  integration:
+    name: Integration (real parse-server + MongoDB)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - run: npm ci
+
+      # Downloads a MongoDB binary on first run; cached between runs so the
+      # suite does not re-fetch it on every push.
+      - name: Cache MongoDB binaries
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/mongodb-binaries
+          key: mongodb-binaries-${{ runner.os }}
+
+      - name: Integration tests
+        run: npm run test:integration
+
+  scaffold:
+    name: Generated project actually runs
+    runs-on: ubuntu-latest
+
+    # A single-node replica set, because a standalone mongod refuses
+    # transactions — the same reason the generated docker-compose.yml uses one.
+    services:
+      mongo:
+        image: mongo:8
+        ports: ['27017:27017']
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ping:1}).ok'"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+
+      - name: Scaffold a project with the CLI
+        run: node dist/cli/index.js new my-api --yes
+        working-directory: ${{ runner.temp }}
+
+      - name: Point it at this build instead of the published package
+        working-directory: ${{ runner.temp }}/my-api
+        run: npm pkg set dependencies.parse-server-kit="file:$GITHUB_WORKSPACE"
+
+      - name: Install and build the generated project
+        working-directory: ${{ runner.temp }}/my-api
+        run: |
+          npm install --no-audit --no-fund
+          npm run build
+
+      - name: Boot it and call its API
+        working-directory: ${{ runner.temp }}/my-api
+        env:
+          DATABASE_URI: mongodb://localhost:27017/ci
+        run: |
+          npm start > server.log 2>&1 &
+          for i in $(seq 1 60); do
+            grep -q "Your API is running" server.log && break
+            sleep 2
+          done
+          cat server.log
+
+          APP_ID=$(grep '^APP_ID=' .env | cut -d= -f2)
+          TOKEN=$(grep -o 'X-Parse-Session-Token: r:[a-f0-9]*' server.log | head -1 | cut -d' ' -f2)
+
+          # The endpoint anyone can call.
+          curl -sf "http://localhost:1337/api/notes/listNotes" \
+            -H "X-Parse-Application-Id: $APP_ID" | tee /dev/stderr | grep -q '"count"'
+
+          # The exact request the CLI tells the user to make.
+          curl -sf -X POST "http://localhost:1337/api/notes/createNote" \
+            -H "X-Parse-Application-Id: $APP_ID" \
+            -H "X-Parse-Session-Token: $TOKEN" \
+            -H "Content-Type: text/plain" \
+            -d '{"title":"CI note"}' | tee /dev/stderr | grep -q '"slug":"ci-note"'
+
+          # restrictRoutes must still be closing off the generic CRUD surface.
+          test "$(curl -s -o /dev/null -w '%{http_code}' \
+            "http://localhost:1337/api/classes/Note" \
+            -H "X-Parse-Application-Id: $APP_ID")" = "403"
+
+          echo "generated project boots, serves, and blocks /classes"
+
+  package:
+    name: Package contents
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+
+      # Catches the class of bug that shipped in 2.7.0: a package that builds
+      # and tests fine but is broken for whoever installs it.
+      - name: Verify the tarball is importable without optional peers
+        run: |
+          npm pack
+          mkdir -p /tmp/probe && cd /tmp/probe
+          npm init -y > /dev/null
+          npm install $GITHUB_WORKSPACE/*.tgz parse --no-audit --no-fund
+          node -e "
+            global.Parse = require('parse/node');
+            const kit = require('parse-server-kit');
+            const missing = ['ParseClass','ParseField','BaseModel','CloudFunction','Route','setupSwagger']
+              .filter(n => typeof kit[n] !== 'function');
+            if (missing.length) { console.error('missing exports:', missing); process.exit(1); }
+            console.log('package imports cleanly without node-cron or swagger-ui-express');
+          "

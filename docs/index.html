@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data:; font-src 'self'; form-action 'none'; base-uri 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>parse-server-kit — a working backend in an afternoon</title>
+<meta name="description" content="A backend for startups, in an afternoon. Decorator-driven toolkit for Parse Server: models, cloud functions, REST routes, OpenAPI, transactions and optimistic locking — with auth, roles and row-level permissions already built in.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="parse-server-kit — a working backend in an afternoon">
+<meta property="og:description" content="A backend for startups, in an afternoon. Decorator-driven toolkit for Parse Server: models, cloud functions, REST routes, OpenAPI, transactions and optimistic locking — with auth, roles and row-level permissions already built in.">
+<meta property="og:url" content="https://walhalabi-code.github.io/parse-server-kit/index.html">
+<meta property="og:site_name" content="parse-server-kit">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="assets/landing.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="index.html"><svg class="brand-mark" viewBox="12 10 62 72" aria-hidden="true"><g transform="translate(18, 14)" fill="none" stroke-linecap="round" stroke-linejoin="round"><path class="logo-base" pathLength="1" d="M 40 24 C 40 14, 28 12, 20 22 C 12 32, 12 44, 22 52 C 32 60, 46 52, 46 36 C 46 20, 34 10, 20 10 C 7 10, 2 22, 2 38 C 2 54, 12 64, 28 64 C 38 64, 48 57, 52 48" stroke="var(--logo-base)" stroke-width="3" opacity="0.6"/><g class="logo-layer" transform="translate(-3, -4)"><path class="logo-kit-path" pathLength="1" d="M 40 20 C 40 10, 28 8, 20 18 C 12 28, 12 40, 22 48 C 32 56, 46 48, 46 32 C 46 16, 34 6, 20 6 C 7 6, 2 18, 2 34 C 2 50, 12 60, 28 60 C 38 60, 48 53, 52 44" stroke="var(--logo-kit)" stroke-width="3.5"/><circle class="logo-dot" cx="25" cy="28" r="3.5" fill="var(--logo-kit)" stroke="none"/></g></g></svg>parse-server-kit <span class="v">3.0</span></a>
+    <nav class="nav">
+      <a href="guide/getting-started.html"><b>Documentation</b></a>
+      <a class="nav-ai" href="guide/ai-assistants.html"><svg class="ai-spark" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 2.4 6.9 5l2.6.9-2.6.9L6 9.4 5.1 6.8 2.5 5.9l2.6-.9Z"/><path d="m11.6 8.4.6 1.7 1.7.6-1.7.6-.6 1.7-.6-1.7-1.7-.6 1.7-.6Z"/></svg>AI</a>
+      <a href="guide/cli.html">CLI</a>
+      <a href="reference/decorators.html">API</a>
+      <a class="hide-sm" href="https://github.com/walhalabi-code/parse-server-kit">GitHub</a>
+      <button class="icon-btn" data-search-open aria-label="Search">⌕</button>
+      <button class="icon-btn" data-theme-toggle aria-label="Switch theme">◐</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-head">
+    <svg class="hero-mark" viewBox="12 10 62 72" aria-hidden="true"><g transform="translate(18, 14)" fill="none" stroke-linecap="round" stroke-linejoin="round"><path class="logo-base" pathLength="1" d="M 40 24 C 40 14, 28 12, 20 22 C 12 32, 12 44, 22 52 C 32 60, 46 52, 46 36 C 46 20, 34 10, 20 10 C 7 10, 2 22, 2 38 C 2 54, 12 64, 28 64 C 38 64, 48 57, 52 48" stroke="var(--logo-base)" stroke-width="3" opacity="0.6"/><g class="logo-layer" transform="translate(-3, -4)"><path class="logo-kit-path" pathLength="1" d="M 40 20 C 40 10, 28 8, 20 18 C 12 28, 12 40, 22 48 C 32 56, 46 48, 46 32 C 46 16, 34 6, 20 6 C 7 6, 2 18, 2 34 C 2 50, 12 60, 28 60 C 38 60, 48 53, 52 44" stroke="var(--logo-kit)" stroke-width="3.5"/><circle class="logo-dot" cx="25" cy="28" r="3.5" fill="var(--logo-kit)" stroke="none"/></g></g></svg>
+    <h1 class="hero-title">
+      A working backend for
+      <span class="typed-line" data-typed="startups, hackathons, sales pitches|MVPs">
+        <span class="typed-text">startups, hackathons, sales pitches</span><span class="caret" aria-hidden="true"></span>
+      </span>
+      in an afternoon.
+    </h1>
+    </div>
+    <p class="sub">
+      <a href="https://parseplatform.org/"><strong>Parse Server</strong></a> already gives you
+      auth, sessions, roles, row-level permissions, real-time subscriptions and file storage.
+      What it never gave you was a pleasant way to write against it. This is that layer —
+      so the first month goes into your idea instead of your plumbing.
+    </p>
+    <div class="cta-row">
+      <a class="btn btn-primary" href="guide/getting-started.html">Get started</a>
+      <a class="btn btn-ghost" href="guide/models.html">Read the documentation</a>
+      <span class="install">
+        <span class="prompt">$</span>
+        <span>npx parse-server-kit new my-api</span>
+        <button class="copy" data-copy="npx parse-server-kit new my-api">copy</button>
+      </span>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <p class="kicker">Who this is for</p>
+    <h2>Your first version should cost days, not months</h2>
+    <p>
+      This is built for the early stage: a <b>startup</b> racing to a first release, an
+      <b>MVP</b> that has to exist by Friday, a <b>hackathon</b> where the clock is the
+      whole problem, a <b>sales pitch</b> that needs a live demo rather than slides. At that
+      point the thing that decides whether it happens is how quickly you can put it in front
+      of someone — not your architecture, and not which ORM you picked. The backend is almost
+      never the interesting part of the idea, and it is almost always where the first month
+      goes.
+    </p>
+    <p>
+      So the position here is narrow and specific: <b>you should never write authentication,
+      sessions, roles, row-level permissions, file storage or real-time again.</b> That is
+      plumbing every product needs and no product competes on. Write the part that is
+      actually yours.
+    </p>
+
+    <div class="split even">
+      <div>
+        <h3>A good fit</h3>
+        <ul class="gets" style="grid-template-columns:1fr">
+          <li><span class="mark">✓</span><span>An idea you need in front of users this month</span></li>
+          <li><span class="mark">✓</span><span>A demo that has to work in front of a customer</span></li>
+          <li><span class="mark">✓</span><span>A product with accounts, roles and per-user data</span></li>
+          <li><span class="mark">✓</span><span>A mobile or web client that needs an API now</span></li>
+          <li><span class="mark">✓</span><span>An internal tool that has to be right, not novel</span></li>
+          <li><span class="mark">✓</span><span>A small team with no time to run a platform</span></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Look elsewhere</h3>
+        <ul class="gets" style="grid-template-columns:1fr">
+          <li><span class="mark" style="color:var(--ink-4)">·</span><span>The backend <em>is</em> the product — a database, a queue, an engine</span></li>
+          <li><span class="mark" style="color:var(--ink-4)">·</span><span>Mostly domain logic over a schema you do not own</span></li>
+          <li><span class="mark" style="color:var(--ink-4)">·</span><span>A large team that needs enforced module boundaries</span></li>
+          <li><span class="mark" style="color:var(--ink-4)">·</span><span>Postgres-first, with transactions and locking that matter</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="note good" style="margin-top:1.75rem">
+      <span class="note-title">Starting fast is not the same as a low ceiling</span>
+      Parse Server is not a toy you graduate from. It began at Parse, was open-sourced in
+      2016, and has been run in production by companies of every size since. Sharding,
+      read replicas, a separate LiveQuery server and horizontal scaling are all normal
+      operations, not rewrites. Choosing it to move quickly does not mean choosing it
+      temporarily.
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <p class="kicker">The idea</p>
+    <h2>One class is the whole definition</h2>
+    <p>
+      Declare a model once. The database schema, a unique index, a MongoDB validator,
+      the class-level permissions and the OpenAPI schema are all derived from it —
+      there is no migration to write and no DTO to keep in step.
+    </p>
+
+    <div class="split">
+      <div>
+        <p>
+          <code>@ParseField</code> maps each property onto Parse's attribute store, so
+          <code>product.price</code> <em>is</em> the supported API — not
+          <code>product.get('price')</code>.
+        </p>
+        <p>
+          Options are checked when the file is imported, not when a request arrives: a
+          Pointer without a <code>targetClass</code>, <code>min</code> on a String, an
+          invalid regex — all throw at boot.
+        </p>
+      </div>
+<pre class="code-block"><code><span class="t-dec">@ParseClass</span>(<span class="t-str">'Product'</span>, {
+  clp: { find: { requiresAuthentication: <span class="t-key">true</span> } },
+})
+<span class="t-key">export default class</span> Product <span class="t-key">extends</span> BaseModel {
+
+  <span class="t-dec">@ParseField</span>({ type: <span class="t-str">'String'</span>, required: <span class="t-key">true</span> })
+  <span class="t-key">declare</span> name: <span class="t-key">string</span>;
+
+  <span class="t-dec">@ParseField</span>({ type: <span class="t-str">'String'</span>, unique: <span class="t-key">true</span> })
+  <span class="t-key">declare</span> sku: <span class="t-key">string</span>;
+
+  <span class="t-dec">@ParseField</span>({ type: <span class="t-str">'Number'</span>, min: <span class="t-num">0</span> })
+  <span class="t-key">declare</span> price: <span class="t-key">number</span>;
+}</code></pre>
+    </div>
+
+    <ul class="gets">
+      <li><span class="mark">✓</span><span><b>Schema</b> generated from the decorators</span></li>
+      <li><span class="mark">✓</span><span><b>Unique index</b> on <code>sku</code>, created at boot</span></li>
+      <li><span class="mark">✓</span><span><b>MongoDB validator</b> so the database enforces <code>min</code> too</span></li>
+      <li><span class="mark">✓</span><span><b>OpenAPI schema</b>, with no annotations</span></li>
+      <li><span class="mark">✓</span><span><b>Class-level permissions</b> applied</span></li>
+      <li><span class="mark">✓</span><span><b>Typed access</b> — <code>product.price</code>, not <code>.get()</code></span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <p class="kicker">Written with an assistant</p>
+    <h2>There is so little of it to write that an AI can write most of it</h2>
+    <p>
+      Look at what you just read. The schema, the index, the validator, the permissions and
+      the OpenAPI schema are <em>one class</em>. An assistant cannot leave five things out of
+      step when there is only one thing.
+    </p>
+    <p>
+      That is the whole argument, and it is a mechanical one rather than a claim about any
+      particular model. On a typical stack a new entity means keeping a migration, an entity
+      class, a DTO, a validator and a controller consistent by hand — five files that drift
+      from each other, which is exactly the kind of work AI is worst at. Here it is two
+      files, generated with the edit points already marked.
+    </p>
+
+    <div class="split">
+      <div>
+        <p>
+          <b>And the traps are written down.</b> This library has a handful of ways to fail
+          silently — a shadowed field, a reversed decorator pair — and they are the ones a
+          model walks into by default, because the wrong form is correct in every other
+          library.
+        </p>
+        <p>
+          So <code>psk</code> asks which assistant you use and writes the rules into the
+          file it already reads: Claude Code, Cursor, Copilot, Windsurf, Gemini, or
+          <code>AGENTS.md</code> for everything else. Claude Code also gets two skills and a
+          reviewer that hunts exactly those mistakes.
+        </p>
+        <p><a href="guide/ai-assistants.html">How the assistant setup works →</a></p>
+      </div>
+<pre class="code-block"><code>  Which AI coding assistants do you use?
+
+   <span class="t-key">•</span> <span class="t-com">1</span>  Claude Code       CLAUDE.md + skills + agent
+     <span class="t-com">2</span>  Cursor            .cursor/rules/
+     <span class="t-com">3</span>  GitHub Copilot    .github/
+     <span class="t-com">4</span>  Windsurf          .windsurf/rules/
+     <span class="t-com">5</span>  Gemini CLI        GEMINI.md
+     <span class="t-com">6</span>  AGENTS.md         the cross-tool convention
+     <span class="t-com">0</span>  none
+
+  Numbers, comma separated <span class="t-com">(6)</span></code></pre>
+    </div>
+
+    <div class="note" style="margin-top:1.75rem">
+      <span class="note-title">Being honest about what that buys you</span>
+      Instructions raise the floor; they do not remove the need to read the diff. What makes
+      the difference here is that the surface is small enough to hold in one head — yours or
+      a model's — and that every way it fails quietly is written down rather than discovered.
+      Speed is the promise; the <a href="guide/troubleshooting.html">troubleshooting page</a>
+      is the proof it was earned honestly.
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <p class="kicker">Why Parse Server</p>
+    <h2>Authorisation the database enforces, not your endpoints</h2>
+    <p>
+      Two layers. <b>Class-level permissions</b> decide who may touch a class at all.
+      An <b>ACL</b> on every row decides who may touch that particular record — and the
+      database applies it to every query, whether or not the endpoint remembered to.
+    </p>
+
+    <div class="split">
+      <div>
+        <p>
+          Set the ACL when the record is created, and the filtering stops being your
+          problem. <code>listNotes</code> needs no <code>equalTo('owner', user)</code>:
+          pass the session token and only permitted rows come back.
+        </p>
+        <p>
+          There is no <code>if (doc.ownerId !== user.id) throw</code> to forget in the
+          twelfth endpoint, no filter to omit from a new query, and no admin panel quietly
+          reading everything because it was written last.
+        </p>
+        <p><a href="guide/acl.html">The full guide to CLP and ACLs →</a></p>
+      </div>
+<pre class="code-block"><code><span class="t-com">// once, when the record is created</span>
+note.setACL(implementACL({
+  owner: [{ user: user.id, read: <span class="t-key">true</span>, write: <span class="t-key">true</span> }],
+  roleRules: [{ role: <span class="t-str">'Admin'</span>, read: <span class="t-key">true</span>, write: <span class="t-key">true</span> }],
+  publicRead: status === <span class="t-str">'published'</span>,
+}));
+
+<span class="t-com">// every query afterwards is filtered for free</span>
+<span class="t-key">const</span> mine = <span class="t-key">await</span> <span class="t-key">new</span> Parse.Query(Note)
+  .find({ sessionToken });   <span class="t-com">// no where clause needed</span></code></pre>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <p class="kicker">Routing</p>
+    <h2>The method name is the route</h2>
+
+    <div class="split">
+      <div>
+        <p>
+          No route table, no controller decorators to keep in sync. Rename the method and
+          the route follows. Matching is done against the class's real method list, so
+          <code>getProduct</code> and <code>getProductCategory</code> cannot collide.
+        </p>
+        <p>
+          <code>/classes</code>, <code>/schemas</code> and <code>/batch</code> are blocked
+          by middleware, so clients only reach the endpoints you declare.
+        </p>
+      </div>
+<pre class="code-block"><code><span class="t-dec">@Route</span>(Product)
+<span class="t-key">class</span> ProductFunctions {
+
+  <span class="t-dec">@CloudFunction</span>({ methods: [<span class="t-str">'POST'</span>] })
+  <span class="t-key">static async</span> createProduct(req) { … }
+  <span class="t-com">// → POST /api/products/createProduct</span>
+
+  <span class="t-dec">@CloudFunction</span>({ methods: [<span class="t-str">'GET'</span>] })
+  <span class="t-key">static async</span> listProducts(req) { … }
+  <span class="t-com">// → GET  /api/products/listProducts</span>
+}</code></pre>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <p class="kicker">Concurrency</p>
+    <h2>Two guards most Parse projects go without</h2>
+
+    <div class="split">
+      <div>
+        <p>
+          <b>Transactions that follow the call.</b> Parse Server keeps its open session on
+          a shared controller, so one cloud function's transaction swallows every unrelated
+          request running at the same moment. This one lives in
+          <code>AsyncLocalStorage</code>: every save, destroy and query inside the body
+          joins automatically, and two callers never see each other's.
+        </p>
+        <p>
+          <b>Optimistic locking in one line.</b> Every read carries the version it was read
+          at; every save asserts it. The adapter moves the assertion into the write's filter
+          and increments the field, so a stale save is refused rather than silently
+          overwriting.
+        </p>
+      </div>
+<pre class="code-block"><code><span class="t-dec">@CloudFunction</span>({ methods: [<span class="t-str">'POST'</span>] })  <span class="t-com">// above</span>
+<span class="t-dec">@Transactional</span>()                        <span class="t-com">// below</span>
+<span class="t-key">static async</span> placeOrder(req) {
+  <span class="t-key">await</span> order.save(<span class="t-key">null</span>, { useMasterKey: <span class="t-key">true</span> });
+  <span class="t-key">await</span> stock.save(<span class="t-key">null</span>, { useMasterKey: <span class="t-key">true</span> });
+}  <span class="t-com">// both land, or neither</span>
+
+
+<span class="t-key">class</span> Job <span class="t-key">extends</span> BaseModel {
+  <span class="t-dec">@ParseVersionField</span>()
+  <span class="t-key">declare</span> version: <span class="t-key">number</span>;
+}  <span class="t-com">// that is the entire feature</span></code></pre>
+    </div>
+
+    <div class="note good" style="margin-top:2rem">
+      <span class="note-title">Order used to matter here. It no longer does.</span>
+      <code>@CloudFunction</code> captured the method the moment it was applied, so writing
+      <code>@Transactional()</code> above it meant the registry kept the unwrapped method
+      and the transaction silently never opened. The registry now re-reads the method when
+      it registers it, so either order works. That is the pattern throughout: where a trap
+      can be removed rather than documented, it was.
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <p class="kicker">Honestly</p>
+    <h2>Compared with NestJS</h2>
+    <p>
+      These are not really competitors, and it is worth being precise about why. NestJS is
+      an application <em>framework</em>: it hands you structure — modules, DI, guards,
+      pipes — and you build the backend inside it. Parse Server <em>is</em> a backend:
+      users, sessions, permissions, files, and real-time already exist, and you customise
+      what they do. This library is the layer that makes customising it feel like writing
+      TypeScript instead of writing configuration.
+    </p>
+    <p>
+      So the question is not "which framework is better". It is <b>how much of your
+      backend is the part Parse already wrote.</b> For a product with accounts, roles,
+      per-row visibility, uploads, and a mobile client, that share is large and starting
+      from Parse saves months. For a service that is mostly domain logic over an existing
+      database, that share is near zero and NestJS wins outright.
+    </p>
+
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr><th></th><th>NestJS</th><th class="own">parse-server-kit</th></tr>
+        </thead>
+        <tbody>
+          <tr><th colspan="3" class="group">Things you would otherwise build</th></tr>
+          <tr><td>Auth, sessions, password reset</td><td class="no">you build it</td><td class="own yes">built in</td></tr>
+          <tr><td>Users &amp; roles</td><td class="no">you build it</td><td class="own yes">built in</td></tr>
+          <tr><td><b>Row-level permissions</b></td><td class="no">you build it</td><td class="own yes">built in</td></tr>
+          <tr><td>Real-time subscriptions</td><td class="no">wire websockets</td><td class="own yes">LiveQuery</td></tr>
+          <tr><td>File storage &amp; adapters</td><td class="no">you build it</td><td class="own yes">built in</td></tr>
+          <tr><td>Push notifications</td><td class="no">you build it</td><td class="own yes">built in</td></tr>
+          <tr><td>Admin dashboard</td><td class="no">build or buy</td><td class="own yes">Parse Dashboard, one install</td></tr>
+
+          <tr><th colspan="3" class="group">Things both do well</th></tr>
+          <tr><td>Schema &amp; migrations</td><td class="yes">Prisma / TypeORM</td><td class="own yes">from decorators</td></tr>
+          <tr><td>REST routing</td><td class="yes">@Controller</td><td class="own yes">from method names</td></tr>
+          <tr><td>OpenAPI</td><td class="yes">@nestjs/swagger</td><td class="own yes">automatic</td></tr>
+          <tr><td>Transactions</td><td class="yes">QueryRunner</td><td class="own yes">@Transactional</td></tr>
+
+          <tr><th colspan="3" class="group">Things NestJS does and this does not</th></tr>
+          <tr><td>Dependency injection</td><td class="yes">first class</td><td class="own no">none</td></tr>
+          <tr><td>Module boundaries</td><td class="yes">@Module</td><td class="own no">none</td></tr>
+          <tr><td>Guards / interceptors / pipes</td><td class="yes">full lifecycle</td><td class="own no">roles only</td></tr>
+          <tr><td>DTO validation</td><td class="yes">class-validator</td><td class="own no">field-level only</td></tr>
+          <tr><td>Database choice</td><td class="yes">anything</td><td class="own no">Mongo, Postgres with limits</td></tr>
+          <tr><td>Ecosystem &amp; hiring pool</td><td class="yes">enormous</td><td class="own no">small</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="margin-top:2.5rem">The same rule, both ways</h3>
+    <p>
+      "Users may only see their own orders" — the difference that never stops costing you.
+    </p>
+
+    <div class="split even">
+<pre class="code-block"><code><span class="t-com">// NestJS — the filter lives in every query</span>
+findAll(user) {
+  <span class="t-key">return</span> <span class="t-key">this</span>.repo.find({
+    where: { ownerId: user.id },   <span class="t-com">// remember it</span>
+  });
+}
+
+<span class="t-key">async</span> findOne(id, user) {
+  <span class="t-key">const</span> o = <span class="t-key">await</span> <span class="t-key">this</span>.repo.findOneBy({ id });
+  <span class="t-key">if</span> (o.ownerId !== user.id)         <span class="t-com">// and here</span>
+    <span class="t-key">throw new</span> ForbiddenException();
+  <span class="t-key">return</span> o;
+}
+
+<span class="t-com">// …and in the report endpoint, the export</span>
+<span class="t-com">// job, and the admin screen added next</span>
+<span class="t-com">// quarter by someone else</span></code></pre>
+
+<pre class="code-block"><code><span class="t-com">// parse-server-kit — written once,</span>
+<span class="t-com">// when the row is created</span>
+order.setACL(implementACL({
+  owner: [{ user: user.id,
+            read: <span class="t-key">true</span>, write: <span class="t-key">true</span> }],
+}));
+
+
+<span class="t-com">// every query afterwards, everywhere:</span>
+<span class="t-key">await</span> <span class="t-key">new</span> Parse.Query(Order)
+  .find({ sessionToken });
+
+<span class="t-com">// no where clause. The database applies</span>
+<span class="t-com">// the rule whether or not the endpoint</span>
+<span class="t-com">// remembered to.</span></code></pre>
+    </div>
+
+    <div class="note" style="margin-top:1.5rem">
+      <span class="note-title">A fair way to decide</span>
+      Write down what your backend must do, then cross out everything Parse already
+      provides. If what remains is small, this is a shortcut worth taking. If what remains
+      is most of the list — or if it is the architecture itself you need — NestJS is the
+      better tool, and this page is not trying to talk you out of it.
+    </div>
+
+    <p style="margin-top:1.5rem">
+      <a href="guide/vs-nestjs.html">The full comparison, with code for auth and CRUD →</a>
+    </p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <p class="kicker">Where the effort went</p>
+    <h2>Most of the work is in what fails quietly</h2>
+    <p>
+      A decorator that does nothing, a transaction that never opens, a field that reads
+      back correctly but never reaches the database — none of these raise an error. Two
+      have been made impossible, four now report themselves at boot, and the rest are
+      written down.
+    </p>
+
+    <div class="stats">
+      <div><b>206</b><span>tests, unit and integration</span></div>
+      <div><b>0</b><span>runtime dependencies</span></div>
+      <div><b>2–11×</b><span>faster body parsing</span></div>
+      <div><b>21</b><span>Parse trigger types</span></div>
+    </div>
+
+    <p style="margin-top:2rem">
+      The integration suite boots a real Parse Server against MongoDB and exercises
+      versioned saves, stale-save conflicts and transaction rollback end to end — because
+      the transaction layer leans on parse-server internals, and an upstream release can
+      move them.
+    </p>
+    <p>
+      <a href="guide/troubleshooting.html">Read the troubleshooting guide →</a>
+    </p>
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="wrap">
+    <p class="kicker">Documentation</p>
+    <h2>Everything you need, without leaving</h2>
+    <p>
+      Parse concepts link out to the Parse Platform docs where the detail belongs. Everything
+      you reach for while building is here.
+    </p>
+
+    <ul class="gets" style="margin-top:1.5rem">
+      <li><span class="mark">&rsaquo;</span><span><a href="guide/getting-started.html"><b>Getting started</b></a> — three commands to a running API</span></li>
+      <li><span class="mark">&rsaquo;</span><span><a href="guide/ai-assistants.html"><b>AI assistants</b></a> — the rules, in the file your tool already reads</span></li>
+      <li><span class="mark">&rsaquo;</span><span><a href="guide/tutorial.html"><b>Tutorial · a first API</b></a> — models to scheduled jobs, in twenty minutes</span></li>
+      <li><span class="mark">&rsaquo;</span><span><a href="guide/tutorial-orders.html"><b>Tutorial · orders &amp; stock</b></a> — money, races and permissions that follow status</span></li>
+      <li><span class="mark">&rsaquo;</span><span><a href="guide/models.html"><b>Models &amp; fields</b></a> — every field type and option</span></li>
+      <li><span class="mark">&rsaquo;</span><span><a href="guide/from-params.html"><b>fromParams</b></a> — request body to typed object, safely</span></li>
+      <li><span class="mark">&rsaquo;</span><span><a href="guide/acl.html"><b>Permissions &amp; ACL</b></a> — the two layers, and five patterns</span></li>
+      <li><span class="mark">&rsaquo;</span><span><a href="guide/queries.html"><b>Queries</b></a> — filters, pointers, paging, counting</span></li>
+      <li><span class="mark">&rsaquo;</span><span><a href="guide/relations.html"><b>Relationships</b></a> — pointers, arrays and relations</span></li>
+      <li><span class="mark">&rsaquo;</span><span><a href="guide/users.html"><b>Users &amp; auth</b></a> — signup, sessions, roles, reset</span></li>
+      <li><span class="mark">&rsaquo;</span><span><a href="guide/files.html"><b>Files &amp; images</b></a> — uploads and the ACL cascade</span></li>
+      <li><span class="mark">&rsaquo;</span><span><a href="guide/endpoints.html"><b>Endpoints</b></a> — routing, validation, OpenAPI</span></li>
+      <li><span class="mark">&rsaquo;</span><span><a href="guide/triggers.html"><b>Triggers</b></a> — all 21 types, and cron</span></li>
+      <li><span class="mark">&rsaquo;</span><span><a href="guide/live-query.html"><b>Real-time</b></a> — LiveQuery, scoped by the same ACL</span></li>
+      <li><span class="mark">&rsaquo;</span><span><a href="guide/transactions.html"><b>Transactions</b></a> — atomic writes across the call</span></li>
+      <li><span class="mark">&rsaquo;</span><span><a href="guide/optimistic-locking.html"><b>Optimistic locking</b></a> — one line against lost updates</span></li>
+      <li><span class="mark">&rsaquo;</span><span><a href="guide/seeding.html"><b>Seeding data</b></a> — roles and a first admin, re-runnably</span></li>
+      <li><span class="mark">&rsaquo;</span><span><a href="guide/dashboard.html"><b>Parse Dashboard</b></a> — an admin console, one install away</span></li>
+      <li><span class="mark">&rsaquo;</span><span><a href="guide/errors.html"><b>Errors</b></a> — codes, throwing, what clients see</span></li>
+      <li><span class="mark">&rsaquo;</span><span><a href="guide/troubleshooting.html"><b>Troubleshooting</b></a> — symptom to page</span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <p class="kicker">Credit where it is due</p>
+    <h2>Built on Parse Platform</h2>
+    <p>
+      Nearly everything this page calls a feature — users, sessions, roles, class-level
+      permissions, row ACLs, LiveQuery, file adapters, push, the admin dashboard — is
+      <a href="https://parseplatform.org/">Parse Platform</a>'s work, not ours. Parse Server
+      began at Parse, was open-sourced in 2016 when the hosted service closed, and has been
+      maintained by its community ever since. It is a mature, actively released project with
+      SDKs for the web, iOS, Android, Flutter and more.
+    </p>
+    <p>
+      <b>This library is a layer on top of it.</b> It does not fork Parse Server, replace it,
+      or wrap it in an abstraction you then have to learn instead. It adds decorators,
+      routing, schema generation and a CLI, and gets out of the way — a Parse concept behaves
+      here exactly as the Parse documentation says it does, which is why these pages link
+      out to it rather than paraphrasing.
+    </p>
+    <ul class="gets" style="margin-top:1.5rem">
+      <li><span class="mark">&rsaquo;</span><span><a href="https://parseplatform.org/"><b>parseplatform.org</b></a> — the project, its SDKs and its community</span></li>
+      <li><span class="mark">&rsaquo;</span><span><a href="https://docs.parseplatform.org/"><b>Parse docs</b></a> — the reference for every Parse concept</span></li>
+      <li><span class="mark">&rsaquo;</span><span><a href="https://github.com/parse-community/parse-server"><b>parse-community/parse-server</b></a> — the server itself</span></li>
+      <li><span class="mark">&rsaquo;</span><span><a href="https://github.com/parse-community/parse-dashboard"><b>parse-dashboard</b></a> — the admin console, <a href="guide/dashboard.html">one install away</a></span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="closing">
+  <div class="wrap">
+    <h2>Start with a project that already runs</h2>
+    <p>
+      The generator writes the correct boot order, a Docker MongoDB configured as a
+      replica set so transactions work, and a seeded user so your first request succeeds.
+    </p>
+    <div class="cta-row" style="justify-content:center">
+      <a class="btn btn-primary" href="guide/getting-started.html">Get started</a>
+      <a class="btn btn-ghost" href="guide/cli.html">See what the CLI generates</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="inner">
+    <span>MIT licensed</span>
+    <a href="https://www.npmjs.com/package/parse-server-kit">npm</a>
+    <a href="https://github.com/walhalabi-code/parse-server-kit">GitHub</a>
+    <span class="spacer">Built on <a href="https://parseplatform.org/">Parse Server</a> — for Parse concepts, its docs remain the reference.</span>
+  </div>
+</footer>
+
+<script src="assets/docs.js"></script>
+<script src="assets/landing.js"></script>
+</body>
+</html>

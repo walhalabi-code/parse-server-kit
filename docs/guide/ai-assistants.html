@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data:; font-src 'self'; form-action 'none'; base-uri 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI assistants — parse-server-kit</title>
+<meta name="description" content="This library's mistakes are exactly the ones an AI makes: declare vs !:, decorator order, the implementACL signature. psk writes the rules into whatever file your assistant reads — Claude Code, Cursor, Copilot, Windsurf, Gemini or AGENTS.md.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="AI assistants — parse-server-kit">
+<meta property="og:description" content="This library's mistakes are exactly the ones an AI makes. psk writes the rules into whatever file your assistant reads.">
+<meta property="og:url" content="https://walhalabi-code.github.io/parse-server-kit/guide/ai-assistants.html">
+<meta property="og:site_name" content="parse-server-kit">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="../index.html"><svg class="brand-mark" viewBox="12 10 62 72" aria-hidden="true"><g transform="translate(18, 14)" fill="none" stroke-linecap="round" stroke-linejoin="round"><path class="logo-base" pathLength="1" d="M 40 24 C 40 14, 28 12, 20 22 C 12 32, 12 44, 22 52 C 32 60, 46 52, 46 36 C 46 20, 34 10, 20 10 C 7 10, 2 22, 2 38 C 2 54, 12 64, 28 64 C 38 64, 48 57, 52 48" stroke="var(--logo-base)" stroke-width="3" opacity="0.6"/><g class="logo-layer" transform="translate(-3, -4)"><path class="logo-kit-path" pathLength="1" d="M 40 20 C 40 10, 28 8, 20 18 C 12 28, 12 40, 22 48 C 32 56, 46 48, 46 32 C 46 16, 34 6, 20 6 C 7 6, 2 18, 2 34 C 2 50, 12 60, 28 60 C 38 60, 48 53, 52 44" stroke="var(--logo-kit)" stroke-width="3.5"/><circle class="logo-dot" cx="25" cy="28" r="3.5" fill="var(--logo-kit)" stroke="none"/></g></g></svg>parse-server-kit <span class="v">3.0</span></a>
+    <nav class="nav">
+      <button class="icon-btn menu-btn" data-menu-toggle aria-expanded="false" aria-label="Toggle navigation">≡</button>
+      <button class="icon-btn" data-search-open aria-label="Search">⌕</button>
+      <a class="nav-ai" href="../guide/ai-assistants.html"><svg class="ai-spark" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 2.4 6.9 5l2.6.9-2.6.9L6 9.4 5.1 6.8 2.5 5.9l2.6-.9Z"/><path d="m11.6 8.4.6 1.7 1.7.6-1.7.6-.6 1.7-.6-1.7-1.7-.6 1.7-.6Z"/></svg>AI</a>
+      <a class="hide-sm" href="../index.html">Home</a>
+      <a class="hide-sm" href="https://github.com/walhalabi-code/parse-server-kit">GitHub</a>
+      <button class="icon-btn" data-theme-toggle aria-label="Switch theme">◐</button>
+    </nav>
+  </div>
+</header>
+
+<div class="layout">
+
+<aside class="sidebar">
+  <svg class="icon-sprite" aria-hidden="true"><symbol id="i-rocket" viewBox="0 0 16 16"><path d="M6.5 9.5 3 8.8l2.2-2.6 2.6-.3M6.5 9.5 7.2 13l2.6-2.2.3-2.6M6.5 9.5 9.5 6.5m0 0a12 12 0 0 1 3.8-3.8 5 5 0 0 1-3.8 3.8ZM4.5 11.5 3 14l2.5-1.5"/></symbol><symbol id="i-book" viewBox="0 0 16 16"><path d="M2.5 3.5h4a2 2 0 0 1 2 2v7a1.5 1.5 0 0 0-1.5-1.5h-4.5Zm11 0h-4a2 2 0 0 0-2 2v7A1.5 1.5 0 0 1 9 11h4.5Z"/></symbol><symbol id="i-play" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><path d="m6.8 5.8 3.2 2.2-3.2 2.2Z"/></symbol><symbol id="i-cart" viewBox="0 0 16 16"><path d="M2 2.5h1.6l1.6 7.4h6.6l1.3-5.2H4.2"/><circle cx="6.3" cy="12.6" r="1"/><circle cx="11.4" cy="12.6" r="1"/></symbol><symbol id="i-scales" viewBox="0 0 16 16"><path d="M8 2.5v11M4.5 4.2h7M2 10a2.5 2.5 0 0 0 5 0L4.5 4.5Zm7 0a2.5 2.5 0 0 0 5 0L11.5 4.5ZM5.5 13.5h5"/></symbol><symbol id="i-box" viewBox="0 0 16 16"><path d="M8 2 2.5 4.8v6.4L8 14l5.5-2.8V4.8Z"/><path d="M2.5 4.8 8 7.6l5.5-2.8M8 7.6V14"/></symbol><symbol id="i-transform" viewBox="0 0 16 16"><path d="M2 5.5h7m-2.2-2.2L9 5.5 6.8 7.7M14 10.5H7m2.2-2.2L7 10.5l2.2 2.2"/></symbol><symbol id="i-shield" viewBox="0 0 16 16"><path d="M8 2 3.5 3.8v3.7c0 2.6 1.9 5 4.5 5.9 2.6-.9 4.5-3.3 4.5-5.9V3.8Z"/><path d="m6.2 7.9 1.4 1.4 2.4-2.6"/></symbol><symbol id="i-search" viewBox="0 0 16 16"><circle cx="7.2" cy="7.2" r="4"/><path d="m10.2 10.2 3 3"/></symbol><symbol id="i-link" viewBox="0 0 16 16"><path d="M6.6 9.4a2.6 2.6 0 0 0 3.7 0l2-2a2.6 2.6 0 0 0-3.7-3.7l-.9.9"/><path d="M9.4 6.6a2.6 2.6 0 0 0-3.7 0l-2 2a2.6 2.6 0 0 0 3.7 3.7l.9-.9"/></symbol><symbol id="i-user" viewBox="0 0 16 16"><circle cx="8" cy="6" r="2.6"/><path d="M3.4 13.2a4.8 4.8 0 0 1 9.2 0"/></symbol><symbol id="i-image" viewBox="0 0 16 16"><rect x="2.5" y="3.5" width="11" height="9" rx="1.5"/><circle cx="6" cy="6.7" r="1"/><path d="m3.2 11.4 3-2.6 2.4 2 2-1.6 2.2 1.9"/></symbol><symbol id="i-signpost" viewBox="0 0 16 16"><path d="M8 2v12M8 4h4.2l1.3 1.6L12.2 7.2H8Zm0 4.2H3.8L2.5 9.8l1.3 1.6H8Z"/></symbol><symbol id="i-bolt" viewBox="0 0 16 16"><path d="M9 2 4 9h3.4l-.4 5 5-7H8.6Z"/></symbol><symbol id="i-broadcast" viewBox="0 0 16 16"><circle cx="8" cy="8" r="1.6"/><path d="M5.2 10.8a4 4 0 0 1 0-5.6m5.6 0a4 4 0 0 1 0 5.6M3.2 12.8a6.8 6.8 0 0 1 0-9.6m9.6 0a6.8 6.8 0 0 1 0 9.6"/></symbol><symbol id="i-exchange" viewBox="0 0 16 16"><path d="M2.8 5.5h9.1l-2-2M13.2 10.5H4.1l2 2"/></symbol><symbol id="i-lock" viewBox="0 0 16 16"><rect x="3.2" y="7" width="9.6" height="6.3" rx="1.5"/><path d="M5.5 7V5.3a2.5 2.5 0 0 1 5 0V7"/><path d="M8 9.6v1.4"/></symbol><symbol id="i-sprout" viewBox="0 0 16 16"><path d="M8 13.5V7.8m0 0C8 6 6.6 4.6 4.8 4.6H3.3c0 1.8 1.4 3.2 3.2 3.2Zm0 0c0-1.8 1.4-3.2 3.2-3.2h1.5c0 1.8-1.4 3.2-3.2 3.2Z"/></symbol><symbol id="i-gauge" viewBox="0 0 16 16"><path d="M2.8 11.6a5.9 5.9 0 1 1 10.4 0"/><path d="M8 8.8 10.6 6"/><circle cx="8" cy="9.4" r="1"/></symbol><symbol id="i-spark" viewBox="0 0 16 16"><path d="M6 2.4 6.9 5l2.6.9-2.6.9L6 9.4 5.1 6.8 2.5 5.9l2.6-.9Z"/><path d="m11.6 8.4.6 1.7 1.7.6-1.7.6-.6 1.7-.6-1.7-1.7-.6 1.7-.6Z"/></symbol><symbol id="i-alert" viewBox="0 0 16 16"><path d="M8 2.8 2.6 12.4h10.8Z"/><path d="M8 6.4v2.8M8 10.8v.1"/></symbol><symbol id="i-terminal" viewBox="0 0 16 16"><rect x="2.2" y="3" width="11.6" height="10" rx="1.5"/><path d="m5 6.4 2 1.8-2 1.8M8.6 10.4h2.6"/></symbol><symbol id="i-lifebuoy" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><circle cx="8" cy="8" r="2.2"/><path d="m4.1 4.1 2.3 2.3m3.2 3.2 2.3 2.3m0-7.8-2.3 2.3M6.4 9.6l-2.3 2.3"/></symbol><symbol id="i-at" viewBox="0 0 16 16"><circle cx="8" cy="8" r="2.3"/><path d="M10.3 5.7v3a1.8 1.8 0 0 0 3.2 1.1A5.8 5.8 0 1 0 11 13"/></symbol><symbol id="i-sliders" viewBox="0 0 16 16"><path d="M2.5 5h7m3 0h1m-11 6h1m3 0h7"/><circle cx="11" cy="5" r="1.5"/><circle cx="5" cy="11" r="1.5"/></symbol><symbol id="i-layers" viewBox="0 0 16 16"><path d="M8 2.2 2.4 5 8 7.8 13.6 5Z"/><path d="m2.4 8 5.6 2.8L13.6 8m-11.2 3 5.6 2.8L13.6 11"/></symbol><symbol id="i-wrench" viewBox="0 0 16 16"><path d="M10.4 2.6a3.4 3.4 0 0 0-3.9 4.6l-4 4a1.3 1.3 0 0 0 1.9 1.9l4-4a3.4 3.4 0 0 0 4.6-3.9l-1.9 1.9-1.9-.5-.5-1.9Z"/></symbol></svg>
+  <h5>Start here</h5>
+  <ul>
+    <li><a href="../guide/getting-started.html"><svg class="ic" aria-hidden="true"><use href="#i-rocket"/></svg><span>Getting started</span></a></li>
+    <li><a href="../guide/ai-assistants.html"><svg class="ic" aria-hidden="true"><use href="#i-spark"/></svg><span>AI assistants</span></a></li>
+    <li class="has-sub">
+      <details>
+        <summary><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg><span>Tutorials</span></summary>
+        <ul>
+        <li><a href="../guide/tutorial.html"><svg class="ic" aria-hidden="true"><use href="#i-play"/></svg><span>A first API</span></a></li>
+        <li><a href="../guide/tutorial-orders.html"><svg class="ic" aria-hidden="true"><use href="#i-cart"/></svg><span>Orders &amp; stock</span></a></li>
+        </ul>
+      </details>
+    </li>
+    <li><a href="../guide/vs-nestjs.html"><svg class="ic" aria-hidden="true"><use href="#i-scales"/></svg><span>Compared with NestJS</span></a></li>
+  </ul>
+  <h5>Guide</h5>
+  <ul>
+    <li><a href="../guide/models.html"><svg class="ic" aria-hidden="true"><use href="#i-box"/></svg><span>Models &amp; fields</span></a></li>
+    <li><a href="../guide/from-params.html"><svg class="ic" aria-hidden="true"><use href="#i-transform"/></svg><span>fromParams</span></a></li>
+    <li><a href="../guide/acl.html"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg><span>Permissions &amp; ACL</span></a></li>
+    <li><a href="../guide/queries.html"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg><span>Queries</span></a></li>
+    <li><a href="../guide/relations.html"><svg class="ic" aria-hidden="true"><use href="#i-link"/></svg><span>Relationships</span></a></li>
+    <li><a href="../guide/users.html"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg><span>Users &amp; auth</span></a></li>
+    <li><a href="../guide/files.html"><svg class="ic" aria-hidden="true"><use href="#i-image"/></svg><span>Files &amp; images</span></a></li>
+    <li><a href="../guide/endpoints.html"><svg class="ic" aria-hidden="true"><use href="#i-signpost"/></svg><span>Endpoints &amp; routing</span></a></li>
+    <li><a href="../guide/triggers.html"><svg class="ic" aria-hidden="true"><use href="#i-bolt"/></svg><span>Triggers</span></a></li>
+    <li><a href="../guide/live-query.html"><svg class="ic" aria-hidden="true"><use href="#i-broadcast"/></svg><span>Real-time</span></a></li>
+    <li><a href="../guide/transactions.html"><svg class="ic" aria-hidden="true"><use href="#i-exchange"/></svg><span>Transactions</span></a></li>
+    <li><a href="../guide/optimistic-locking.html"><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg><span>Optimistic locking</span></a></li>
+    <li><a href="../guide/seeding.html"><svg class="ic" aria-hidden="true"><use href="#i-sprout"/></svg><span>Seeding data</span></a></li>
+    <li><a href="../guide/dashboard.html"><svg class="ic" aria-hidden="true"><use href="#i-gauge"/></svg><span>Parse Dashboard</span></a></li>
+    <li><a href="../guide/errors.html"><svg class="ic" aria-hidden="true"><use href="#i-alert"/></svg><span>Errors</span></a></li>
+    <li><a href="../guide/cli.html"><svg class="ic" aria-hidden="true"><use href="#i-terminal"/></svg><span>The psk CLI</span></a></li>
+    <li><a href="../guide/troubleshooting.html"><svg class="ic" aria-hidden="true"><use href="#i-lifebuoy"/></svg><span>Troubleshooting</span></a></li>
+  </ul>
+  <h5>Reference</h5>
+  <ul>
+    <li><a href="../reference/decorators.html"><svg class="ic" aria-hidden="true"><use href="#i-at"/></svg><span>Decorators</span></a></li>
+    <li><a href="../reference/configuration.html"><svg class="ic" aria-hidden="true"><use href="#i-sliders"/></svg><span>Configuration</span></a></li>
+    <li><a href="../reference/middleware.html"><svg class="ic" aria-hidden="true"><use href="#i-layers"/></svg><span>Middleware</span></a></li>
+    <li><a href="../reference/utilities.html"><svg class="ic" aria-hidden="true"><use href="#i-wrench"/></svg><span>Utilities</span></a></li>
+  </ul>
+</aside>
+
+<main class="content">
+  <p class="eyebrow">Start here</p>
+  <h1>AI assistants</h1>
+  <p class="lede">This library's failure modes are, almost exactly, the mistakes a language model makes by default. That is not a coincidence — and it is fixable by handing your assistant the rules up front, in the file it already reads.</p>
+
+  <h2 id="why">Why this library specifically</h2>
+  <p>
+    A model writing TypeScript reaches for the form that is correct nearly everywhere:
+  </p>
+<pre class="code-block"><code><span class="t-dec">@ParseField</span>({ type: <span class="t-str">'String'</span>, required: <span class="t-key">true</span> })
+title!: string;                    <span class="t-com">// correct in every other library</span></code></pre>
+  <p>
+    Here it is wrong, and wrong in the worst way. <code>@ParseField</code> installs an
+    accessor on the prototype; <code>title!: string</code> emits a real class field that
+    shadows it. Reads return <code>undefined</code>, writes never reach Parse's attribute
+    store, and <code>save()</code> sends nothing. The build passes. The request returns
+    200. The row is empty.
+  </p>
+  <p>
+    The same shape recurs across the library — a reversed decorator pair that silently
+    disables a transaction, an <code>implementACL</code> call with the arguments a
+    reasonable person would guess, an Array field missing its <code>targetClass</code>.
+    An assistant cannot infer any of it, because in each case the wrong answer is the one
+    the rest of the ecosystem taught it.
+  </p>
+  <div class="note">
+    <span class="note-title">Which is why the instructions are worth shipping</span>
+    These are not style preferences that a linter would catch anyway. They are the handful
+    of rules where being wrong produces no error at all — so a written rule is the only
+    thing standing between the model and a silent bug.
+  </div>
+
+  <h2 id="generate">Getting them</h2>
+  <p><code>psk new</code> asks, before it writes anything:</p>
+<pre class="code-block"><code>  Which AI coding assistants do you use?
+
+   • <span class="t-com">1</span>  Claude Code       CLAUDE.md, plus two skills and a review agent
+     <span class="t-com">2</span>  Cursor            .cursor/rules/parse-server-kit.mdc
+     <span class="t-com">3</span>  GitHub Copilot    .github/copilot-instructions.md
+     <span class="t-com">4</span>  Windsurf          .windsurf/rules/parse-server-kit.md
+     <span class="t-com">5</span>  Gemini CLI        GEMINI.md
+     <span class="t-com">6</span>  AGENTS.md         the cross-tool convention
+     <span class="t-com">0</span>  none
+
+  Numbers, comma separated <span class="t-com">(6)</span></code></pre>
+  <p>
+    Pick several — most people use two. The default is <code>AGENTS.md</code> alone,
+    because it is the convention several tools already read and it costs one file. Anything
+    tool-specific should be a directory you asked for, not one that appeared in your
+    repository unannounced.
+  </p>
+
+  <h3 id="existing">A project that already exists</h3>
+  <p>
+    Skipped the question, or changed tools since? <code>psk ai</code> writes into the
+    project you are standing in, taking its name from <code>package.json</code>:
+  </p>
+<pre class="code-block"><code>psk ai                      <span class="t-com"># asks, same list</span>
+psk ai claude cursor        <span class="t-com"># or name them</span>
+psk ai claude --force       <span class="t-com"># replace what is there</span></code></pre>
+  <p>
+    Existing files are never replaced without <code>--force</code>. A project's
+    <code>CLAUDE.md</code> is usually hand-edited by the time you run this, and quietly
+    overwriting it would be the rudest thing a generator could do.
+  </p>
+
+  <h3 id="unattended">Unattended</h3>
+<pre class="code-block"><code>psk new my-api --ai=claude,agents -y
+psk new my-api --ai=none -y            <span class="t-com"># nothing written</span></code></pre>
+  <p>
+    <code>--ai=</code> wins over the prompt, and a non-interactive shell takes the default
+    rather than hanging — so this works in CI without threading <code>--yes</code> through
+    everything.
+  </p>
+
+  <h2 id="targets">What each tool gets</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Assistant</th><th><code>--ai</code></th><th>Files</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Claude Code</td><td><code>claude</code></td>
+          <td><code>CLAUDE.md</code><br><code>.claude/skills/parse-model/SKILL.md</code><br><code>.claude/skills/parse-endpoint/SKILL.md</code><br><code>.claude/agents/parse-reviewer.md</code></td>
+        </tr>
+        <tr><td>Cursor</td><td><code>cursor</code></td><td><code>.cursor/rules/parse-server-kit.mdc</code></td></tr>
+        <tr><td>GitHub Copilot</td><td><code>copilot</code></td><td><code>.github/copilot-instructions.md</code></td></tr>
+        <tr><td>Windsurf</td><td><code>windsurf</code></td><td><code>.windsurf/rules/parse-server-kit.md</code></td></tr>
+        <tr><td>Gemini CLI</td><td><code>gemini</code></td><td><code>GEMINI.md</code></td></tr>
+        <tr><td>Anything else</td><td><code>agents</code></td><td><code>AGENTS.md</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    One body of rules, written once, placed wherever your tool looks. The tools disagree
+    about the filename and almost nothing else — Cursor wants frontmatter deciding when the
+    rule attaches (set to always, since these are not situational), and Claude Code takes
+    skills and agents as well as project instructions.
+  </p>
+
+  <h2 id="contents">What is in them</h2>
+  <p>
+    Ten rules, each one a silent failure, each shown with the wrong form next to the right
+    one — a rule stated in the abstract is easy to misapply:
+  </p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Rule</th><th>What happens when it is broken</th></tr></thead>
+      <tbody>
+        <tr><td><code>declare</code>, never <code>!:</code></td><td>Field reads as <code>undefined</code>, writes are discarded</td></tr>
+        <tr><td><code>@CloudFunction</code> above <code>@Transactional()</code></td><td>The transaction never opens</td></tr>
+        <tr><td><code>implementACL</code> returns an ACL</td><td>Will not compile — the one loud failure in the list</td></tr>
+        <tr><td>Triggers need <code>@ParseClass</code></td><td>The trigger never registers</td></tr>
+        <tr><td>Build requests with <code>fromParams</code></td><td>Manual <code>set()</code> calls drift from the model</td></tr>
+        <tr><td>Never trust the body for identity or money</td><td>The client picks its own price, or its own owner</td></tr>
+        <tr><td>GET parameters are strings</td><td><code>limit</code> of <code>"20"</code> compares wrong</td></tr>
+        <tr><td>Cast query results</td><td>Typed properties unavailable</td></tr>
+        <tr><td><code>targetClass</code> on Pointer, Relation <em>and</em> Array</td><td>An array of ids stays an array of strings</td></tr>
+        <tr><td><code>@ParseVersionField</code> declares its own field</td><td>Duplicate declaration</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    Plus this project's conventions — <code>catchError</code> over <code>try/catch</code>,
+    <code>roleKey()</code> over literal <code>'role:Admin'</code>, the method name being
+    the route, and the fact that nothing needs registering.
+  </p>
+
+  <h3 id="index">Knowing what exists</h3>
+  <p>
+    The rules file also carries a one-line index of <b>every export</b> — models, endpoints,
+    all 21 trigger types, cron, permissions, validation, transactions, locking, indexes,
+    schema, middleware, config, the role cache, Swagger and the utilities. Not the
+    signatures; just the names, so an assistant reaches for the built-in instead of
+    reinventing it. It cannot use <code>syncImageAcl</code> if it does not know the function
+    is there.
+  </p>
+  <p>
+    A test in this repository fails if an export is added without appearing in that index,
+    so it cannot quietly fall behind.
+  </p>
+
+  <h3 id="skills">Skills and the review agent</h3>
+  <p>
+    Claude Code gets eight more files, because it can load instructions on demand rather
+    than carrying everything in context. That split is deliberate: the rules file is read on
+    <em>every</em> request, so breadth lives in the skills — otherwise the ten rules that
+    always matter get buried under material that applies once a month.
+  </p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>File</th><th>Loads when</th><th>The trap it covers</th></tr></thead>
+      <tbody>
+        <tr><td><code>parse-model</code></td><td>Adding or changing a model</td><td>Field shadowing; <code>targetClass</code> on arrays</td></tr>
+        <tr><td><code>parse-endpoint</code></td><td>Adding an endpoint</td><td>GET params as strings; client-supplied identity</td></tr>
+        <tr><td><code>parse-permissions</code></td><td>Deciding who may read or write</td><td>The three <code>implementACL</code> reversals</td></tr>
+        <tr><td><code>parse-triggers</code></td><td>Any of the 21 trigger types</td><td>A trigger without <code>@ParseClass</code> never registers</td></tr>
+        <tr><td><code>parse-transactions</code></td><td>Atomic writes or lost updates</td><td>Decorator order; <code>directAccess</code>; unread objects are unprotected</td></tr>
+        <tr><td><code>parse-jobs</code></td><td>Scheduled work</td><td>No <code>node-cron</code> means no job ever runs</td></tr>
+        <tr><td><code>parse-boot</code></td><td>Touching <code>app.ts</code></td><td>Boot order; <code>importFiles</code> extensions; blocked auth routes</td></tr>
+        <tr><td><code>parse-reviewer</code> <small>(agent)</small></td><td>You ask for a review</td><td>All of the above, after the fact</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    The reviewer is deliberately narrow. It looks for the mistakes that produce no error
+    and nothing else, ranked by consequence — silent data loss first, silent permission
+    holes next:
+  </p>
+<pre class="code-block"><code><span class="t-com"># 1. Field shadowing - silent, total data loss</span>
+grep -n <span class="t-str">"@ParseField"</span> -A2 src/models/*.ts
+
+<span class="t-com"># 2. Decorator order on transactions - silently no transaction</span>
+grep -n -B3 <span class="t-str">"@Transactional"</span> src/functions/*.ts
+
+<span class="t-com"># 4. Client-supplied identity and money</span>
+grep -n -A6 <span class="t-str">"fromParams"</span> src/functions/*.ts</code></pre>
+  <p>
+    A reviewer that reports style opinions is noise. One that catches a shadowed field has
+    earned its run.
+  </p>
+
+  <h2 id="reference">Pointing an assistant at the full API</h2>
+  <p>
+    The generated files are the rules, not the reference. The complete API — every
+    signature, taken from the source rather than paraphrased — ships inside the package:
+  </p>
+<pre class="code-block"><code>node_modules/parse-server-kit/CLAUDE.md</code></pre>
+  <p>
+    It is there deliberately, so an assistant working in your project can read the contract
+    without a network request and without you pasting anything. Tell it where to look:
+  </p>
+  <div class="note good">
+    <span class="note-title">A prompt that works</span>
+    "Read <code>node_modules/parse-server-kit/CLAUDE.md</code> before writing against this
+    library, and follow <code>AGENTS.md</code> in the repository root."
+  </div>
+
+  <h2 id="honest">What this does not do</h2>
+  <p>
+    Instructions raise the floor; they do not remove the need to read the diff. Two habits
+    catch nearly everything that gets through:
+  </p>
+  <ul>
+    <li>
+      <b>Run the build.</b> The decorators are compile-time. A type error is a real error,
+      and it is free.
+    </li>
+    <li>
+      <b>Read the boot log.</b> <code>Registered Parse class: X</code> and
+      <code>Route: /x/y</code> confirm a model and an endpoint actually registered — which
+      is the one thing a passing build cannot tell you.
+    </li>
+  </ul>
+  <p>
+    And when something behaves oddly with nothing logged, that is the signature of this
+    library's whole class of bug: start at <a href="troubleshooting.html">Troubleshooting</a>,
+    which is organised symptom-first for exactly that reason.
+  </p>
+
+  <p>
+    Next: <a href="tutorial.html">the first tutorial</a>, which is the fastest way to see the
+    whole shape — then <a href="troubleshooting.html">Troubleshooting</a> for this same list
+    read from the symptom end, and <a href="cli.html">The psk CLI</a> for everything else the
+    generator does.
+  </p>
+
+  <div class="pager">
+    <a href="getting-started.html"><span>Back</span>Getting started</a>
+    <a class="next" href="tutorial.html"><span>Next</span>Tutorial: build a first API</a>
+  </div>
+</main>
+
+</div>
+
+<footer class="site-footer">
+  <div class="inner">
+    <span>MIT licensed</span>
+    <a href="https://www.npmjs.com/package/parse-server-kit">npm</a>
+    <a href="https://github.com/walhalabi-code/parse-server-kit">GitHub</a>
+    <span class="spacer">For Parse concepts, <a href="https://docs.parseplatform.org/">its docs</a> remain the reference.</span>
+  </div>
+</footer>
+
+<script src="../assets/docs.js"></script>
+</body>
+</html>

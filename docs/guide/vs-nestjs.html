@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data:; font-src 'self'; form-action 'none'; base-uri 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Compared with NestJS — parse-server-kit</title>
+<meta name="description" content="They are not really competitors. One gives you structure and you build the backend; the other is a backend you customise. Here is the honest side-by-side.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Compared with NestJS — parse-server-kit">
+<meta property="og:description" content="They are not really competitors. One gives you structure and you build the backend; the other is a backend you customise. Here is the honest side-by-side.">
+<meta property="og:url" content="https://walhalabi-code.github.io/parse-server-kit/guide/vs-nestjs.html">
+<meta property="og:site_name" content="parse-server-kit">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="../index.html"><svg class="brand-mark" viewBox="12 10 62 72" aria-hidden="true"><g transform="translate(18, 14)" fill="none" stroke-linecap="round" stroke-linejoin="round"><path class="logo-base" pathLength="1" d="M 40 24 C 40 14, 28 12, 20 22 C 12 32, 12 44, 22 52 C 32 60, 46 52, 46 36 C 46 20, 34 10, 20 10 C 7 10, 2 22, 2 38 C 2 54, 12 64, 28 64 C 38 64, 48 57, 52 48" stroke="var(--logo-base)" stroke-width="3" opacity="0.6"/><g class="logo-layer" transform="translate(-3, -4)"><path class="logo-kit-path" pathLength="1" d="M 40 20 C 40 10, 28 8, 20 18 C 12 28, 12 40, 22 48 C 32 56, 46 48, 46 32 C 46 16, 34 6, 20 6 C 7 6, 2 18, 2 34 C 2 50, 12 60, 28 60 C 38 60, 48 53, 52 44" stroke="var(--logo-kit)" stroke-width="3.5"/><circle class="logo-dot" cx="25" cy="28" r="3.5" fill="var(--logo-kit)" stroke="none"/></g></g></svg>parse-server-kit <span class="v">3.0</span></a>
+    <nav class="nav">
+      <button class="icon-btn menu-btn" data-menu-toggle aria-expanded="false" aria-label="Toggle navigation">≡</button>
+      <button class="icon-btn" data-search-open aria-label="Search">⌕</button>
+      <a class="nav-ai" href="../guide/ai-assistants.html"><svg class="ai-spark" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 2.4 6.9 5l2.6.9-2.6.9L6 9.4 5.1 6.8 2.5 5.9l2.6-.9Z"/><path d="m11.6 8.4.6 1.7 1.7.6-1.7.6-.6 1.7-.6-1.7-1.7-.6 1.7-.6Z"/></svg>AI</a>
+      <a class="hide-sm" href="../index.html">Home</a>
+      <a class="hide-sm" href="https://github.com/walhalabi-code/parse-server-kit">GitHub</a>
+      <button class="icon-btn" data-theme-toggle aria-label="Switch theme">◐</button>
+    </nav>
+  </div>
+</header>
+
+<div class="layout">
+
+<aside class="sidebar">
+  <svg class="icon-sprite" aria-hidden="true"><symbol id="i-rocket" viewBox="0 0 16 16"><path d="M6.5 9.5 3 8.8l2.2-2.6 2.6-.3M6.5 9.5 7.2 13l2.6-2.2.3-2.6M6.5 9.5 9.5 6.5m0 0a12 12 0 0 1 3.8-3.8 5 5 0 0 1-3.8 3.8ZM4.5 11.5 3 14l2.5-1.5"/></symbol><symbol id="i-book" viewBox="0 0 16 16"><path d="M2.5 3.5h4a2 2 0 0 1 2 2v7a1.5 1.5 0 0 0-1.5-1.5h-4.5Zm11 0h-4a2 2 0 0 0-2 2v7A1.5 1.5 0 0 1 9 11h4.5Z"/></symbol><symbol id="i-play" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><path d="m6.8 5.8 3.2 2.2-3.2 2.2Z"/></symbol><symbol id="i-cart" viewBox="0 0 16 16"><path d="M2 2.5h1.6l1.6 7.4h6.6l1.3-5.2H4.2"/><circle cx="6.3" cy="12.6" r="1"/><circle cx="11.4" cy="12.6" r="1"/></symbol><symbol id="i-scales" viewBox="0 0 16 16"><path d="M8 2.5v11M4.5 4.2h7M2 10a2.5 2.5 0 0 0 5 0L4.5 4.5Zm7 0a2.5 2.5 0 0 0 5 0L11.5 4.5ZM5.5 13.5h5"/></symbol><symbol id="i-box" viewBox="0 0 16 16"><path d="M8 2 2.5 4.8v6.4L8 14l5.5-2.8V4.8Z"/><path d="M2.5 4.8 8 7.6l5.5-2.8M8 7.6V14"/></symbol><symbol id="i-transform" viewBox="0 0 16 16"><path d="M2 5.5h7m-2.2-2.2L9 5.5 6.8 7.7M14 10.5H7m2.2-2.2L7 10.5l2.2 2.2"/></symbol><symbol id="i-shield" viewBox="0 0 16 16"><path d="M8 2 3.5 3.8v3.7c0 2.6 1.9 5 4.5 5.9 2.6-.9 4.5-3.3 4.5-5.9V3.8Z"/><path d="m6.2 7.9 1.4 1.4 2.4-2.6"/></symbol><symbol id="i-search" viewBox="0 0 16 16"><circle cx="7.2" cy="7.2" r="4"/><path d="m10.2 10.2 3 3"/></symbol><symbol id="i-link" viewBox="0 0 16 16"><path d="M6.6 9.4a2.6 2.6 0 0 0 3.7 0l2-2a2.6 2.6 0 0 0-3.7-3.7l-.9.9"/><path d="M9.4 6.6a2.6 2.6 0 0 0-3.7 0l-2 2a2.6 2.6 0 0 0 3.7 3.7l.9-.9"/></symbol><symbol id="i-user" viewBox="0 0 16 16"><circle cx="8" cy="6" r="2.6"/><path d="M3.4 13.2a4.8 4.8 0 0 1 9.2 0"/></symbol><symbol id="i-image" viewBox="0 0 16 16"><rect x="2.5" y="3.5" width="11" height="9" rx="1.5"/><circle cx="6" cy="6.7" r="1"/><path d="m3.2 11.4 3-2.6 2.4 2 2-1.6 2.2 1.9"/></symbol><symbol id="i-signpost" viewBox="0 0 16 16"><path d="M8 2v12M8 4h4.2l1.3 1.6L12.2 7.2H8Zm0 4.2H3.8L2.5 9.8l1.3 1.6H8Z"/></symbol><symbol id="i-bolt" viewBox="0 0 16 16"><path d="M9 2 4 9h3.4l-.4 5 5-7H8.6Z"/></symbol><symbol id="i-broadcast" viewBox="0 0 16 16"><circle cx="8" cy="8" r="1.6"/><path d="M5.2 10.8a4 4 0 0 1 0-5.6m5.6 0a4 4 0 0 1 0 5.6M3.2 12.8a6.8 6.8 0 0 1 0-9.6m9.6 0a6.8 6.8 0 0 1 0 9.6"/></symbol><symbol id="i-exchange" viewBox="0 0 16 16"><path d="M2.8 5.5h9.1l-2-2M13.2 10.5H4.1l2 2"/></symbol><symbol id="i-lock" viewBox="0 0 16 16"><rect x="3.2" y="7" width="9.6" height="6.3" rx="1.5"/><path d="M5.5 7V5.3a2.5 2.5 0 0 1 5 0V7"/><path d="M8 9.6v1.4"/></symbol><symbol id="i-sprout" viewBox="0 0 16 16"><path d="M8 13.5V7.8m0 0C8 6 6.6 4.6 4.8 4.6H3.3c0 1.8 1.4 3.2 3.2 3.2Zm0 0c0-1.8 1.4-3.2 3.2-3.2h1.5c0 1.8-1.4 3.2-3.2 3.2Z"/></symbol><symbol id="i-gauge" viewBox="0 0 16 16"><path d="M2.8 11.6a5.9 5.9 0 1 1 10.4 0"/><path d="M8 8.8 10.6 6"/><circle cx="8" cy="9.4" r="1"/></symbol><symbol id="i-spark" viewBox="0 0 16 16"><path d="M6 2.4 6.9 5l2.6.9-2.6.9L6 9.4 5.1 6.8 2.5 5.9l2.6-.9Z"/><path d="m11.6 8.4.6 1.7 1.7.6-1.7.6-.6 1.7-.6-1.7-1.7-.6 1.7-.6Z"/></symbol><symbol id="i-alert" viewBox="0 0 16 16"><path d="M8 2.8 2.6 12.4h10.8Z"/><path d="M8 6.4v2.8M8 10.8v.1"/></symbol><symbol id="i-terminal" viewBox="0 0 16 16"><rect x="2.2" y="3" width="11.6" height="10" rx="1.5"/><path d="m5 6.4 2 1.8-2 1.8M8.6 10.4h2.6"/></symbol><symbol id="i-lifebuoy" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><circle cx="8" cy="8" r="2.2"/><path d="m4.1 4.1 2.3 2.3m3.2 3.2 2.3 2.3m0-7.8-2.3 2.3M6.4 9.6l-2.3 2.3"/></symbol><symbol id="i-at" viewBox="0 0 16 16"><circle cx="8" cy="8" r="2.3"/><path d="M10.3 5.7v3a1.8 1.8 0 0 0 3.2 1.1A5.8 5.8 0 1 0 11 13"/></symbol><symbol id="i-sliders" viewBox="0 0 16 16"><path d="M2.5 5h7m3 0h1m-11 6h1m3 0h7"/><circle cx="11" cy="5" r="1.5"/><circle cx="5" cy="11" r="1.5"/></symbol><symbol id="i-layers" viewBox="0 0 16 16"><path d="M8 2.2 2.4 5 8 7.8 13.6 5Z"/><path d="m2.4 8 5.6 2.8L13.6 8m-11.2 3 5.6 2.8L13.6 11"/></symbol><symbol id="i-wrench" viewBox="0 0 16 16"><path d="M10.4 2.6a3.4 3.4 0 0 0-3.9 4.6l-4 4a1.3 1.3 0 0 0 1.9 1.9l4-4a3.4 3.4 0 0 0 4.6-3.9l-1.9 1.9-1.9-.5-.5-1.9Z"/></symbol></svg>
+  <h5>Start here</h5>
+  <ul>
+    <li><a href="../guide/getting-started.html"><svg class="ic" aria-hidden="true"><use href="#i-rocket"/></svg><span>Getting started</span></a></li>
+    <li><a href="../guide/ai-assistants.html"><svg class="ic" aria-hidden="true"><use href="#i-spark"/></svg><span>AI assistants</span></a></li>
+    <li class="has-sub">
+      <details>
+        <summary><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg><span>Tutorials</span></summary>
+        <ul>
+        <li><a href="../guide/tutorial.html"><svg class="ic" aria-hidden="true"><use href="#i-play"/></svg><span>A first API</span></a></li>
+        <li><a href="../guide/tutorial-orders.html"><svg class="ic" aria-hidden="true"><use href="#i-cart"/></svg><span>Orders &amp; stock</span></a></li>
+        </ul>
+      </details>
+    </li>
+    <li><a href="../guide/vs-nestjs.html"><svg class="ic" aria-hidden="true"><use href="#i-scales"/></svg><span>Compared with NestJS</span></a></li>
+  </ul>
+  <h5>Guide</h5>
+  <ul>
+    <li><a href="../guide/models.html"><svg class="ic" aria-hidden="true"><use href="#i-box"/></svg><span>Models &amp; fields</span></a></li>
+    <li><a href="../guide/from-params.html"><svg class="ic" aria-hidden="true"><use href="#i-transform"/></svg><span>fromParams</span></a></li>
+    <li><a href="../guide/acl.html"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg><span>Permissions &amp; ACL</span></a></li>
+    <li><a href="../guide/queries.html"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg><span>Queries</span></a></li>
+    <li><a href="../guide/relations.html"><svg class="ic" aria-hidden="true"><use href="#i-link"/></svg><span>Relationships</span></a></li>
+    <li><a href="../guide/users.html"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg><span>Users &amp; auth</span></a></li>
+    <li><a href="../guide/files.html"><svg class="ic" aria-hidden="true"><use href="#i-image"/></svg><span>Files &amp; images</span></a></li>
+    <li><a href="../guide/endpoints.html"><svg class="ic" aria-hidden="true"><use href="#i-signpost"/></svg><span>Endpoints &amp; routing</span></a></li>
+    <li><a href="../guide/triggers.html"><svg class="ic" aria-hidden="true"><use href="#i-bolt"/></svg><span>Triggers</span></a></li>
+    <li><a href="../guide/live-query.html"><svg class="ic" aria-hidden="true"><use href="#i-broadcast"/></svg><span>Real-time</span></a></li>
+    <li><a href="../guide/transactions.html"><svg class="ic" aria-hidden="true"><use href="#i-exchange"/></svg><span>Transactions</span></a></li>
+    <li><a href="../guide/optimistic-locking.html"><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg><span>Optimistic locking</span></a></li>
+    <li><a href="../guide/seeding.html"><svg class="ic" aria-hidden="true"><use href="#i-sprout"/></svg><span>Seeding data</span></a></li>
+    <li><a href="../guide/dashboard.html"><svg class="ic" aria-hidden="true"><use href="#i-gauge"/></svg><span>Parse Dashboard</span></a></li>
+    <li><a href="../guide/errors.html"><svg class="ic" aria-hidden="true"><use href="#i-alert"/></svg><span>Errors</span></a></li>
+    <li><a href="../guide/cli.html"><svg class="ic" aria-hidden="true"><use href="#i-terminal"/></svg><span>The psk CLI</span></a></li>
+    <li><a href="../guide/troubleshooting.html"><svg class="ic" aria-hidden="true"><use href="#i-lifebuoy"/></svg><span>Troubleshooting</span></a></li>
+  </ul>
+  <h5>Reference</h5>
+  <ul>
+    <li><a href="../reference/decorators.html"><svg class="ic" aria-hidden="true"><use href="#i-at"/></svg><span>Decorators</span></a></li>
+    <li><a href="../reference/configuration.html"><svg class="ic" aria-hidden="true"><use href="#i-sliders"/></svg><span>Configuration</span></a></li>
+    <li><a href="../reference/middleware.html"><svg class="ic" aria-hidden="true"><use href="#i-layers"/></svg><span>Middleware</span></a></li>
+    <li><a href="../reference/utilities.html"><svg class="ic" aria-hidden="true"><use href="#i-wrench"/></svg><span>Utilities</span></a></li>
+  </ul>
+</aside>
+
+<main class="content">
+  <p class="eyebrow">Start here</p>
+  <h1>Compared with NestJS</h1>
+  <p class="lede">They are not really competitors. One gives you structure and you build the backend; the other is a backend you customise. Here is the honest side-by-side.</p>
+
+
+  <h2 id="difference">The actual difference</h2>
+  <p>
+    <b>NestJS is an application framework.</b> It gives you dependency injection, module
+    boundaries and a request lifecycle — and you build authentication, users, roles,
+    permissions, real-time and file storage yourself, or assemble them from packages.
+  </p>
+  <p>
+    <b>Parse Server is a backend.</b> Those things already exist and are wired together.
+    What it never had was a pleasant way to write against it, which is what this library
+    adds.
+  </p>
+  <p>
+    So the question is not "which framework is better". It is <em>how much of your backend
+    do you want to own?</em>
+  </p>
+
+  <h2 id="table">Feature by feature</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th></th><th>NestJS</th><th class="own">parse-server-kit</th></tr></thead>
+    <tbody>
+      <tr><td>Auth, sessions, password reset</td><td class="no">you build it</td><td class="own yes">built in</td></tr>
+      <tr><td>Users &amp; roles</td><td class="no">you build it</td><td class="own yes">built in</td></tr>
+      <tr><td><b>Row-level permissions</b></td><td class="no">you build it</td><td class="own yes">built in</td></tr>
+      <tr><td>Real-time subscriptions</td><td class="no">wire websockets</td><td class="own yes">LiveQuery</td></tr>
+      <tr><td>File storage &amp; adapters</td><td class="no">you build it</td><td class="own yes">built in</td></tr>
+      <tr><td>Push notifications</td><td class="no">you build it</td><td class="own yes">built in</td></tr>
+      <tr><td>Schema &amp; migrations</td><td class="yes">Prisma / TypeORM</td><td class="own yes">from decorators</td></tr>
+      <tr><td>REST routing</td><td class="yes">@Controller</td><td class="own yes">from method names</td></tr>
+      <tr><td>OpenAPI</td><td class="yes">@nestjs/swagger</td><td class="own yes">automatic</td></tr>
+      <tr><td>Admin dashboard</td><td class="no">build or buy</td><td class="own yes">Parse Dashboard, one install</td></tr>
+      <tr><td>Transactions</td><td class="yes">QueryRunner</td><td class="own yes">@Transactional</td></tr>
+      <tr><td>Dependency injection</td><td class="yes">first class</td><td class="own no">none</td></tr>
+      <tr><td>Module boundaries</td><td class="yes">@Module</td><td class="own no">none</td></tr>
+      <tr><td>Guards / interceptors / pipes</td><td class="yes">full lifecycle</td><td class="own no">roles only</td></tr>
+      <tr><td>DTO validation</td><td class="yes">class-validator</td><td class="own no">field-level only</td></tr>
+      <tr><td>Database choice</td><td class="yes">anything</td><td class="own no">Mongo, or Postgres with limits</td></tr>
+      <tr><td>Ecosystem &amp; hiring pool</td><td class="yes">enormous</td><td class="own no">small</td></tr>
+    </tbody>
+  </table></div>
+  <p><small>The last six rows are things this library does not do. They are not oversights — see <a href="#choose">when to choose NestJS</a>.</small></p>
+
+  <h2 id="side-by-side">The same feature, both ways</h2>
+
+  <h3 id="sbs-permissions">"Users may only see their own orders"</h3>
+  <p>The clearest difference, because it is the one that never stops costing you.</p>
+<pre class="code-block"><code><span class="t-com">// NestJS - the filter lives in every query, forever</span>
+<span class="t-dec">@Injectable</span>()
+<span class="t-key">export class</span> OrdersService {
+  <span class="t-key">constructor</span>(<span class="t-key">private</span> repo: Repository&lt;Order&gt;) {}
+
+  findAll(user: User) {
+    <span class="t-key">return</span> <span class="t-key">this</span>.repo.find({ where: { ownerId: user.id } });   <span class="t-com">// remember it</span>
+  }
+  <span class="t-key">async</span> findOne(id: <span class="t-key">string</span>, user: User) {
+    <span class="t-key">const</span> order = <span class="t-key">await</span> <span class="t-key">this</span>.repo.findOneBy({ id });
+    <span class="t-key">if</span> (order.ownerId !== user.id) <span class="t-key">throw new</span> ForbiddenException();  <span class="t-com">// and here</span>
+    <span class="t-key">return</span> order;
+  }
+  <span class="t-com">// and in the report endpoint, and the export job, and the</span>
+  <span class="t-com">// admin screen someone adds next quarter</span>
+}</code></pre>
+<pre class="code-block"><code><span class="t-com">// parse-server-kit - written once, when the row is created</span>
+order.setACL(implementACL({
+  owner: [{ user: user.id, read: <span class="t-key">true</span>, write: <span class="t-key">true</span> }],
+  roleRules: [{ role: <span class="t-str">'Admin'</span>, read: <span class="t-key">true</span>, write: <span class="t-key">true</span> }],
+}));
+
+<span class="t-com">// every query afterwards, everywhere, forever:</span>
+<span class="t-key">await</span> <span class="t-key">new</span> Parse.Query(Order).find({ sessionToken });   <span class="t-com">// no where clause</span></code></pre>
+  <p>
+    The NestJS version is not wrong — it is what everyone writes. The difference is that the
+    rule lives in <em>n</em> places and the database does not know it, so the twelfth
+    endpoint is one forgotten line away from leaking. In the Parse version the rule is on
+    the row, and the database applies it whether or not the endpoint remembered.
+  </p>
+
+  <h3 id="sbs-auth">Signup and login</h3>
+<pre class="code-block"><code><span class="t-com">// NestJS: install passport, jwt, bcrypt; write a User entity, an</span>
+<span class="t-com">// AuthService, a JwtStrategy, guards, refresh tokens, a password</span>
+<span class="t-com">// reset flow with tokens and expiry, and an email integration.</span>
+<span class="t-com">// Perhaps 400 lines and a day, or several days done properly.</span></code></pre>
+<pre class="code-block"><code><span class="t-com">// parse-server-kit</span>
+<span class="t-key">const</span> user = <span class="t-key">new</span> Parse.User();
+user.setUsername(username); user.setPassword(password); user.setEmail(email);
+<span class="t-key">await</span> user.signUp();
+<span class="t-com">// hashed passwords, session tokens with revocation, email</span>
+<span class="t-com">// verification and password reset already exist</span></code></pre>
+
+  <h3 id="sbs-crud">A CRUD resource</h3>
+<pre class="code-block"><code><span class="t-com">// NestJS: nest g resource orders</span>
+<span class="t-com">//   orders.module.ts, orders.controller.ts, orders.service.ts,</span>
+<span class="t-com">//   dto/create-order.dto.ts, dto/update-order.dto.ts,</span>
+<span class="t-com">//   entities/order.entity.ts   + register it in app.module.ts</span>
+
+<span class="t-com">// parse-server-kit: psk g resource Order</span>
+<span class="t-com">//   models/Order.ts, functions/order.ts</span>
+<span class="t-com">//   nothing to register - importFiles finds them</span></code></pre>
+  <p>
+    Comparable effort. The difference is what the entity gives you: in Parse the one class
+    also produces the database schema, the indexes, the validators, the permissions and the
+    OpenAPI document, so there is no DTO to keep in step and no migration to write.
+  </p>
+
+  <h2 id="choose">When to choose NestJS</h2>
+  <p>Genuinely — these are good reasons, not concessions.</p>
+  <ul>
+    <li><b>You need a database Parse does not serve well.</b> Postgres works, but transactions and optimistic locking here are MongoDB-only.</li>
+    <li><b>Your domain is not CRUD.</b> Heavy workflow engines, event sourcing, or a service that is mostly computation get little from a data platform.</li>
+    <li><b>You want enforced architecture.</b> Modules and DI are how a large team keeps boundaries. This library has neither and is not going to grow them.</li>
+    <li><b>You need cross-cutting behaviour.</b> Interceptors for tracing, caching, transformation. Here there is one hook — role checking — and no general pipeline.</li>
+    <li><b>Rich request validation matters.</b> class-validator has a hundred decorators and nested rules; this has field-level constraints on the model.</li>
+    <li><b>Hiring and ecosystem.</b> Far more people know Nest, and far more packages target it. That is a real engineering cost.</li>
+  </ul>
+
+  <h2 id="choose-parse">When to choose this</h2>
+  <ul>
+    <li><b>The app is mostly records with permissions.</b> Business apps, admin tools, marketplaces, mobile backends — most software, honestly.</li>
+    <li><b>Per-row authorisation is a real requirement.</b> Multi-tenant, owner-scoped or role-scoped data. This is the strongest reason, because it is the hardest to retrofit.</li>
+    <li><b>You want real-time without building it.</b> LiveQuery is a subscription, not a websocket layer to design.</li>
+    <li><b>You are a small team and the schedule is short.</b> The week you do not spend on auth is the week you spend on the product.</li>
+    <li><b>Files, push and an admin dashboard are on the list.</b> All present.</li>
+  </ul>
+
+  <h2 id="honest">The honest summary</h2>
+  <div class="note">
+    <span class="note-title">A fair way to decide</span>
+    Write down what your backend must do. Cross out everything Parse already provides —
+    auth, users, roles, row-level permissions, real-time, files, push, dashboard. If what
+    remains is small, this is a shortcut worth taking. If what remains is most of the list,
+    or if it is the architecture itself you need, NestJS is the better tool and this page is
+    not trying to talk you out of it.
+  </div>
+  <p>
+    One caveat worth stating plainly: <b>NestJS has roughly three hundred times the
+    downloads of Parse Server.</b> Ecosystem, answers on the internet and the hiring pool
+    all follow that. If those matter more to you than the head start, that is a rational
+    decision and not a mistake.
+  </p>
+
+
+  <div class="pager">
+    <a href="tutorial-orders.html"><span>Back</span>Tutorial: orders, stock and money</a>
+    <a class="next" href="models.html"><span>Next</span>Models &amp; fields</a>
+  </div>
+</main>
+
+</div>
+
+<footer class="site-footer">
+  <div class="inner">
+    <span>MIT licensed</span>
+    <a href="https://www.npmjs.com/package/parse-server-kit">npm</a>
+    <a href="https://github.com/walhalabi-code/parse-server-kit">GitHub</a>
+    <span class="spacer">For Parse concepts, <a href="https://docs.parseplatform.org/">its docs</a> remain the reference.</span>
+  </div>
+</footer>
+
+<script src="../assets/docs.js"></script>
+</body>
+</html>

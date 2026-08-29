@@ -1,0 +1,839 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data:; font-src 'self'; form-action 'none'; base-uri 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tutorial: orders, stock and money — parse-server-kit</title>
+<meta name="description" content="A checkout API where mistakes cost money: pointers and dates decoded from the request body, a total the client cannot forge, stock two shoppers cannot both take, and permissions that follow the order's status. Every step shows what the browser sends.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Tutorial: orders, stock and money — parse-server-kit">
+<meta property="og:description" content="A checkout API where mistakes cost money: pointers and dates decoded from the request body, a total the client cannot forge, stock two shoppers cannot both take, and permissions that follow the order's status.">
+<meta property="og:url" content="https://walhalabi-code.github.io/parse-server-kit/guide/tutorial-orders.html">
+<meta property="og:site_name" content="parse-server-kit">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="../index.html"><svg class="brand-mark" viewBox="12 10 62 72" aria-hidden="true"><g transform="translate(18, 14)" fill="none" stroke-linecap="round" stroke-linejoin="round"><path class="logo-base" pathLength="1" d="M 40 24 C 40 14, 28 12, 20 22 C 12 32, 12 44, 22 52 C 32 60, 46 52, 46 36 C 46 20, 34 10, 20 10 C 7 10, 2 22, 2 38 C 2 54, 12 64, 28 64 C 38 64, 48 57, 52 48" stroke="var(--logo-base)" stroke-width="3" opacity="0.6"/><g class="logo-layer" transform="translate(-3, -4)"><path class="logo-kit-path" pathLength="1" d="M 40 20 C 40 10, 28 8, 20 18 C 12 28, 12 40, 22 48 C 32 56, 46 48, 46 32 C 46 16, 34 6, 20 6 C 7 6, 2 18, 2 34 C 2 50, 12 60, 28 60 C 38 60, 48 53, 52 44" stroke="var(--logo-kit)" stroke-width="3.5"/><circle class="logo-dot" cx="25" cy="28" r="3.5" fill="var(--logo-kit)" stroke="none"/></g></g></svg>parse-server-kit <span class="v">3.0</span></a>
+    <nav class="nav">
+      <button class="icon-btn menu-btn" data-menu-toggle aria-expanded="false" aria-label="Toggle navigation">≡</button>
+      <button class="icon-btn" data-search-open aria-label="Search">⌕</button>
+      <a class="nav-ai" href="../guide/ai-assistants.html"><svg class="ai-spark" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 2.4 6.9 5l2.6.9-2.6.9L6 9.4 5.1 6.8 2.5 5.9l2.6-.9Z"/><path d="m11.6 8.4.6 1.7 1.7.6-1.7.6-.6 1.7-.6-1.7-1.7-.6 1.7-.6Z"/></svg>AI</a>
+      <a class="hide-sm" href="../index.html">Home</a>
+      <a class="hide-sm" href="https://github.com/walhalabi-code/parse-server-kit">GitHub</a>
+      <button class="icon-btn" data-theme-toggle aria-label="Switch theme">◐</button>
+    </nav>
+  </div>
+</header>
+
+<div class="layout">
+
+<aside class="sidebar">
+  <svg class="icon-sprite" aria-hidden="true"><symbol id="i-rocket" viewBox="0 0 16 16"><path d="M6.5 9.5 3 8.8l2.2-2.6 2.6-.3M6.5 9.5 7.2 13l2.6-2.2.3-2.6M6.5 9.5 9.5 6.5m0 0a12 12 0 0 1 3.8-3.8 5 5 0 0 1-3.8 3.8ZM4.5 11.5 3 14l2.5-1.5"/></symbol><symbol id="i-book" viewBox="0 0 16 16"><path d="M2.5 3.5h4a2 2 0 0 1 2 2v7a1.5 1.5 0 0 0-1.5-1.5h-4.5Zm11 0h-4a2 2 0 0 0-2 2v7A1.5 1.5 0 0 1 9 11h4.5Z"/></symbol><symbol id="i-play" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><path d="m6.8 5.8 3.2 2.2-3.2 2.2Z"/></symbol><symbol id="i-cart" viewBox="0 0 16 16"><path d="M2 2.5h1.6l1.6 7.4h6.6l1.3-5.2H4.2"/><circle cx="6.3" cy="12.6" r="1"/><circle cx="11.4" cy="12.6" r="1"/></symbol><symbol id="i-scales" viewBox="0 0 16 16"><path d="M8 2.5v11M4.5 4.2h7M2 10a2.5 2.5 0 0 0 5 0L4.5 4.5Zm7 0a2.5 2.5 0 0 0 5 0L11.5 4.5ZM5.5 13.5h5"/></symbol><symbol id="i-box" viewBox="0 0 16 16"><path d="M8 2 2.5 4.8v6.4L8 14l5.5-2.8V4.8Z"/><path d="M2.5 4.8 8 7.6l5.5-2.8M8 7.6V14"/></symbol><symbol id="i-transform" viewBox="0 0 16 16"><path d="M2 5.5h7m-2.2-2.2L9 5.5 6.8 7.7M14 10.5H7m2.2-2.2L7 10.5l2.2 2.2"/></symbol><symbol id="i-shield" viewBox="0 0 16 16"><path d="M8 2 3.5 3.8v3.7c0 2.6 1.9 5 4.5 5.9 2.6-.9 4.5-3.3 4.5-5.9V3.8Z"/><path d="m6.2 7.9 1.4 1.4 2.4-2.6"/></symbol><symbol id="i-search" viewBox="0 0 16 16"><circle cx="7.2" cy="7.2" r="4"/><path d="m10.2 10.2 3 3"/></symbol><symbol id="i-link" viewBox="0 0 16 16"><path d="M6.6 9.4a2.6 2.6 0 0 0 3.7 0l2-2a2.6 2.6 0 0 0-3.7-3.7l-.9.9"/><path d="M9.4 6.6a2.6 2.6 0 0 0-3.7 0l-2 2a2.6 2.6 0 0 0 3.7 3.7l.9-.9"/></symbol><symbol id="i-user" viewBox="0 0 16 16"><circle cx="8" cy="6" r="2.6"/><path d="M3.4 13.2a4.8 4.8 0 0 1 9.2 0"/></symbol><symbol id="i-image" viewBox="0 0 16 16"><rect x="2.5" y="3.5" width="11" height="9" rx="1.5"/><circle cx="6" cy="6.7" r="1"/><path d="m3.2 11.4 3-2.6 2.4 2 2-1.6 2.2 1.9"/></symbol><symbol id="i-signpost" viewBox="0 0 16 16"><path d="M8 2v12M8 4h4.2l1.3 1.6L12.2 7.2H8Zm0 4.2H3.8L2.5 9.8l1.3 1.6H8Z"/></symbol><symbol id="i-bolt" viewBox="0 0 16 16"><path d="M9 2 4 9h3.4l-.4 5 5-7H8.6Z"/></symbol><symbol id="i-broadcast" viewBox="0 0 16 16"><circle cx="8" cy="8" r="1.6"/><path d="M5.2 10.8a4 4 0 0 1 0-5.6m5.6 0a4 4 0 0 1 0 5.6M3.2 12.8a6.8 6.8 0 0 1 0-9.6m9.6 0a6.8 6.8 0 0 1 0 9.6"/></symbol><symbol id="i-exchange" viewBox="0 0 16 16"><path d="M2.8 5.5h9.1l-2-2M13.2 10.5H4.1l2 2"/></symbol><symbol id="i-lock" viewBox="0 0 16 16"><rect x="3.2" y="7" width="9.6" height="6.3" rx="1.5"/><path d="M5.5 7V5.3a2.5 2.5 0 0 1 5 0V7"/><path d="M8 9.6v1.4"/></symbol><symbol id="i-sprout" viewBox="0 0 16 16"><path d="M8 13.5V7.8m0 0C8 6 6.6 4.6 4.8 4.6H3.3c0 1.8 1.4 3.2 3.2 3.2Zm0 0c0-1.8 1.4-3.2 3.2-3.2h1.5c0 1.8-1.4 3.2-3.2 3.2Z"/></symbol><symbol id="i-gauge" viewBox="0 0 16 16"><path d="M2.8 11.6a5.9 5.9 0 1 1 10.4 0"/><path d="M8 8.8 10.6 6"/><circle cx="8" cy="9.4" r="1"/></symbol><symbol id="i-spark" viewBox="0 0 16 16"><path d="M6 2.4 6.9 5l2.6.9-2.6.9L6 9.4 5.1 6.8 2.5 5.9l2.6-.9Z"/><path d="m11.6 8.4.6 1.7 1.7.6-1.7.6-.6 1.7-.6-1.7-1.7-.6 1.7-.6Z"/></symbol><symbol id="i-alert" viewBox="0 0 16 16"><path d="M8 2.8 2.6 12.4h10.8Z"/><path d="M8 6.4v2.8M8 10.8v.1"/></symbol><symbol id="i-terminal" viewBox="0 0 16 16"><rect x="2.2" y="3" width="11.6" height="10" rx="1.5"/><path d="m5 6.4 2 1.8-2 1.8M8.6 10.4h2.6"/></symbol><symbol id="i-lifebuoy" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><circle cx="8" cy="8" r="2.2"/><path d="m4.1 4.1 2.3 2.3m3.2 3.2 2.3 2.3m0-7.8-2.3 2.3M6.4 9.6l-2.3 2.3"/></symbol><symbol id="i-at" viewBox="0 0 16 16"><circle cx="8" cy="8" r="2.3"/><path d="M10.3 5.7v3a1.8 1.8 0 0 0 3.2 1.1A5.8 5.8 0 1 0 11 13"/></symbol><symbol id="i-sliders" viewBox="0 0 16 16"><path d="M2.5 5h7m3 0h1m-11 6h1m3 0h7"/><circle cx="11" cy="5" r="1.5"/><circle cx="5" cy="11" r="1.5"/></symbol><symbol id="i-layers" viewBox="0 0 16 16"><path d="M8 2.2 2.4 5 8 7.8 13.6 5Z"/><path d="m2.4 8 5.6 2.8L13.6 8m-11.2 3 5.6 2.8L13.6 11"/></symbol><symbol id="i-wrench" viewBox="0 0 16 16"><path d="M10.4 2.6a3.4 3.4 0 0 0-3.9 4.6l-4 4a1.3 1.3 0 0 0 1.9 1.9l4-4a3.4 3.4 0 0 0 4.6-3.9l-1.9 1.9-1.9-.5-.5-1.9Z"/></symbol></svg>
+  <h5>Start here</h5>
+  <ul>
+    <li><a href="../guide/getting-started.html"><svg class="ic" aria-hidden="true"><use href="#i-rocket"/></svg><span>Getting started</span></a></li>
+    <li><a href="../guide/ai-assistants.html"><svg class="ic" aria-hidden="true"><use href="#i-spark"/></svg><span>AI assistants</span></a></li>
+    <li class="has-sub">
+      <details>
+        <summary><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg><span>Tutorials</span></summary>
+        <ul>
+        <li><a href="../guide/tutorial.html"><svg class="ic" aria-hidden="true"><use href="#i-play"/></svg><span>A first API</span></a></li>
+        <li><a href="../guide/tutorial-orders.html"><svg class="ic" aria-hidden="true"><use href="#i-cart"/></svg><span>Orders &amp; stock</span></a></li>
+        </ul>
+      </details>
+    </li>
+    <li><a href="../guide/vs-nestjs.html"><svg class="ic" aria-hidden="true"><use href="#i-scales"/></svg><span>Compared with NestJS</span></a></li>
+  </ul>
+  <h5>Guide</h5>
+  <ul>
+    <li><a href="../guide/models.html"><svg class="ic" aria-hidden="true"><use href="#i-box"/></svg><span>Models &amp; fields</span></a></li>
+    <li><a href="../guide/from-params.html"><svg class="ic" aria-hidden="true"><use href="#i-transform"/></svg><span>fromParams</span></a></li>
+    <li><a href="../guide/acl.html"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg><span>Permissions &amp; ACL</span></a></li>
+    <li><a href="../guide/queries.html"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg><span>Queries</span></a></li>
+    <li><a href="../guide/relations.html"><svg class="ic" aria-hidden="true"><use href="#i-link"/></svg><span>Relationships</span></a></li>
+    <li><a href="../guide/users.html"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg><span>Users &amp; auth</span></a></li>
+    <li><a href="../guide/files.html"><svg class="ic" aria-hidden="true"><use href="#i-image"/></svg><span>Files &amp; images</span></a></li>
+    <li><a href="../guide/endpoints.html"><svg class="ic" aria-hidden="true"><use href="#i-signpost"/></svg><span>Endpoints &amp; routing</span></a></li>
+    <li><a href="../guide/triggers.html"><svg class="ic" aria-hidden="true"><use href="#i-bolt"/></svg><span>Triggers</span></a></li>
+    <li><a href="../guide/live-query.html"><svg class="ic" aria-hidden="true"><use href="#i-broadcast"/></svg><span>Real-time</span></a></li>
+    <li><a href="../guide/transactions.html"><svg class="ic" aria-hidden="true"><use href="#i-exchange"/></svg><span>Transactions</span></a></li>
+    <li><a href="../guide/optimistic-locking.html"><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg><span>Optimistic locking</span></a></li>
+    <li><a href="../guide/seeding.html"><svg class="ic" aria-hidden="true"><use href="#i-sprout"/></svg><span>Seeding data</span></a></li>
+    <li><a href="../guide/dashboard.html"><svg class="ic" aria-hidden="true"><use href="#i-gauge"/></svg><span>Parse Dashboard</span></a></li>
+    <li><a href="../guide/errors.html"><svg class="ic" aria-hidden="true"><use href="#i-alert"/></svg><span>Errors</span></a></li>
+    <li><a href="../guide/cli.html"><svg class="ic" aria-hidden="true"><use href="#i-terminal"/></svg><span>The psk CLI</span></a></li>
+    <li><a href="../guide/troubleshooting.html"><svg class="ic" aria-hidden="true"><use href="#i-lifebuoy"/></svg><span>Troubleshooting</span></a></li>
+  </ul>
+  <h5>Reference</h5>
+  <ul>
+    <li><a href="../reference/decorators.html"><svg class="ic" aria-hidden="true"><use href="#i-at"/></svg><span>Decorators</span></a></li>
+    <li><a href="../reference/configuration.html"><svg class="ic" aria-hidden="true"><use href="#i-sliders"/></svg><span>Configuration</span></a></li>
+    <li><a href="../reference/middleware.html"><svg class="ic" aria-hidden="true"><use href="#i-layers"/></svg><span>Middleware</span></a></li>
+    <li><a href="../reference/utilities.html"><svg class="ic" aria-hidden="true"><use href="#i-wrench"/></svg><span>Utilities</span></a></li>
+  </ul>
+</aside>
+
+<main class="content">
+  <p class="eyebrow">Start here</p>
+  <h1>Tutorial: orders, stock and money</h1>
+  <p class="lede">A checkout API, where getting it wrong costs real money. Pointers and dates decoded straight from the request body, a total the client cannot forge, stock two shoppers cannot both take, and permissions that follow the order's status. Every step shows exactly what the browser sends and what your handler receives.</p>
+
+  <p>
+    The <a href="tutorial.html">first tutorial</a> builds something small and safe. This one
+    is the opposite: every step here is a place where real systems lose money or leak data,
+    and the point is to show what the library does about each one.
+  </p>
+
+  <div class="note">
+    <span class="note-title">How to read the examples</span>
+    Every endpoint is shown as an exchange — what the frontend puts on the wire, what your
+    handler does with it, and what comes back. The JSON is real, not illustrative: it is
+    what these handlers actually send and return.
+  </div>
+
+  <h2 id="building">What you are building</h2>
+  <p>
+    A storefront back end with four jobs, in order of how badly they go wrong when done
+    naively:
+  </p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Job</th><th>The naive version</th><th>What you will write</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Decode the request</td>
+          <td>twenty <code>set()</code> calls that drift from the model</td>
+          <td><code>Order.fromParams()</code></td>
+        </tr>
+        <tr>
+          <td>Total the order</td>
+          <td>trust <code>req.params.total</code></td>
+          <td>price it server-side from the database</td>
+        </tr>
+        <tr>
+          <td>Take the stock</td>
+          <td><code>stock -= qty</code>, and oversell under load</td>
+          <td>a transaction plus a version field</td>
+        </tr>
+        <tr>
+          <td>Decide who may look</td>
+          <td>a <code>where</code> clause in every query</td>
+          <td>one ACL, written when the row is created</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 id="setup">1. Set up</h2>
+<pre class="code-block"><code>npx parse-server-kit new shop-api
+<span class="t-key">cd</span> shop-api
+docker compose up -d       <span class="t-com"># MongoDB as a replica set - transactions need one</span>
+npm install
+npm run dev</code></pre>
+  <p>
+    The replica set matters. Transactions and <code>@ParseVersionField</code> are both
+    MongoDB features that a standalone <code>mongod</code> does not have, and steps 6 and 7
+    depend on them. The bundled <code>docker-compose.yml</code> starts a single-node replica
+    set, which is enough.
+  </p>
+  <p>
+    Startup seeds an <code>Admin</code> and an <code>Editor</code> role and a
+    <code>demo</code> user, and prints a session token. Every request below carries that
+    token — it is how Parse knows who is asking, and therefore which ACLs apply.
+  </p>
+
+  <h2 id="products">2. Products, with stock worth protecting</h2>
+<pre class="code-block"><code>psk g resource Product</code></pre>
+  <p>Then fill in <code>src/models/Product.ts</code>:</p>
+<pre class="code-block"><code><span class="t-key">import</span> {
+  ParseClass, ParseField, BaseModel, ParseVersionField, roleKey,
+} <span class="t-key">from</span> <span class="t-str">'parse-server-kit'</span>;
+
+<span class="t-dec">@ParseClass</span>(<span class="t-str">'Product'</span>, {
+  description: <span class="t-str">'Something for sale'</span>,
+  <span class="t-com">// Class-level permissions: the coarse gate, checked before any row is</span>
+  <span class="t-com">// looked at. Anyone may browse the catalogue; only an Admin may change it.</span>
+  clp: {
+    find:   { <span class="t-str">'*'</span>: <span class="t-key">true</span> },
+    get:    { <span class="t-str">'*'</span>: <span class="t-key">true</span> },
+    count:  { <span class="t-str">'*'</span>: <span class="t-key">true</span> },
+    create: { [roleKey(<span class="t-str">'Admin'</span>)]: <span class="t-key">true</span> },
+    update: { [roleKey(<span class="t-str">'Admin'</span>)]: <span class="t-key">true</span> },
+    delete: { [roleKey(<span class="t-str">'Admin'</span>)]: <span class="t-key">true</span> },
+  },
+})
+<span class="t-key">export default class</span> Product <span class="t-key">extends</span> BaseModel {
+  <span class="t-key">constructor</span>() { <span class="t-key">super</span>(<span class="t-str">'Product'</span>); }
+
+  <span class="t-com">// `declare`, never `name!: string`. @ParseField installs a getter and setter</span>
+  <span class="t-com">// on the prototype; a real class field would shadow them with an own property</span>
+  <span class="t-com">// set to undefined, and every read would come back empty with nothing logged.</span>
+  <span class="t-dec">@ParseField</span>({ type: <span class="t-str">'String'</span>, required: <span class="t-key">true</span>, maxLength: <span class="t-num">200</span> })
+  <span class="t-key">declare</span> name: string;
+
+  <span class="t-com">// `unique: true` creates a unique index at startup, so two products cannot</span>
+  <span class="t-com">// share an SKU even if two requests race.</span>
+  <span class="t-dec">@ParseField</span>({ type: <span class="t-str">'String'</span>, required: <span class="t-key">true</span>, unique: <span class="t-key">true</span> })
+  <span class="t-key">declare</span> sku: string;
+
+  <span class="t-com">// Money, in the smallest unit. Integers, because 0.1 + 0.2 is not 0.3 and</span>
+  <span class="t-com">// you do not want to discover that in an invoice.</span>
+  <span class="t-dec">@ParseField</span>({ type: <span class="t-str">'Number'</span>, required: <span class="t-key">true</span>, min: <span class="t-num">0</span>, description: <span class="t-str">'Price in cents'</span> })
+  <span class="t-key">declare</span> priceCents: number;
+
+  <span class="t-dec">@ParseField</span>({ type: <span class="t-str">'Number'</span>, required: <span class="t-key">true</span>, min: <span class="t-num">0</span> })
+  <span class="t-key">declare</span> stock: number;
+
+  <span class="t-com">// The whole optimistic-locking feature. It declares the Number field itself,</span>
+  <span class="t-com">// so there is no @ParseField above it. Nothing else in your code ever reads</span>
+  <span class="t-com">// or writes this: every object carries the version it was read at, and every</span>
+  <span class="t-com">// save asserts that version is still current.</span>
+  <span class="t-dec">@ParseVersionField</span>()
+  <span class="t-key">declare</span> version: number;
+}</code></pre>
+
+  <div class="note">
+    <span class="note-title">Check the boot log</span>
+    <code>@ParseVersionField</code> needs the versioned MongoDB adapter. If it is missing —
+    or you are on Postgres — the field is declared and <em>never enforced</em>. As of 2.8.0
+    that logs a <code>[Versioning]</code> line at startup rather than failing silently. Read
+    it once and you never have to wonder.
+  </div>
+
+  <h2 id="order-model">3. The order model, and every type <code>fromParams</code> decodes</h2>
+  <p>
+    This model exists partly to be realistic and partly to cover, in one place, each field
+    type that <code>fromParams</code> converts for you.
+  </p>
+<pre class="code-block"><code><span class="t-dec">@ParseClass</span>(<span class="t-str">'Order'</span>, {
+  description: <span class="t-str">'A customer order'</span>,
+  <span class="t-com">// Every route below goes through a cloud function using the master key or an</span>
+  <span class="t-com">// explicit session, so nothing needs direct class access. Deny it all: the</span>
+  <span class="t-com">// only way in is through code you wrote.</span>
+  clp: {
+    find: {}, get: {}, count: {}, create: {}, update: {}, delete: {},
+  },
+  <span class="t-com">// One index serving the customer's own order history, newest first.</span>
+  compoundIndexes: [{ fields: [<span class="t-str">'customer'</span>, <span class="t-str">'createdAt'</span>] }],
+})
+<span class="t-key">export default class</span> Order <span class="t-key">extends</span> BaseModel {
+  <span class="t-key">constructor</span>() { <span class="t-key">super</span>(<span class="t-str">'Order'</span>); }
+
+  <span class="t-com">// Pointer. `targetClass` is REQUIRED - without it the decorator throws at</span>
+  <span class="t-com">// import, and fromParams would have no idea what to build a pointer to.</span>
+  <span class="t-dec">@ParseField</span>({ type: <span class="t-str">'Pointer'</span>, targetClass: <span class="t-str">'_User'</span>, required: <span class="t-key">true</span> })
+  <span class="t-key">declare</span> customer: Parse.User;
+
+  <span class="t-com">// Array of pointers. Also needs targetClass - an Array field without one</span>
+  <span class="t-com">// stays exactly as the client sent it, which for a list of ids means a list</span>
+  <span class="t-com">// of strings that no query will ever match.</span>
+  <span class="t-dec">@ParseField</span>({ type: <span class="t-str">'Array'</span>, targetClass: <span class="t-str">'Coupon'</span> })
+  <span class="t-key">declare</span> coupons: Parse.Object[];
+
+  <span class="t-com">// Date. The client sends an ISO string; fromParams gives you a Date.</span>
+  <span class="t-dec">@ParseField</span>({ type: <span class="t-str">'Date'</span> })
+  <span class="t-key">declare</span> deliverAfter: Date;
+
+  <span class="t-com">// GeoPoint. The client sends {latitude, longitude}; fromParams builds the</span>
+  <span class="t-com">// Parse.GeoPoint. `geo: true` adds the 2dsphere index that makes</span>
+  <span class="t-com">// "orders near here" a query rather than a full scan.</span>
+  <span class="t-dec">@ParseField</span>({ type: <span class="t-str">'GeoPoint'</span>, geo: <span class="t-key">true</span> })
+  <span class="t-key">declare</span> dropPoint: Parse.GeoPoint;
+
+  <span class="t-dec">@ParseField</span>({ type: <span class="t-str">'String'</span>, maxLength: <span class="t-num">500</span> })
+  <span class="t-key">declare</span> note: string;
+
+  <span class="t-com">// Server-owned. Listed here so it is in the schema and the OpenAPI output,</span>
+  <span class="t-com">// but step 5 is about making sure the client can never set it.</span>
+  <span class="t-dec">@ParseField</span>({ type: <span class="t-str">'Number'</span>, min: <span class="t-num">0</span>, description: <span class="t-str">'Computed server-side, in cents'</span> })
+  <span class="t-key">declare</span> totalCents: number;
+
+  <span class="t-com">// `enum` is enforced twice: by validateOrThrow in your trigger, and by the</span>
+  <span class="t-com">// MongoDB $jsonSchema validator applyMongoValidators installs at boot. The</span>
+  <span class="t-com">// second one catches writes that never went through your code at all.</span>
+  <span class="t-dec">@ParseField</span>({ type: <span class="t-str">'String'</span>, enum: [<span class="t-str">'pending'</span>, <span class="t-str">'paid'</span>, <span class="t-str">'shipped'</span>, <span class="t-str">'cancelled'</span>] })
+  <span class="t-key">declare</span> status: string;
+}</code></pre>
+
+  <h2 id="placing">4. Placing an order — what the browser actually sends</h2>
+  <p>
+    Here is the whole point of <code>fromParams</code>. The frontend sends flat JSON: ids as
+    strings, dates as strings, a geopoint as a plain object. Your model says what those
+    fields are. <code>fromParams</code> reads the model's metadata and does the conversion.
+  </p>
+
+  <div class="wire">
+    <div class="wire-step">
+      <span class="wire-tag req">Frontend sends</span>
+<pre class="code-block"><code>POST /api/orders/createOrder
+X-Parse-Application-Id: shop-api
+X-Parse-Session-Token: r:aecd1f21d674c1db3047fb7e8eac3fa5
+Content-Type: text/plain
+
+{
+  <span class="t-str">"customer"</span>:     <span class="t-str">"QeC10HzbsH"</span>,
+  <span class="t-str">"coupons"</span>:      [<span class="t-str">"cpn_A1"</span>, <span class="t-str">"cpn_B2"</span>],
+  <span class="t-str">"deliverAfter"</span>: <span class="t-str">"2026-09-01T09:00:00.000Z"</span>,
+  <span class="t-str">"dropPoint"</span>:    { <span class="t-str">"latitude"</span>: <span class="t-num">24.7136</span>, <span class="t-str">"longitude"</span>: <span class="t-num">46.6753</span> },
+  <span class="t-str">"note"</span>:         <span class="t-str">"Leave at reception"</span>,
+  <span class="t-str">"lines"</span>:        [
+    { <span class="t-str">"product"</span>: <span class="t-str">"prd_desk"</span>,  <span class="t-str">"quantity"</span>: <span class="t-num">1</span> },
+    { <span class="t-str">"product"</span>: <span class="t-str">"prd_chair"</span>, <span class="t-str">"quantity"</span>: <span class="t-num">2</span> }
+  ]
+}</code></pre>
+      <p class="wire-note">
+        <code>Content-Type: text/plain</code> is not a mistake — it is what
+        <code>conditionalJsonMiddleware</code> parses, matching Parse's own convention of
+        avoiding a CORS preflight on every write.
+      </p>
+    </div>
+
+    <div class="wire-step">
+      <span class="wire-tag run">Your handler</span>
+<pre class="code-block"><code><span class="t-com">// src/functions/order.ts</span>
+<span class="t-key">import</span> {
+  Route, CloudFunction, Transactional, catchError, MAX_QUERY_LIMIT,
+} <span class="t-key">from</span> <span class="t-str">'parse-server-kit'</span>;
+<span class="t-key">import</span> Order <span class="t-key">from</span> <span class="t-str">'../models/Order'</span>;
+
+<span class="t-dec">@Route</span>(Order)
+<span class="t-key">class</span> OrderFunctions {
+  <span class="t-dec">@CloudFunction</span>({
+    methods: [<span class="t-str">'POST'</span>],
+    description: <span class="t-str">'Place an order'</span>,
+    validation: {
+      requireUser: <span class="t-key">true</span>,
+      fields: { lines: { required: <span class="t-key">true</span> } },
+    },
+    swagger: { tags: [<span class="t-str">'Orders'</span>] },
+  })
+  <span class="t-key">static async</span> createOrder(req: Parse.Cloud.FunctionRequest) {
+    <span class="t-com">// ONE line for the five fields the model knows about. It reads the</span>
+    <span class="t-com">// @ParseField metadata and converts as it goes:</span>
+    <span class="t-com">//</span>
+    <span class="t-com">//   customer     "QeC10HzbsH"        -> Pointer&lt;_User&gt;</span>
+    <span class="t-com">//   coupons      ["cpn_A1","cpn_B2"] -> [Pointer&lt;Coupon&gt;, Pointer&lt;Coupon&gt;]</span>
+    <span class="t-com">//   deliverAfter "2026-09-01T09:..."  -> Date</span>
+    <span class="t-com">//   dropPoint    {latitude,longitude} -> Parse.GeoPoint</span>
+    <span class="t-com">//   note         "Leave at reception" -> String, unchanged</span>
+    <span class="t-com">//</span>
+    <span class="t-com">// Add a field to the model tomorrow and this line already handles it.</span>
+    <span class="t-key">const</span> order = Order.fromParams(req.params);
+
+    <span class="t-com">// `lines` is NOT a model field, so fromParams left it alone - correctly.</span>
+    <span class="t-com">// It is a list of objects carrying a quantity, which is not something the</span>
+    <span class="t-com">// field metadata can describe. Step 5 handles it explicitly.</span>
+    ...
+  }
+}</code></pre>
+    </div>
+  </div>
+
+  <div class="note warn">
+    <span class="note-title">The customer field is the one to think about</span>
+    The request above sends <code>customer</code> in the body, so a caller could name someone
+    else. That is not automatically a hole — the ACL you set in step 7 decides who can read
+    the resulting order — but it does mean the <em>attribution</em> is the client's. If an
+    order must belong to whoever is signed in, ignore the body and say so:
+<pre class="code-block"><code><span class="t-com">// req.user is set by the session token and cannot be forged.</span>
+order.customer = req.user!;</code></pre>
+    That one line is the difference between "the client suggests who the customer is" and
+    "the server decides". Do the same for any field that is really an identity.
+  </div>
+
+  <h3 id="not-fromparams">What <code>fromParams</code> deliberately does not do</h3>
+  <p>
+    It is worth being precise, because the gaps are design decisions rather than omissions:
+  </p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Input</th><th>Result</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>A key with no <code>@ParseField</code></td>
+          <td>ignored</td>
+          <td>Only declared fields are set, so an unexpected key cannot reach the database</td>
+        </tr>
+        <tr>
+          <td>Array field with no <code>targetClass</code></td>
+          <td>left as raw values</td>
+          <td>Nothing says what to point at; guessing would be worse</td>
+        </tr>
+        <tr>
+          <td>Pointer to <code>IMG</code> or <code>File</code></td>
+          <td>skipped</td>
+          <td>Uploads need their own handling; see <a href="files.html">Files &amp; images</a></td>
+        </tr>
+        <tr>
+          <td>Pointer given <code>null</code> or <code>{}</code></td>
+          <td>set to <code>null</code></td>
+          <td>An explicit clear is a real intent and has to be expressible</td>
+        </tr>
+        <tr>
+          <td>Nested objects like <code>lines</code></td>
+          <td>ignored</td>
+          <td>Not a field type; write the loop, as below</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    The full rules, including the security discussion, are on the
+    <a href="from-params.html">fromParams</a> page.
+  </p>
+
+  <h2 id="pricing">5. Never trust the client's total</h2>
+  <p>
+    The request deliberately did not include a price, and if it had, you would throw it away.
+    Prices come from the database, every time.
+  </p>
+<pre class="code-block"><code><span class="t-key">import</span> { catchError } <span class="t-key">from</span> <span class="t-str">'parse-server-kit'</span>;
+
+<span class="t-key">interface</span> LineInput { product: string; quantity: number }
+
+<span class="t-com">/**
+ * Turn the client's line list into priced lines, using the database as the
+ * only source of truth for price and availability.
+ *
+ * Returns the lines and the total, so the caller never has to add up
+ * anything the client sent.
+ */</span>
+<span class="t-key">async function</span> priceLines(lines: LineInput[]) {
+  <span class="t-com">// Reject nonsense before touching the database. A negative quantity is a</span>
+  <span class="t-com">// refund by another name, and a fractional one is a rounding bug waiting.</span>
+  <span class="t-key">for</span> (<span class="t-key">const</span> line <span class="t-key">of</span> lines) {
+    <span class="t-key">if</span> (!Number.isInteger(line.quantity) || line.quantity &lt; <span class="t-num">1</span>) {
+      <span class="t-key">throw new</span> Parse.Error(<span class="t-num">142</span>, <span class="t-str">`Quantity must be a positive whole number`</span>);
+    }
+  }
+
+  <span class="t-com">// One query for every product, not one per line. `containedIn` is the</span>
+  <span class="t-com">// difference between 2 round trips and 2N of them.</span>
+  <span class="t-key">const</span> ids = lines.map(l =&gt; l.product);
+  <span class="t-key">const</span> [err, products] = <span class="t-key">await</span> catchError(
+    <span class="t-key">new</span> Parse.Query(Product).containedIn(<span class="t-str">'objectId'</span>, ids).find({ useMasterKey: <span class="t-key">true</span> })
+  );
+  <span class="t-key">if</span> (err) <span class="t-key">throw</span> err;
+
+  <span class="t-com">// Cast: Parse.Query returns Parse.Object, so `p.priceCents` is not available</span>
+  <span class="t-com">// until you tell TypeScript what it really is.</span>
+  <span class="t-key">const</span> byId = <span class="t-key">new</span> Map((products <span class="t-key">as</span> Product[]).map(p =&gt; [p.id, p]));
+
+  <span class="t-key">let</span> totalCents = <span class="t-num">0</span>;
+  <span class="t-key">const</span> priced = lines.map(line =&gt; {
+    <span class="t-key">const</span> product = byId.get(line.product);
+    <span class="t-com">// An id that does not resolve is a bad request, not an empty line.</span>
+    <span class="t-key">if</span> (!product) <span class="t-key">throw new</span> Parse.Error(<span class="t-num">101</span>, <span class="t-str">`No product ${line.product}`</span>);
+    <span class="t-key">if</span> (product.stock &lt; line.quantity) {
+      <span class="t-key">throw new</span> Parse.Error(<span class="t-num">142</span>, <span class="t-str">`Only ${product.stock} left of ${product.name}`</span>);
+    }
+
+    <span class="t-com">// The price is read here, not received. This is the whole point.</span>
+    <span class="t-key">const</span> unit = product.priceCents;
+    totalCents += unit * line.quantity;
+    <span class="t-key">return</span> { product, quantity: line.quantity, unitCents: unit };
+  });
+
+  <span class="t-key">return</span> { priced, totalCents };
+}</code></pre>
+
+  <div class="wire">
+    <div class="wire-step">
+      <span class="wire-tag req">Frontend tries to help itself</span>
+<pre class="code-block"><code>{
+  <span class="t-str">"lines"</span>: [{ <span class="t-str">"product"</span>: <span class="t-str">"prd_desk"</span>, <span class="t-str">"quantity"</span>: <span class="t-num">1</span> }],
+  <span class="t-str">"totalCents"</span>: <span class="t-num">1</span>
+}</code></pre>
+    </div>
+    <div class="wire-step">
+      <span class="wire-tag res">What is stored</span>
+<pre class="code-block"><code>{ <span class="t-str">"totalCents"</span>: <span class="t-num">24900</span> }</code></pre>
+      <p class="wire-note">
+        <code>fromParams</code> did set <code>totalCents</code> to 1 — it is a declared
+        field, so it was decoded like any other. Then the handler overwrote it with the
+        priced figure before saving. Order matters: compute <em>after</em>
+        <code>fromParams</code>, never before.
+      </p>
+    </div>
+  </div>
+
+  <h2 id="stock">6. Two shoppers, one unit of stock</h2>
+  <p>
+    This is the step that separates a demo from a system. Two requests read
+    <code>stock: 1</code> at the same moment, both check "is there enough?", both say yes,
+    and both write <code>stock: 0</code>. You have sold two and have one.
+  </p>
+  <p>
+    Two mechanisms fix it, and they do different jobs:
+  </p>
+  <ul>
+    <li>
+      <b>A transaction</b> makes the order and the stock change one unit of work — either
+      both happen or neither does.
+    </li>
+    <li>
+      <b>The version field</b> makes the stock write refuse to land if anyone else changed
+      the row since you read it. A transaction alone does not give you this; two
+      transactions can still interleave a read-then-write.
+    </li>
+  </ul>
+
+<pre class="code-block"><code>  <span class="t-dec">@CloudFunction</span>({          <span class="t-com">// MUST be above: it captures the wrapped method</span>
+    methods: [<span class="t-str">'POST'</span>],
+    validation: { requireUser: <span class="t-key">true</span>, fields: { lines: { required: <span class="t-key">true</span> } } },
+    swagger: { tags: [<span class="t-str">'Orders'</span>] },
+  })
+  <span class="t-dec">@Transactional</span>()            <span class="t-com">// MUST be below: it does the wrapping</span>
+  <span class="t-key">static async</span> createOrder(req: Parse.Cloud.FunctionRequest) {
+    <span class="t-key">const</span> order = Order.fromParams(req.params);
+    order.customer = req.user!;          <span class="t-com">// server decides, not the body</span>
+    order.status = <span class="t-str">'pending'</span>;
+
+    <span class="t-key">const</span> { priced, totalCents } = <span class="t-key">await</span> priceLines(req.params.lines);
+    order.totalCents = totalCents;       <span class="t-com">// after fromParams, so it wins</span>
+
+    <span class="t-com">// Every save below joins the transaction automatically. There is no</span>
+    <span class="t-com">// session to thread through: AsyncLocalStorage follows the call chain,</span>
+    <span class="t-com">// so even priceLines' queries ran inside it.</span>
+    <span class="t-key">await</span> order.save(<span class="t-key">null</span>, { useMasterKey: <span class="t-key">true</span> });
+
+    <span class="t-key">for</span> (<span class="t-key">const</span> line <span class="t-key">of</span> priced) {
+      <span class="t-com">// Each product was READ inside this transaction, so it carries the</span>
+      <span class="t-com">// version it was read at. This save asserts that version is still</span>
+      <span class="t-com">// current and increments it. If the other shopper got there first,</span>
+      <span class="t-com">// it fails with CONFLICT rather than overwriting them.</span>
+      line.product.stock -= line.quantity;
+      <span class="t-key">await</span> line.product.save(<span class="t-key">null</span>, { useMasterKey: <span class="t-key">true</span> });
+
+      <span class="t-key">const</span> item = <span class="t-key">new</span> OrderLine();
+      item.order = order;
+      item.product = line.product;
+      item.quantity = line.quantity;
+      item.unitCents = line.unitCents;   <span class="t-com">// price AT PURCHASE, frozen</span>
+      <span class="t-key">await</span> item.save(<span class="t-key">null</span>, { useMasterKey: <span class="t-key">true</span> });
+    }
+
+    <span class="t-key">return</span> { id: order.id, totalCents, status: order.status };
+  }</code></pre>
+
+  <div class="note danger">
+    <span class="note-title">Decorator order is load-bearing and fails silently</span>
+    Decorators apply bottom-up, and <code>@CloudFunction</code> captures the method as it is
+    applied. Put <code>@Transactional()</code> <em>above</em> it and the registry keeps the
+    unwrapped method: the transaction never opens, every write commits on its own, and
+    nothing is logged. The endpoint keeps working right up until two people use it at once.
+    <br><br>
+    <b>Rule:</b> <code>@CloudFunction</code> on top, <code>@Transactional()</code> directly
+    above the method. And in your <code>ParseServer</code> options,
+    <code>directAccess: true</code> — without it a <code>save()</code> becomes an internal
+    HTTP request that lands in a fresh async context and writes outside the transaction,
+    also with no symptom.
+  </div>
+
+  <h3 id="conflict">What the loser sees</h3>
+  <div class="wire">
+    <div class="wire-step">
+      <span class="wire-tag req">Two requests, same instant</span>
+<pre class="code-block"><code>POST /api/orders/createOrder    { "lines": [{ "product": "prd_desk", "quantity": 1 }] }
+POST /api/orders/createOrder    { "lines": [{ "product": "prd_desk", "quantity": 1 }] }</code></pre>
+    </div>
+    <div class="wire-step">
+      <span class="wire-tag res">First one</span>
+<pre class="code-block"><code>{ <span class="t-str">"id"</span>: <span class="t-str">"o_9Kd2"</span>, <span class="t-str">"totalCents"</span>: <span class="t-num">24900</span>, <span class="t-str">"status"</span>: <span class="t-str">"pending"</span> }</code></pre>
+    </div>
+    <div class="wire-step">
+      <span class="wire-tag err">Second one</span>
+<pre class="code-block"><code>{ <span class="t-str">"code"</span>: <span class="t-num">5001</span>, <span class="t-str">"error"</span>: <span class="t-str">"Someone else changed this while you were working on it."</span> }</code></pre>
+      <p class="wire-note">
+        Not an overwrite, not a negative stock count, and not a 500. A refusal your frontend
+        can act on.
+      </p>
+    </div>
+  </div>
+  <p>Which the caller handles by reloading and retrying:</p>
+<pre class="code-block"><code><span class="t-key">import</span> { CONFLICT, CONFLICT_MESSAGE } <span class="t-key">from</span> <span class="t-str">'parse-server-kit'</span>;
+
+<span class="t-key">try</span> {
+  <span class="t-key">await</span> placeOrder(lines);
+} <span class="t-key">catch</span> (error) {
+  <span class="t-key">if</span> (error <span class="t-key">instanceof</span> Parse.Error &amp;&amp; error.code === CONFLICT) {
+    <span class="t-com">// CONFLICT_MESSAGE is already written for an end user, so it can go</span>
+    <span class="t-com">// straight on screen. Refresh the cart and let them try again.</span>
+    showBanner(CONFLICT_MESSAGE);
+    <span class="t-key">return</span> refreshCart();
+  }
+  <span class="t-key">throw</span> error;
+}</code></pre>
+  <p class="wire-note">
+    The transaction body may re-run up to three times on a transient conflict before you see
+    this, so keep it free of side effects that cannot be repeated — no emails, no charges.
+    Do those <em>after</em> it commits.
+  </p>
+
+  <h2 id="permissions">7. Permissions that follow the order's status</h2>
+  <p>
+    Now the part that a <code>where</code> clause cannot do. The rule is:
+  </p>
+  <ul>
+    <li>the customer may always read their own order;</li>
+    <li>they may edit it only while it is <code>pending</code>;</li>
+    <li>staff may always read and write;</li>
+    <li>nobody else sees it at all.</li>
+  </ul>
+  <p>
+    Written once, on the row, in a <code>beforeSave</code> trigger so it is re-applied every
+    time the status changes:
+  </p>
+<pre class="code-block"><code><span class="t-com">// src/models/Order.ts — add to the imports at the top of the file:</span>
+<span class="t-com">//   BeforeSave, implementACL, validateOrThrow</span>
+
+  <span class="t-dec">@BeforeSave</span>()
+  <span class="t-key">static async</span> onBeforeSave(req: Parse.Cloud.BeforeSaveRequest&lt;Order&gt;) {
+    <span class="t-key">const</span> order = req.object <span class="t-key">as</span> Order;
+
+    <span class="t-key">if</span> (!order.status) order.status = <span class="t-str">'pending'</span>;
+
+    <span class="t-com">// Checks the rules already declared on the model - required, min, max,</span>
+    <span class="t-com">// enum - and throws a VALIDATION_ERROR listing every failure at once.</span>
+    validateOrThrow(order);
+
+    <span class="t-key">const</span> editable = order.status === <span class="t-str">'pending'</span>;
+
+    <span class="t-com">// implementACL takes a DESCRIPTION and RETURNS an ACL. It does not take</span>
+    <span class="t-com">// the object. Assign the result with setACL.</span>
+    order.setACL(implementACL({
+      <span class="t-com">// Never public. An order is nobody else's business.</span>
+      publicRead: <span class="t-key">false</span>,
+      publicWrite: <span class="t-key">false</span>,
+      roleRules: [
+        { role: <span class="t-str">'Admin'</span>,  read: <span class="t-key">true</span>, write: <span class="t-key">true</span> },
+        { role: <span class="t-str">'Editor'</span>, read: <span class="t-key">true</span>, write: <span class="t-key">true</span> },
+      ],
+      <span class="t-com">// Read always; write only while pending. Once it is paid, the customer</span>
+      <span class="t-com">// can look but not touch - enforced by the database, not by remembering</span>
+      <span class="t-com">// to check in each endpoint.</span>
+      owner: [{ user: order.customer, read: <span class="t-key">true</span>, write: editable }],
+    }));
+  }</code></pre>
+
+  <div class="wire">
+    <div class="wire-step">
+      <span class="wire-tag req">A different signed-in user asks for it</span>
+<pre class="code-block"><code>GET /api/orders/getOrder?id=o_9Kd2
+X-Parse-Session-Token: r:someone-else</code></pre>
+    </div>
+    <div class="wire-step">
+      <span class="wire-tag err">Response</span>
+<pre class="code-block"><code>{ <span class="t-str">"code"</span>: <span class="t-num">101</span>, <span class="t-str">"error"</span>: <span class="t-str">"Object not found."</span> }</code></pre>
+      <p class="wire-note">
+        Not "forbidden" — <b>not found</b>. Parse does not confirm that an object exists to
+        someone who may not read it, so the response leaks nothing about what orders there
+        are. You get that behaviour for free, and it is the correct one.
+      </p>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="note-title">Two gates, both must open</span>
+    CLP is the class gate; the ACL is the row gate. The <code>Order</code> CLP above denies
+    everything, so the only route in is a cloud function using the master key or an explicit
+    session token — and once inside, the ACL decides which rows that session may see. The
+    <a href="acl.html">Permissions &amp; ACL</a> page works through the combinations.
+  </div>
+
+  <h2 id="transitions">8. Status transitions, gated by role</h2>
+  <p>
+    A customer must not mark their own order <code>shipped</code>. That is not an ACL
+    question — they legitimately have write access while it is pending — it is a rule about
+    <em>which</em> change is allowed, which belongs in the trigger.
+  </p>
+<pre class="code-block"><code><span class="t-com">// src/models/Order.ts — also needs: getUserRoles</span>
+
+  <span class="t-com">// Which statuses may follow which. Anything not listed is refused.</span>
+  <span class="t-key">private static readonly</span> TRANSITIONS: Record&lt;string, string[]&gt; = {
+    pending:   [<span class="t-str">'paid'</span>, <span class="t-str">'cancelled'</span>],
+    paid:      [<span class="t-str">'shipped'</span>, <span class="t-str">'cancelled'</span>],
+    shipped:   [],
+    cancelled: [],
+  };
+
+  <span class="t-dec">@BeforeSave</span>()
+  <span class="t-key">static async</span> onBeforeSave(req: Parse.Cloud.BeforeSaveRequest&lt;Order&gt;) {
+    <span class="t-key">const</span> order = req.object <span class="t-key">as</span> Order;
+
+    <span class="t-com">// `dirty` tells a status CHANGE apart from a save that merely includes</span>
+    <span class="t-com">// the current status. Without it, every save would be checked as though</span>
+    <span class="t-com">// it were a transition and re-saving a shipped order would fail.</span>
+    <span class="t-key">if</span> (!order.isNew() &amp;&amp; order.dirty(<span class="t-str">'status'</span>)) {
+      <span class="t-key">const</span> previous = order.previous(<span class="t-str">'status'</span>) <span class="t-key">as</span> string;
+      <span class="t-key">const</span> allowed = Order.TRANSITIONS[previous] ?? [];
+
+      <span class="t-key">if</span> (!allowed.includes(order.status)) {
+        <span class="t-key">throw new</span> Parse.Error(<span class="t-num">142</span>, <span class="t-str">`Cannot go from ${previous} to ${order.status}`</span>);
+      }
+
+      <span class="t-com">// Only staff may advance an order. req.master is true when the caller</span>
+      <span class="t-com">// used the master key - which your own cloud functions do, so check the</span>
+      <span class="t-com">// USER's roles rather than trusting the call site.</span>
+      <span class="t-key">const</span> roles = req.user ? <span class="t-key">await</span> getUserRoles(req.user) : [];
+      <span class="t-key">const</span> staff = roles.includes(<span class="t-str">'Admin'</span>) || roles.includes(<span class="t-str">'Editor'</span>);
+      <span class="t-key">const</span> customerCancelling =
+        order.status === <span class="t-str">'cancelled'</span> &amp;&amp; previous === <span class="t-str">'pending'</span>;
+
+      <span class="t-key">if</span> (!staff &amp;&amp; !customerCancelling) {
+        <span class="t-key">throw new</span> Parse.Error(<span class="t-num">119</span>, <span class="t-str">'Only staff can change an order status'</span>);
+      }
+    }
+
+    ... <span class="t-com">// the ACL block from step 7 goes here</span>
+  }</code></pre>
+
+  <div class="wire">
+    <div class="wire-step">
+      <span class="wire-tag req">The customer tries it on</span>
+<pre class="code-block"><code>POST /api/orders/setStatus
+{ <span class="t-str">"id"</span>: <span class="t-str">"o_9Kd2"</span>, <span class="t-str">"status"</span>: <span class="t-str">"shipped"</span> }</code></pre>
+    </div>
+    <div class="wire-step">
+      <span class="wire-tag err">Response</span>
+<pre class="code-block"><code>{ <span class="t-str">"code"</span>: <span class="t-num">142</span>, <span class="t-str">"error"</span>: <span class="t-str">"Cannot go from pending to shipped"</span> }</code></pre>
+      <p class="wire-note">
+        The transition table caught it before the role check even ran — <code>pending</code>
+        cannot reach <code>shipped</code> at all, whoever is asking. Both rules are useful:
+        one is about the workflow, the other about authority.
+      </p>
+    </div>
+  </div>
+
+  <h2 id="realtime">9. Watching an order in real time</h2>
+  <p>
+    The customer's page should update itself when the order ships, without polling. Parse's
+    LiveQuery does that, and — the part that matters — <b>it respects the ACL you already
+    wrote.</b> A subscription only ever delivers rows its session token may read, so there
+    is no second permission model to keep in step.
+  </p>
+<pre class="code-block"><code><span class="t-com">// Frontend</span>
+<span class="t-key">const</span> query = <span class="t-key">new</span> Parse.Query(<span class="t-str">'Order'</span>).equalTo(<span class="t-str">'objectId'</span>, orderId);
+
+<span class="t-com">// The session token is what scopes this. Without it you would get nothing,</span>
+<span class="t-com">// because the ACL grants no public read.</span>
+<span class="t-key">const</span> subscription = <span class="t-key">await</span> query.subscribe(sessionToken);
+
+subscription.on(<span class="t-str">'update'</span>, order =&gt; {
+  setStatus(order.get(<span class="t-str">'status'</span>));   <span class="t-com">// 'paid' -&gt; 'shipped'</span>
+});</code></pre>
+  <p>And on the server, if you want to log or restrict who may subscribe at all:</p>
+<pre class="code-block"><code><span class="t-com">// src/models/Order.ts — also needs: BeforeSubscribe</span>
+
+  <span class="t-dec">@BeforeSubscribe</span>()
+  <span class="t-key">static async</span> onSubscribe(req: any) {
+    <span class="t-com">// Runs before the subscription is accepted. Throwing here refuses it.</span>
+    <span class="t-com">// The ACL still applies afterwards - this is an extra gate, not the only</span>
+    <span class="t-com">// one.</span>
+    <span class="t-key">if</span> (!req.user) <span class="t-key">throw new</span> Parse.Error(<span class="t-num">101</span>, <span class="t-str">'Sign in to watch an order'</span>);
+  }</code></pre>
+
+  <h2 id="whole-flow">10. The whole flow, on the wire</h2>
+  <p>Start to finish, this is every exchange a checkout makes:</p>
+
+  <div class="wire">
+    <div class="wire-step">
+      <span class="wire-tag req">1 · Browse</span>
+<pre class="code-block"><code>GET /api/products/listProducts?limit=20</code></pre>
+    </div>
+    <div class="wire-step">
+      <span class="wire-tag res">Public, no token needed</span>
+<pre class="code-block"><code>{ <span class="t-str">"results"</span>: [
+    { <span class="t-str">"objectId"</span>: <span class="t-str">"prd_desk"</span>, <span class="t-str">"name"</span>: <span class="t-str">"Standing desk"</span>,
+      <span class="t-str">"sku"</span>: <span class="t-str">"DSK-1"</span>, <span class="t-str">"priceCents"</span>: <span class="t-num">24900</span>, <span class="t-str">"stock"</span>: <span class="t-num">3</span> }
+  ], <span class="t-str">"count"</span>: <span class="t-num">1</span> }</code></pre>
+    </div>
+    <div class="wire-step">
+      <span class="wire-tag req">2 · Place the order</span>
+<pre class="code-block"><code>POST /api/orders/createOrder
+X-Parse-Session-Token: r:aecd1f...
+
+{ <span class="t-str">"lines"</span>: [{ <span class="t-str">"product"</span>: <span class="t-str">"prd_desk"</span>, <span class="t-str">"quantity"</span>: <span class="t-num">1</span> }],
+  <span class="t-str">"deliverAfter"</span>: <span class="t-str">"2026-09-01T09:00:00.000Z"</span>,
+  <span class="t-str">"note"</span>: <span class="t-str">"Leave at reception"</span> }</code></pre>
+    </div>
+    <div class="wire-step">
+      <span class="wire-tag res">Priced and stocked, in one transaction</span>
+<pre class="code-block"><code>{ <span class="t-str">"id"</span>: <span class="t-str">"o_9Kd2"</span>, <span class="t-str">"totalCents"</span>: <span class="t-num">24900</span>, <span class="t-str">"status"</span>: <span class="t-str">"pending"</span> }</code></pre>
+    </div>
+    <div class="wire-step">
+      <span class="wire-tag req">3 · Staff marks it paid</span>
+<pre class="code-block"><code>POST /api/orders/setStatus
+X-Parse-Session-Token: r:staff-token
+
+{ <span class="t-str">"id"</span>: <span class="t-str">"o_9Kd2"</span>, <span class="t-str">"status"</span>: <span class="t-str">"paid"</span> }</code></pre>
+    </div>
+    <div class="wire-step">
+      <span class="wire-tag res">Customer loses write access as a side effect</span>
+<pre class="code-block"><code>{ <span class="t-str">"id"</span>: <span class="t-str">"o_9Kd2"</span>, <span class="t-str">"status"</span>: <span class="t-str">"paid"</span> }</code></pre>
+      <p class="wire-note">
+        The trigger re-ran <code>implementACL</code> with <code>editable: false</code>, so the
+        customer's write permission is gone from the row itself. Nothing had to remember to
+        check.
+      </p>
+    </div>
+    <div class="wire-step">
+      <span class="wire-tag res">4 · The customer's open page, via LiveQuery</span>
+<pre class="code-block"><code>{ <span class="t-str">"op"</span>: <span class="t-str">"update"</span>,
+  <span class="t-str">"object"</span>: { <span class="t-str">"objectId"</span>: <span class="t-str">"o_9Kd2"</span>, <span class="t-str">"status"</span>: <span class="t-str">"paid"</span> } }</code></pre>
+    </div>
+  </div>
+
+  <h2 id="built">What you built</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Problem</th><th>What handles it</th><th>Lines you wrote</th></tr></thead>
+      <tbody>
+        <tr><td>Decoding pointers, dates, geopoints, id arrays</td><td><code>Order.fromParams()</code></td><td>1</td></tr>
+        <tr><td>Forged totals</td><td>server-side pricing</td><td>a helper</td></tr>
+        <tr><td>Overselling under load</td><td><code>@Transactional</code> + <code>@ParseVersionField</code></td><td>2 decorators</td></tr>
+        <tr><td>Who may read an order</td><td><code>implementACL</code> in a trigger</td><td>~10</td></tr>
+        <tr><td>Who may change its status</td><td>a transition table</td><td>~15</td></tr>
+        <tr><td>Live status on the customer's page</td><td>LiveQuery, using the same ACL</td><td>3 on the client</td></tr>
+        <tr><td>Unique SKUs, 2dsphere index, enum enforcement</td><td><code>@ParseField</code> options</td><td>0 extra</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    Next, in the order they will bite you:
+    <a href="from-params.html">fromParams</a> for the full decoding rules and the security
+    discussion, <a href="acl.html">Permissions &amp; ACL</a> for the model behind step 7,
+    <a href="transactions.html">Transactions</a> for what joins a transaction and what never
+    does, and <a href="optimistic-locking.html">Optimistic locking</a> for the one case a
+    version field cannot protect.
+  </p>
+
+  <div class="pager">
+    <a href="tutorial.html"><span>Back</span>Tutorial: build a first API</a>
+    <a class="next" href="vs-nestjs.html"><span>Next</span>Compared with NestJS</a>
+  </div>
+</main>
+
+</div>
+
+<footer class="site-footer">
+  <div class="inner">
+    <span>MIT licensed</span>
+    <a href="https://www.npmjs.com/package/parse-server-kit">npm</a>
+    <a href="https://github.com/walhalabi-code/parse-server-kit">GitHub</a>
+    <span class="spacer">For Parse concepts, <a href="https://docs.parseplatform.org/">its docs</a> remain the reference.</span>
+  </div>
+</footer>
+
+<script src="../assets/docs.js"></script>
+</body>
+</html>

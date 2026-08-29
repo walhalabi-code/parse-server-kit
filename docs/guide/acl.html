@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data:; font-src 'self'; form-action 'none'; base-uri 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ACL &amp; permissions — parse-server-kit</title>
+<meta name="description" content="Class-level permissions and row-level ACLs: the two layers that make Parse Server worth building on, and how to use them without leaving a door open.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="ACL &amp; permissions — parse-server-kit">
+<meta property="og:description" content="Class-level permissions and row-level ACLs: the two layers that make Parse Server worth building on, and how to use them without leaving a door open.">
+<meta property="og:url" content="https://walhalabi-code.github.io/parse-server-kit/guide/acl.html">
+<meta property="og:site_name" content="parse-server-kit">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="../index.html"><svg class="brand-mark" viewBox="12 10 62 72" aria-hidden="true"><g transform="translate(18, 14)" fill="none" stroke-linecap="round" stroke-linejoin="round"><path class="logo-base" pathLength="1" d="M 40 24 C 40 14, 28 12, 20 22 C 12 32, 12 44, 22 52 C 32 60, 46 52, 46 36 C 46 20, 34 10, 20 10 C 7 10, 2 22, 2 38 C 2 54, 12 64, 28 64 C 38 64, 48 57, 52 48" stroke="var(--logo-base)" stroke-width="3" opacity="0.6"/><g class="logo-layer" transform="translate(-3, -4)"><path class="logo-kit-path" pathLength="1" d="M 40 20 C 40 10, 28 8, 20 18 C 12 28, 12 40, 22 48 C 32 56, 46 48, 46 32 C 46 16, 34 6, 20 6 C 7 6, 2 18, 2 34 C 2 50, 12 60, 28 60 C 38 60, 48 53, 52 44" stroke="var(--logo-kit)" stroke-width="3.5"/><circle class="logo-dot" cx="25" cy="28" r="3.5" fill="var(--logo-kit)" stroke="none"/></g></g></svg>parse-server-kit <span class="v">3.0</span></a>
+    <nav class="nav">
+      <button class="icon-btn menu-btn" data-menu-toggle aria-expanded="false" aria-label="Toggle navigation">≡</button>
+      <a class="nav-ai" href="../guide/ai-assistants.html"><svg class="ai-spark" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 2.4 6.9 5l2.6.9-2.6.9L6 9.4 5.1 6.8 2.5 5.9l2.6-.9Z"/><path d="m11.6 8.4.6 1.7 1.7.6-1.7.6-.6 1.7-.6-1.7-1.7-.6 1.7-.6Z"/></svg>AI</a>
+      <a class="hide-sm" href="../index.html">Home</a>
+      <a class="hide-sm" href="https://github.com/walhalabi-code/parse-server-kit">GitHub</a>
+      <button class="icon-btn" data-search-open aria-label="Search">⌕</button>
+      <button class="icon-btn" data-theme-toggle aria-label="Switch theme">◐</button>
+    </nav>
+  </div>
+</header>
+
+<div class="layout">
+
+<aside class="sidebar">
+  <svg class="icon-sprite" aria-hidden="true"><symbol id="i-rocket" viewBox="0 0 16 16"><path d="M6.5 9.5 3 8.8l2.2-2.6 2.6-.3M6.5 9.5 7.2 13l2.6-2.2.3-2.6M6.5 9.5 9.5 6.5m0 0a12 12 0 0 1 3.8-3.8 5 5 0 0 1-3.8 3.8ZM4.5 11.5 3 14l2.5-1.5"/></symbol><symbol id="i-book" viewBox="0 0 16 16"><path d="M2.5 3.5h4a2 2 0 0 1 2 2v7a1.5 1.5 0 0 0-1.5-1.5h-4.5Zm11 0h-4a2 2 0 0 0-2 2v7A1.5 1.5 0 0 1 9 11h4.5Z"/></symbol><symbol id="i-play" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><path d="m6.8 5.8 3.2 2.2-3.2 2.2Z"/></symbol><symbol id="i-cart" viewBox="0 0 16 16"><path d="M2 2.5h1.6l1.6 7.4h6.6l1.3-5.2H4.2"/><circle cx="6.3" cy="12.6" r="1"/><circle cx="11.4" cy="12.6" r="1"/></symbol><symbol id="i-scales" viewBox="0 0 16 16"><path d="M8 2.5v11M4.5 4.2h7M2 10a2.5 2.5 0 0 0 5 0L4.5 4.5Zm7 0a2.5 2.5 0 0 0 5 0L11.5 4.5ZM5.5 13.5h5"/></symbol><symbol id="i-box" viewBox="0 0 16 16"><path d="M8 2 2.5 4.8v6.4L8 14l5.5-2.8V4.8Z"/><path d="M2.5 4.8 8 7.6l5.5-2.8M8 7.6V14"/></symbol><symbol id="i-transform" viewBox="0 0 16 16"><path d="M2 5.5h7m-2.2-2.2L9 5.5 6.8 7.7M14 10.5H7m2.2-2.2L7 10.5l2.2 2.2"/></symbol><symbol id="i-shield" viewBox="0 0 16 16"><path d="M8 2 3.5 3.8v3.7c0 2.6 1.9 5 4.5 5.9 2.6-.9 4.5-3.3 4.5-5.9V3.8Z"/><path d="m6.2 7.9 1.4 1.4 2.4-2.6"/></symbol><symbol id="i-search" viewBox="0 0 16 16"><circle cx="7.2" cy="7.2" r="4"/><path d="m10.2 10.2 3 3"/></symbol><symbol id="i-link" viewBox="0 0 16 16"><path d="M6.6 9.4a2.6 2.6 0 0 0 3.7 0l2-2a2.6 2.6 0 0 0-3.7-3.7l-.9.9"/><path d="M9.4 6.6a2.6 2.6 0 0 0-3.7 0l-2 2a2.6 2.6 0 0 0 3.7 3.7l.9-.9"/></symbol><symbol id="i-user" viewBox="0 0 16 16"><circle cx="8" cy="6" r="2.6"/><path d="M3.4 13.2a4.8 4.8 0 0 1 9.2 0"/></symbol><symbol id="i-image" viewBox="0 0 16 16"><rect x="2.5" y="3.5" width="11" height="9" rx="1.5"/><circle cx="6" cy="6.7" r="1"/><path d="m3.2 11.4 3-2.6 2.4 2 2-1.6 2.2 1.9"/></symbol><symbol id="i-signpost" viewBox="0 0 16 16"><path d="M8 2v12M8 4h4.2l1.3 1.6L12.2 7.2H8Zm0 4.2H3.8L2.5 9.8l1.3 1.6H8Z"/></symbol><symbol id="i-bolt" viewBox="0 0 16 16"><path d="M9 2 4 9h3.4l-.4 5 5-7H8.6Z"/></symbol><symbol id="i-broadcast" viewBox="0 0 16 16"><circle cx="8" cy="8" r="1.6"/><path d="M5.2 10.8a4 4 0 0 1 0-5.6m5.6 0a4 4 0 0 1 0 5.6M3.2 12.8a6.8 6.8 0 0 1 0-9.6m9.6 0a6.8 6.8 0 0 1 0 9.6"/></symbol><symbol id="i-exchange" viewBox="0 0 16 16"><path d="M2.8 5.5h9.1l-2-2M13.2 10.5H4.1l2 2"/></symbol><symbol id="i-lock" viewBox="0 0 16 16"><rect x="3.2" y="7" width="9.6" height="6.3" rx="1.5"/><path d="M5.5 7V5.3a2.5 2.5 0 0 1 5 0V7"/><path d="M8 9.6v1.4"/></symbol><symbol id="i-sprout" viewBox="0 0 16 16"><path d="M8 13.5V7.8m0 0C8 6 6.6 4.6 4.8 4.6H3.3c0 1.8 1.4 3.2 3.2 3.2Zm0 0c0-1.8 1.4-3.2 3.2-3.2h1.5c0 1.8-1.4 3.2-3.2 3.2Z"/></symbol><symbol id="i-gauge" viewBox="0 0 16 16"><path d="M2.8 11.6a5.9 5.9 0 1 1 10.4 0"/><path d="M8 8.8 10.6 6"/><circle cx="8" cy="9.4" r="1"/></symbol><symbol id="i-spark" viewBox="0 0 16 16"><path d="M6 2.4 6.9 5l2.6.9-2.6.9L6 9.4 5.1 6.8 2.5 5.9l2.6-.9Z"/><path d="m11.6 8.4.6 1.7 1.7.6-1.7.6-.6 1.7-.6-1.7-1.7-.6 1.7-.6Z"/></symbol><symbol id="i-alert" viewBox="0 0 16 16"><path d="M8 2.8 2.6 12.4h10.8Z"/><path d="M8 6.4v2.8M8 10.8v.1"/></symbol><symbol id="i-terminal" viewBox="0 0 16 16"><rect x="2.2" y="3" width="11.6" height="10" rx="1.5"/><path d="m5 6.4 2 1.8-2 1.8M8.6 10.4h2.6"/></symbol><symbol id="i-lifebuoy" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><circle cx="8" cy="8" r="2.2"/><path d="m4.1 4.1 2.3 2.3m3.2 3.2 2.3 2.3m0-7.8-2.3 2.3M6.4 9.6l-2.3 2.3"/></symbol><symbol id="i-at" viewBox="0 0 16 16"><circle cx="8" cy="8" r="2.3"/><path d="M10.3 5.7v3a1.8 1.8 0 0 0 3.2 1.1A5.8 5.8 0 1 0 11 13"/></symbol><symbol id="i-sliders" viewBox="0 0 16 16"><path d="M2.5 5h7m3 0h1m-11 6h1m3 0h7"/><circle cx="11" cy="5" r="1.5"/><circle cx="5" cy="11" r="1.5"/></symbol><symbol id="i-layers" viewBox="0 0 16 16"><path d="M8 2.2 2.4 5 8 7.8 13.6 5Z"/><path d="m2.4 8 5.6 2.8L13.6 8m-11.2 3 5.6 2.8L13.6 11"/></symbol><symbol id="i-wrench" viewBox="0 0 16 16"><path d="M10.4 2.6a3.4 3.4 0 0 0-3.9 4.6l-4 4a1.3 1.3 0 0 0 1.9 1.9l4-4a3.4 3.4 0 0 0 4.6-3.9l-1.9 1.9-1.9-.5-.5-1.9Z"/></symbol></svg>
+  <h5>Start here</h5>
+  <ul>
+    <li><a href="../guide/getting-started.html"><svg class="ic" aria-hidden="true"><use href="#i-rocket"/></svg><span>Getting started</span></a></li>
+    <li><a href="../guide/ai-assistants.html"><svg class="ic" aria-hidden="true"><use href="#i-spark"/></svg><span>AI assistants</span></a></li>
+    <li class="has-sub">
+      <details>
+        <summary><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg><span>Tutorials</span></summary>
+        <ul>
+        <li><a href="../guide/tutorial.html"><svg class="ic" aria-hidden="true"><use href="#i-play"/></svg><span>A first API</span></a></li>
+        <li><a href="../guide/tutorial-orders.html"><svg class="ic" aria-hidden="true"><use href="#i-cart"/></svg><span>Orders &amp; stock</span></a></li>
+        </ul>
+      </details>
+    </li>
+    <li><a href="../guide/vs-nestjs.html"><svg class="ic" aria-hidden="true"><use href="#i-scales"/></svg><span>Compared with NestJS</span></a></li>
+  </ul>
+  <h5>Guide</h5>
+  <ul>
+    <li><a href="../guide/models.html"><svg class="ic" aria-hidden="true"><use href="#i-box"/></svg><span>Models &amp; fields</span></a></li>
+    <li><a href="../guide/from-params.html"><svg class="ic" aria-hidden="true"><use href="#i-transform"/></svg><span>fromParams</span></a></li>
+    <li><a href="../guide/acl.html"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg><span>Permissions &amp; ACL</span></a></li>
+    <li><a href="../guide/queries.html"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg><span>Queries</span></a></li>
+    <li><a href="../guide/relations.html"><svg class="ic" aria-hidden="true"><use href="#i-link"/></svg><span>Relationships</span></a></li>
+    <li><a href="../guide/users.html"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg><span>Users &amp; auth</span></a></li>
+    <li><a href="../guide/files.html"><svg class="ic" aria-hidden="true"><use href="#i-image"/></svg><span>Files &amp; images</span></a></li>
+    <li><a href="../guide/endpoints.html"><svg class="ic" aria-hidden="true"><use href="#i-signpost"/></svg><span>Endpoints &amp; routing</span></a></li>
+    <li><a href="../guide/triggers.html"><svg class="ic" aria-hidden="true"><use href="#i-bolt"/></svg><span>Triggers</span></a></li>
+    <li><a href="../guide/live-query.html"><svg class="ic" aria-hidden="true"><use href="#i-broadcast"/></svg><span>Real-time</span></a></li>
+    <li><a href="../guide/transactions.html"><svg class="ic" aria-hidden="true"><use href="#i-exchange"/></svg><span>Transactions</span></a></li>
+    <li><a href="../guide/optimistic-locking.html"><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg><span>Optimistic locking</span></a></li>
+    <li><a href="../guide/seeding.html"><svg class="ic" aria-hidden="true"><use href="#i-sprout"/></svg><span>Seeding data</span></a></li>
+    <li><a href="../guide/dashboard.html"><svg class="ic" aria-hidden="true"><use href="#i-gauge"/></svg><span>Parse Dashboard</span></a></li>
+    <li><a href="../guide/errors.html"><svg class="ic" aria-hidden="true"><use href="#i-alert"/></svg><span>Errors</span></a></li>
+    <li><a href="../guide/cli.html"><svg class="ic" aria-hidden="true"><use href="#i-terminal"/></svg><span>The psk CLI</span></a></li>
+    <li><a href="../guide/troubleshooting.html"><svg class="ic" aria-hidden="true"><use href="#i-lifebuoy"/></svg><span>Troubleshooting</span></a></li>
+  </ul>
+  <h5>Reference</h5>
+  <ul>
+    <li><a href="../reference/decorators.html"><svg class="ic" aria-hidden="true"><use href="#i-at"/></svg><span>Decorators</span></a></li>
+    <li><a href="../reference/configuration.html"><svg class="ic" aria-hidden="true"><use href="#i-sliders"/></svg><span>Configuration</span></a></li>
+    <li><a href="../reference/middleware.html"><svg class="ic" aria-hidden="true"><use href="#i-layers"/></svg><span>Middleware</span></a></li>
+    <li><a href="../reference/utilities.html"><svg class="ic" aria-hidden="true"><use href="#i-wrench"/></svg><span>Utilities</span></a></li>
+  </ul>
+</aside>
+
+<main class="content">
+  <p class="eyebrow">Guide</p>
+  <h1>Permissions &amp; ACL</h1>
+  <p class="lede">
+    This is the part of Parse Server worth building on. Per-row authorisation, enforced by
+    the database layer on every query, is weeks of work in any framework that does not have
+    it — and it is the thing most people never build properly.
+  </p>
+
+  <h2 id="model">Two layers, and both must pass</h2>
+
+  <p>
+    Parse checks permissions twice, at different granularities. Understanding which layer is
+    refusing you is most of the debugging.
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th></th><th>CLP — class level</th><th>ACL — row level</th></tr></thead>
+      <tbody>
+        <tr><td><b>Question</b></td><td>May this kind of caller touch this class at all?</td><td>May this caller touch <em>this record</em>?</td></tr>
+        <tr><td><b>Scope</b></td><td>The whole class</td><td>One object</td></tr>
+        <tr><td><b>Stored in</b></td><td>The Parse schema</td><td>A column on every row</td></tr>
+        <tr><td><b>Declared</b></td><td><code>@ParseClass({clp})</code>, once</td><td><code>obj.setACL(...)</code>, per record</td></tr>
+        <tr><td><b>Answer when refused</b></td><td>Permission error</td><td>Usually <em>invisible</em> — see below</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    A request must satisfy <b>both</b>. CLP is the coarse gate: <em>employees may read
+    invoices</em>. The ACL is the fine one: <em>…but only invoices belonging to their own
+    branch</em>. The master key bypasses both entirely.
+  </p>
+
+  <div class="note">
+    <span class="note-title">The ACL filters rather than refuses</span>
+    A query does not fail when the ACL denies you — the rows simply are not in the result.
+    That is the correct behaviour (a refusal would confirm the record exists), but it means
+    <b>"my query returns nothing"</b> and <b>"my query returns fewer rows than expected"</b>
+    are usually ACL problems, not query problems.
+  </div>
+
+  <h2 id="clp">Class-level permissions</h2>
+
+  <p>Six operations, declared once on the model and written into the schema at boot.</p>
+
+<pre class="code-block"><code><span class="t-key">import</span> {
+  ParseClass, roleKey, implementACL, cloneAcl, CloudFunction, catchError,
+  BeforeSave, validateOrThrow, syncImageAcl,
+} <span class="t-key">from</span> <span class="t-str">'parse-server-kit'</span>;
+
+<span class="t-key">export enum</span> Roles {
+  ADMIN  = <span class="t-str">'Admin'</span>,
+  EDITOR = <span class="t-str">'Editor'</span>,
+  MEMBER = <span class="t-str">'Member'</span>,
+}
+
+<span class="t-dec">@ParseClass</span>(<span class="t-str">'Article'</span>, {
+  clp: {
+    find:   { requiresAuthentication: <span class="t-key">true</span> },
+    get:    { requiresAuthentication: <span class="t-key">true</span> },
+    count:  { requiresAuthentication: <span class="t-key">true</span> },
+    create: { [roleKey(Roles.EDITOR)]: <span class="t-key">true</span> },
+    update: { [roleKey(Roles.EDITOR)]: <span class="t-key">true</span> },
+    delete: { [roleKey(Roles.ADMIN)]:  <span class="t-key">true</span> },
+  },
+})</code></pre>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Operation</th><th>Covers</th></tr></thead>
+      <tbody>
+        <tr><td><code>find</code></td><td>Querying for many objects</td></tr>
+        <tr><td><code>get</code></td><td>Fetching one by id</td></tr>
+        <tr><td><code>count</code></td><td>Counting. Separate because a count can leak size</td></tr>
+        <tr><td><code>create</code></td><td>Inserting</td></tr>
+        <tr><td><code>update</code></td><td>Modifying an existing row</td></tr>
+        <tr><td><code>delete</code></td><td>Removing</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="clp-forms">The four forms</h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Written as</th><th>Means</th></tr></thead>
+      <tbody>
+        <tr><td><code>{}</code></td><td><b>Master key only.</b> No client reaches it — the strictest setting</td></tr>
+        <tr><td><code>{requiresAuthentication: true}</code></td><td>Any signed-in user</td></tr>
+        <tr><td><code>{[roleKey('Editor')]: true}</code></td><td>Members of that role</td></tr>
+        <tr><td><code>'*'</code></td><td><b>Everyone, including anonymous.</b> Use knowingly</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    Several roles combine as alternatives — <code>{[roleKey('Editor')]: true,
+    [roleKey('Admin')]: true}</code> means <em>either</em>. There is no "all of" at the CLP
+    level; for that, check roles inside the endpoint with
+    <code>requireAllRoles</code>.
+  </p>
+
+  <p>
+    Use <code>roleKey</code> rather than writing <code>'role:Editor'</code> by hand. It is
+    generic over the role name and returns that exact literal type, so a typo in a
+    permission key is a compile error rather than a permission that silently never matches.
+  </p>
+
+  <h3 id="protected-fields">Hiding individual fields</h3>
+
+  <p>
+    Sometimes the row should be readable but one column should not. <code>protectedFields</code>
+    removes fields per role, without a second class or a mapping layer.
+  </p>
+
+<pre class="code-block"><code><span class="t-dec">@ParseClass</span>(<span class="t-str">'Employee'</span>, {
+  clp: { <span class="t-com">/* … */</span> },
+  protectedFields: {
+    <span class="t-str">'*'</span>: [<span class="t-str">'salary'</span>, <span class="t-str">'nationalId'</span>],       <span class="t-com">// hidden from everyone…</span>
+    [roleKey(Roles.ADMIN)]: [],                <span class="t-com">// …except admins</span>
+  },
+})</code></pre>
+
+  <h2 id="default-acl">The default ACL template — read this one</h2>
+
+  <p>
+    <code>@ParseClass</code> also writes a <b>default ACL template</b> into the schema. It is
+    applied to objects created without an explicit ACL, and if you do not set it, it is:
+  </p>
+
+<pre class="code-block"><code>{ <span class="t-str">'*'</span>: { read: <span class="t-key">true</span>, write: <span class="t-key">true</span> } }   <span class="t-com">// public read AND write</span></code></pre>
+
+  <div class="note danger">
+    <span class="note-title">A row saved with no ACL is world-writable</span>
+    This surprises people. The CLP may be locked down to a single role, but the moment a
+    record is created through a path that sets no ACL — a script, the dashboard, a seed, an
+    endpoint that forgot — the row itself is open to anyone the CLP lets through. CLP and
+    ACL are independent; a strict CLP does not imply a strict ACL.
+  </div>
+
+  <p>Set the template explicitly on any class holding data that is not genuinely public:</p>
+
+<pre class="code-block"><code><span class="t-dec">@ParseClass</span>(<span class="t-str">'Invoice'</span>, {
+  clp: { <span class="t-com">/* … */</span> },
+  <span class="t-com">// Applied to new rows that arrive without an ACL of their own.</span>
+  ACL: {
+    [<span class="t-str">'role:'</span> + Roles.ADMIN]: { read: <span class="t-key">true</span>, write: <span class="t-key">true</span> },
+  },
+})</code></pre>
+
+  <p>
+    Treat it as a floor, not as the mechanism. The real ACL should be set deliberately when
+    the record is created — the template is what catches the paths you forgot.
+  </p>
+
+  <h2 id="acl">Row-level ACLs</h2>
+
+  <p>An ACL is a map from an identity to what it may do. Three kinds of key:</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Key</th><th>Identity</th></tr></thead>
+      <tbody>
+        <tr><td><code>*</code></td><td>Everyone, signed in or not</td></tr>
+        <tr><td><code>role:Editor</code></td><td>Every member of that role, resolved at request time</td></tr>
+        <tr><td><code>xY7kQp2mAb</code></td><td>One user, by objectId</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    Each carries <code>read</code> and <code>write</code>. There is <b>no separate delete
+    permission</b> — <code>write</code> covers update and delete together. If you need
+    "may edit but not remove", that belongs in the endpoint or a
+    <code>@BeforeDelete</code> trigger, not the ACL.
+  </p>
+
+  <h3 id="implementacl">implementACL</h3>
+
+  <p>
+    Takes one params object and <b>returns</b> an ACL. It does not take the object as an
+    argument — a signature worth remembering, because the wrong shape is a common mistake.
+  </p>
+
+<pre class="code-block"><code>article.setACL(implementACL({
+  roleRules: [
+    { role: Roles.ADMIN,  read: <span class="t-key">true</span>, write: <span class="t-key">true</span> },
+    { role: Roles.EDITOR, read: <span class="t-key">true</span>, write: <span class="t-key">true</span> },
+    { role: Roles.MEMBER, read: <span class="t-key">true</span> },              <span class="t-com">// read only</span>
+  ],
+  owner: [{ user: authorId, read: <span class="t-key">true</span>, write: <span class="t-key">true</span> }],
+  publicRead: status === <span class="t-str">'published'</span>,
+}));</code></pre>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Parameter</th><th>Effect</th></tr></thead>
+      <tbody>
+        <tr><td><code>publicRead</code> / <code>publicWrite</code></td><td>The <code>*</code> entry. Both default to <code>false</code></td></tr>
+        <tr><td><code>roleRules</code></td><td><code>{role, read?, write?}</code> per role</td></tr>
+        <tr><td><code>owner</code></td><td><code>{user, read?, write?}</code> — takes a user id or object</td></tr>
+        <tr><td><code>excludedRoles</code></td><td>Role names whose rule is <b>skipped</b> — see below. Useful when the rules are built from data</td></tr>
+        <tr><td><em>second argument</em></td><td>An existing ACL to modify instead of building a fresh one. Modified <b>in place</b></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note warn">
+    <span class="note-title">It revokes as well as grants</span>
+    Omitting <code>read</code> is not "leave as is" — it is <code>read: false</code>, and
+    the access is explicitly removed. Likewise <code>publicRead</code> defaults to
+    <code>false</code> and is applied on every call. That is what you want when building an
+    ACL from scratch. When passing an <b>existing</b> ACL as the second argument, be aware
+    you are rewriting every rule you mention, not adding to them.
+<pre class="code-block"><code><span class="t-com">// An existing ACL that grants public read...</span>
+existing.setPublicReadAccess(<span class="t-key">true</span>);
+
+<span class="t-com">// ...loses it here, because publicRead was not restated.</span>
+implementACL({ roleRules: [{ role: <span class="t-str">'Admin'</span>, read: <span class="t-key">true</span> }] }, existing);
+<span class="t-com">// =&gt; { "role:Admin": { "read": true } }</span></code></pre>
+    In a <code>beforeSave</code> trigger this is the right behaviour and not a trap, because
+    the trigger runs on every save and restates the whole rule —
+    <code>publicRead: status === 'published'</code> re-derives it each time.
+  </div>
+
+  <div class="note warn">
+    <span class="note-title">The second argument is modified, not copied</span>
+    <code>implementACL(params, existing)</code> returns <em>the same object</em> it was
+    given. If the original has to survive untouched, hand it a copy:
+<pre class="code-block"><code><span class="t-key">const</span> updated = implementACL(params, cloneAcl(existing));
+<span class="t-com">// `existing` is unchanged; `updated` is a separate ACL.</span></code></pre>
+  </div>
+
+  <div class="note danger">
+    <span class="note-title">excludedRoles skips the rule — it does not deny the role</span>
+    The name suggests exclusion from access. It means exclusion from
+    <em>processing</em>: the rule is not applied at all, so on an existing ACL, whatever that
+    role was already granted <b>survives</b>.
+<pre class="code-block"><code><span class="t-com">// Legacy already has read + write on this row.</span>
+implementACL({
+  roleRules: [{ role: <span class="t-str">'Legacy'</span>, read: <span class="t-key">false</span>, write: <span class="t-key">false</span> }],
+  excludedRoles: [<span class="t-str">'Legacy'</span>],        <span class="t-com">// rule skipped entirely...</span>
+}, existing);
+<span class="t-com">// =&gt; { "role:Legacy": { "read": true, "write": true } }  - still there</span>
+
+<span class="t-com">// To actually take access away, name the role with nothing allowed</span>
+<span class="t-com">// and do NOT exclude it:</span>
+implementACL({ roleRules: [{ role: <span class="t-str">'Legacy'</span> }] }, existing);
+<span class="t-com">// =&gt; { }</span></code></pre>
+  </div>
+
+  <h2 id="patterns">Patterns</h2>
+
+  <p>Most applications need four or five of these. They compose.</p>
+
+  <h3 id="pattern-owner">The record belongs to its creator</h3>
+
+<pre class="code-block"><code><span class="t-dec">@CloudFunction</span>({ methods: [<span class="t-str">'POST'</span>], validation: { requireUser: <span class="t-key">true</span> } })
+<span class="t-key">static async</span> createNote(req: Parse.Cloud.FunctionRequest) {
+  <span class="t-key">const</span> user = req.user!;
+  <span class="t-key">const</span> note = Note.fromParams(req.params);
+
+  note.setACL(implementACL({
+    owner: [{ user: user.id, read: <span class="t-key">true</span>, write: <span class="t-key">true</span> }],
+    roleRules: [{ role: Roles.ADMIN, read: <span class="t-key">true</span>, write: <span class="t-key">true</span> }],
+  }));
+
+  <span class="t-key">const</span> [err, saved] = <span class="t-key">await</span> catchError(
+    note.save(<span class="t-key">null</span>, { sessionToken: user.getSessionToken() })
+  );
+  <span class="t-key">if</span> (err) <span class="t-key">throw</span> err;
+  <span class="t-key">return</span> saved;
+}</code></pre>
+
+  <p>
+    Every later query is now filtered for free. <code>listNotes</code> needs no
+    <code>equalTo('owner', user)</code> clause — pass the session token and the database
+    returns only what that user may see. That is the part worth the whole platform: the
+    filter cannot be forgotten in one endpoint, because it is not in any endpoint.
+  </p>
+
+  <h3 id="pattern-status">Visibility that follows a status</h3>
+
+<pre class="code-block"><code><span class="t-key">function</span> articleAcl(authorId: <span class="t-key">string</span>, status: <span class="t-key">string</span>) {
+  <span class="t-key">return</span> implementACL({
+    owner: [{ user: authorId, read: <span class="t-key">true</span>, write: <span class="t-key">true</span> }],
+    roleRules: [{ role: Roles.ADMIN, read: <span class="t-key">true</span>, write: <span class="t-key">true</span> }],
+    <span class="t-com">// The single line that publishes it.</span>
+    publicRead: status === <span class="t-str">'published'</span>,
+  });
+}</code></pre>
+
+  <p>
+    Because <code>implementACL</code> rewrites the rules it is given, calling this again on
+    a status change both grants and revokes correctly — unpublishing genuinely removes
+    public access rather than leaving it behind.
+  </p>
+
+  <div class="note">
+    <span class="note-title">Recompute the ACL on every transition</span>
+    Create, approve, reject, publish, archive, restore. A record whose ACL was set once at
+    creation and never revisited is the most common source of "why can that person still
+    see it".
+  </div>
+
+  <h3 id="pattern-team">Scoping to a team or organisation</h3>
+
+  <p>
+    Parse roles can contain other roles, so a per-tenant role gives you multi-tenancy
+    without a <code>where</code> clause anywhere in the codebase.
+  </p>
+
+<pre class="code-block"><code><span class="t-com">// One role per organisation: 'org:acme'. Members are added on invite.</span>
+document.setACL(implementACL({
+  roleRules: [
+    { role: <span class="t-str">`org:</span>${orgSlug}<span class="t-str">`</span>, read: <span class="t-key">true</span>, write: <span class="t-key">true</span> },
+    { role: Roles.ADMIN,        read: <span class="t-key">true</span>, write: <span class="t-key">true</span> },
+  ],
+}));</code></pre>
+
+  <p>
+    Cross-tenant leakage then requires someone to be in the wrong role, rather than requiring
+    every query in the application to be written correctly.
+  </p>
+
+  <h3 id="pattern-trigger">Enforcing it on every save path</h3>
+
+  <p>
+    An ACL set in one endpoint protects that endpoint. Setting it in
+    <code>@BeforeSave</code> protects the dashboard, scripts, imports and any endpoint added
+    later.
+  </p>
+
+<pre class="code-block"><code><span class="t-dec">@BeforeSave</span>()
+<span class="t-key">static async</span> onBeforeSave(req: Parse.Cloud.BeforeSaveRequest&lt;Article&gt;) {
+  <span class="t-key">const</span> article = req.object <span class="t-key">as</span> Article;
+
+  <span class="t-com">// Only on create - do not fight a deliberate change later.</span>
+  <span class="t-key">if</span> (!article.existed() &amp;&amp; !article.getACL() &amp;&amp; req.user) {
+    article.setACL(implementACL({
+      owner: [{ user: req.user.id, read: <span class="t-key">true</span>, write: <span class="t-key">true</span> }],
+      roleRules: [{ role: Roles.ADMIN, read: <span class="t-key">true</span>, write: <span class="t-key">true</span> }],
+    }));
+  }
+
+  validateOrThrow(article);
+}</code></pre>
+
+  <h3 id="pattern-nested">Nested objects that must follow the parent</h3>
+
+  <p>
+    A pointed-to record keeps whatever ACL it was created with. Publish the parent and its
+    image stays invisible; hide the parent and its image stays readable.
+  </p>
+
+<pre class="code-block"><code>offer.setACL(implementACL({ roleRules, publicRead: status === <span class="t-str">'active'</span> }));
+syncImageAcl(offer, [<span class="t-str">'image'</span>, <span class="t-str">'gallery'</span>]);   <span class="t-com">// after setACL, before save</span>
+<span class="t-key">await</span> offer.save(<span class="t-key">null</span>, { sessionToken });</code></pre>
+
+  <p>
+    <code>syncImageAcl</code> copies the parent's ACL onto each pointed-to record — single
+    pointer or array — and dirties them so the parent's save cascades the change. Call it
+    after the parent's <em>final</em> ACL is set and before saving.
+  </p>
+
+  <p>
+    Where visibility is derived inside a <code>beforeSave</code> trigger, pass that
+    <code>publicRead</code> into <code>implementACL</code> at the call site:
+    <code>syncImageAcl</code> runs before the trigger does, so it would otherwise copy the
+    ACL as it was a moment too early.
+  </p>
+
+  <h2 id="master-key">The master key, and why to use it sparingly</h2>
+
+  <p>
+    <code>{useMasterKey: true}</code> bypasses CLP and ACL completely. It is the right tool
+    for administrative work, migrations and system jobs — and the wrong one for ordinary
+    request handling, because it throws away the protection you set up.
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Use</th><th>When</th></tr></thead>
+      <tbody>
+        <tr><td><code>{sessionToken}</code></td><td><b>Almost always.</b> The database enforces the caller's permissions for you</td></tr>
+        <tr><td><code>{useMasterKey: true}</code></td><td>Migrations, seeds, cron jobs, deliberate cross-user administration</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    A codebase where every query uses the master key has, in effect, no row-level security
+    at all — the ACLs are written but never consulted. If you find yourself reaching for it
+    to make something work, that is usually the ACL telling you it is set wrongly.
+  </p>
+
+  <h2 id="mistakes">Common mistakes</h2>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Symptom</th><th>Usually</th></tr></thead>
+      <tbody>
+        <tr><td>A record is visible to everyone</td><td>No ACL was ever set, so the class's default template applied — and unless you declared one, that is public read and write</td></tr>
+        <tr><td>A query returns nothing</td><td>The ACL filtered every row. Retry with the master key: if rows appear, it is the ACL, not the query</td></tr>
+        <tr><td>A query returns fewer rows than the count</td><td><code>count</code> and <code>find</code> have separate CLP entries, and one of them is more permissive</td></tr>
+        <tr><td>Refused with "object not found"</td><td>Parse reports a CLP or ACL refusal as missing rather than forbidden, deliberately — it will not confirm that a record exists</td></tr>
+        <tr><td>A user cannot see their own record</td><td>The ACL was set before the object had an id, or built from <code>user.id</code> when the user was not yet saved</td></tr>
+        <tr><td>Unpublishing leaves it public</td><td>The ACL was set at creation and never recomputed on the status change</td></tr>
+        <tr><td>A role grants nothing</td><td>The role name does not exist in <code>_Role</code>, or the key was written by hand and misspelled. <code>roleKey</code> prevents the second</td></tr>
+        <tr><td>An image is invisible while its record is public</td><td><code>syncImageAcl</code> was not called after the parent's ACL was set</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 id="debugging">Working out which layer refused you</h2>
+
+  <ol>
+    <li><b>Repeat the call with the master key.</b> If it works, permissions are the cause; if not, look at the query.</li>
+    <li><b>Read the row's ACL</b> — <code>obj.getACL()?.toJSON()</code> shows exactly which identities have which access.</li>
+    <li><b>Check the user's roles</b> — <code>await getUserRoles(user)</code>. A role the ACL names but the user lacks explains most refusals.</li>
+    <li><b>Compare against the CLP</b> in <code>@ParseClass</code>. If <code>find</code> is stricter than you remember, the ACL is not the problem.</li>
+  </ol>
+
+  <div class="note good">
+    <span class="note-title">Why this is worth the effort</span>
+    Once the ACL is right, the authorisation logic leaves your endpoints entirely. There is
+    no <code>if (doc.ownerId !== user.id) throw</code> to forget in the twelfth endpoint, no
+    filter to omit from a new query, and no admin panel quietly reading everything because
+    it was written last and nobody checked. The database applies the rule, on every path,
+    including the ones you have not written yet.
+  </div>
+
+  <p>
+    For the semantics of <code>Parse.ACL</code>, <code>Parse.Role</code> and role hierarchy
+    themselves, the <a href="https://docs.parseplatform.org/js/guide/#security">Parse
+    Platform security guide</a> is the reference. This page covers what this library adds on
+    top of it.
+  </p>
+
+  <div class="pager">
+    <a href="from-params.html"><span>Back</span>fromParams</a>
+    <a class="next" href="queries.html"><span>Next</span>Queries</a>
+  </div>
+</main>
+
+</div>
+
+<footer class="site-footer">
+  <div class="inner">
+    <span>MIT licensed</span>
+    <a href="https://www.npmjs.com/package/parse-server-kit">npm</a>
+    <a href="https://github.com/walhalabi-code/parse-server-kit">GitHub</a>
+    <span class="spacer">For Parse concepts, <a href="https://docs.parseplatform.org/">its docs</a> remain the reference.</span>
+  </div>
+</footer>
+
+<script src="../assets/docs.js"></script>
+</body>
+</html>

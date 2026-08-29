@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data:; font-src 'self'; form-action 'none'; base-uri 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parse Dashboard — parse-server-kit</title>
+<meta name="description" content="An admin console for every class, query, user and role — one install away, already wired into the generated project. What it can do, why it is not bundled, and how to expose it without handing out your master key.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Parse Dashboard — parse-server-kit">
+<meta property="og:description" content="An admin console for every class, query, user and role — one install away, already wired into the generated project.">
+<meta property="og:url" content="https://walhalabi-code.github.io/parse-server-kit/guide/dashboard.html">
+<meta property="og:site_name" content="parse-server-kit">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="../index.html"><svg class="brand-mark" viewBox="12 10 62 72" aria-hidden="true"><g transform="translate(18, 14)" fill="none" stroke-linecap="round" stroke-linejoin="round"><path class="logo-base" pathLength="1" d="M 40 24 C 40 14, 28 12, 20 22 C 12 32, 12 44, 22 52 C 32 60, 46 52, 46 36 C 46 20, 34 10, 20 10 C 7 10, 2 22, 2 38 C 2 54, 12 64, 28 64 C 38 64, 48 57, 52 48" stroke="var(--logo-base)" stroke-width="3" opacity="0.6"/><g class="logo-layer" transform="translate(-3, -4)"><path class="logo-kit-path" pathLength="1" d="M 40 20 C 40 10, 28 8, 20 18 C 12 28, 12 40, 22 48 C 32 56, 46 48, 46 32 C 46 16, 34 6, 20 6 C 7 6, 2 18, 2 34 C 2 50, 12 60, 28 60 C 38 60, 48 53, 52 44" stroke="var(--logo-kit)" stroke-width="3.5"/><circle class="logo-dot" cx="25" cy="28" r="3.5" fill="var(--logo-kit)" stroke="none"/></g></g></svg>parse-server-kit <span class="v">3.0</span></a>
+    <nav class="nav">
+      <button class="icon-btn menu-btn" data-menu-toggle aria-expanded="false" aria-label="Toggle navigation">≡</button>
+      <button class="icon-btn" data-search-open aria-label="Search">⌕</button>
+      <a class="nav-ai" href="../guide/ai-assistants.html"><svg class="ai-spark" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 2.4 6.9 5l2.6.9-2.6.9L6 9.4 5.1 6.8 2.5 5.9l2.6-.9Z"/><path d="m11.6 8.4.6 1.7 1.7.6-1.7.6-.6 1.7-.6-1.7-1.7-.6 1.7-.6Z"/></svg>AI</a>
+      <a class="hide-sm" href="../index.html">Home</a>
+      <a class="hide-sm" href="https://github.com/walhalabi-code/parse-server-kit">GitHub</a>
+      <button class="icon-btn" data-theme-toggle aria-label="Switch theme">◐</button>
+    </nav>
+  </div>
+</header>
+
+<div class="layout">
+
+<aside class="sidebar">
+  <svg class="icon-sprite" aria-hidden="true"><symbol id="i-rocket" viewBox="0 0 16 16"><path d="M6.5 9.5 3 8.8l2.2-2.6 2.6-.3M6.5 9.5 7.2 13l2.6-2.2.3-2.6M6.5 9.5 9.5 6.5m0 0a12 12 0 0 1 3.8-3.8 5 5 0 0 1-3.8 3.8ZM4.5 11.5 3 14l2.5-1.5"/></symbol><symbol id="i-book" viewBox="0 0 16 16"><path d="M2.5 3.5h4a2 2 0 0 1 2 2v7a1.5 1.5 0 0 0-1.5-1.5h-4.5Zm11 0h-4a2 2 0 0 0-2 2v7A1.5 1.5 0 0 1 9 11h4.5Z"/></symbol><symbol id="i-play" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><path d="m6.8 5.8 3.2 2.2-3.2 2.2Z"/></symbol><symbol id="i-cart" viewBox="0 0 16 16"><path d="M2 2.5h1.6l1.6 7.4h6.6l1.3-5.2H4.2"/><circle cx="6.3" cy="12.6" r="1"/><circle cx="11.4" cy="12.6" r="1"/></symbol><symbol id="i-scales" viewBox="0 0 16 16"><path d="M8 2.5v11M4.5 4.2h7M2 10a2.5 2.5 0 0 0 5 0L4.5 4.5Zm7 0a2.5 2.5 0 0 0 5 0L11.5 4.5ZM5.5 13.5h5"/></symbol><symbol id="i-box" viewBox="0 0 16 16"><path d="M8 2 2.5 4.8v6.4L8 14l5.5-2.8V4.8Z"/><path d="M2.5 4.8 8 7.6l5.5-2.8M8 7.6V14"/></symbol><symbol id="i-transform" viewBox="0 0 16 16"><path d="M2 5.5h7m-2.2-2.2L9 5.5 6.8 7.7M14 10.5H7m2.2-2.2L7 10.5l2.2 2.2"/></symbol><symbol id="i-shield" viewBox="0 0 16 16"><path d="M8 2 3.5 3.8v3.7c0 2.6 1.9 5 4.5 5.9 2.6-.9 4.5-3.3 4.5-5.9V3.8Z"/><path d="m6.2 7.9 1.4 1.4 2.4-2.6"/></symbol><symbol id="i-search" viewBox="0 0 16 16"><circle cx="7.2" cy="7.2" r="4"/><path d="m10.2 10.2 3 3"/></symbol><symbol id="i-link" viewBox="0 0 16 16"><path d="M6.6 9.4a2.6 2.6 0 0 0 3.7 0l2-2a2.6 2.6 0 0 0-3.7-3.7l-.9.9"/><path d="M9.4 6.6a2.6 2.6 0 0 0-3.7 0l-2 2a2.6 2.6 0 0 0 3.7 3.7l.9-.9"/></symbol><symbol id="i-user" viewBox="0 0 16 16"><circle cx="8" cy="6" r="2.6"/><path d="M3.4 13.2a4.8 4.8 0 0 1 9.2 0"/></symbol><symbol id="i-image" viewBox="0 0 16 16"><rect x="2.5" y="3.5" width="11" height="9" rx="1.5"/><circle cx="6" cy="6.7" r="1"/><path d="m3.2 11.4 3-2.6 2.4 2 2-1.6 2.2 1.9"/></symbol><symbol id="i-signpost" viewBox="0 0 16 16"><path d="M8 2v12M8 4h4.2l1.3 1.6L12.2 7.2H8Zm0 4.2H3.8L2.5 9.8l1.3 1.6H8Z"/></symbol><symbol id="i-bolt" viewBox="0 0 16 16"><path d="M9 2 4 9h3.4l-.4 5 5-7H8.6Z"/></symbol><symbol id="i-broadcast" viewBox="0 0 16 16"><circle cx="8" cy="8" r="1.6"/><path d="M5.2 10.8a4 4 0 0 1 0-5.6m5.6 0a4 4 0 0 1 0 5.6M3.2 12.8a6.8 6.8 0 0 1 0-9.6m9.6 0a6.8 6.8 0 0 1 0 9.6"/></symbol><symbol id="i-exchange" viewBox="0 0 16 16"><path d="M2.8 5.5h9.1l-2-2M13.2 10.5H4.1l2 2"/></symbol><symbol id="i-lock" viewBox="0 0 16 16"><rect x="3.2" y="7" width="9.6" height="6.3" rx="1.5"/><path d="M5.5 7V5.3a2.5 2.5 0 0 1 5 0V7"/><path d="M8 9.6v1.4"/></symbol><symbol id="i-sprout" viewBox="0 0 16 16"><path d="M8 13.5V7.8m0 0C8 6 6.6 4.6 4.8 4.6H3.3c0 1.8 1.4 3.2 3.2 3.2Zm0 0c0-1.8 1.4-3.2 3.2-3.2h1.5c0 1.8-1.4 3.2-3.2 3.2Z"/></symbol><symbol id="i-gauge" viewBox="0 0 16 16"><path d="M2.8 11.6a5.9 5.9 0 1 1 10.4 0"/><path d="M8 8.8 10.6 6"/><circle cx="8" cy="9.4" r="1"/></symbol><symbol id="i-spark" viewBox="0 0 16 16"><path d="M6 2.4 6.9 5l2.6.9-2.6.9L6 9.4 5.1 6.8 2.5 5.9l2.6-.9Z"/><path d="m11.6 8.4.6 1.7 1.7.6-1.7.6-.6 1.7-.6-1.7-1.7-.6 1.7-.6Z"/></symbol><symbol id="i-alert" viewBox="0 0 16 16"><path d="M8 2.8 2.6 12.4h10.8Z"/><path d="M8 6.4v2.8M8 10.8v.1"/></symbol><symbol id="i-terminal" viewBox="0 0 16 16"><rect x="2.2" y="3" width="11.6" height="10" rx="1.5"/><path d="m5 6.4 2 1.8-2 1.8M8.6 10.4h2.6"/></symbol><symbol id="i-lifebuoy" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><circle cx="8" cy="8" r="2.2"/><path d="m4.1 4.1 2.3 2.3m3.2 3.2 2.3 2.3m0-7.8-2.3 2.3M6.4 9.6l-2.3 2.3"/></symbol><symbol id="i-at" viewBox="0 0 16 16"><circle cx="8" cy="8" r="2.3"/><path d="M10.3 5.7v3a1.8 1.8 0 0 0 3.2 1.1A5.8 5.8 0 1 0 11 13"/></symbol><symbol id="i-sliders" viewBox="0 0 16 16"><path d="M2.5 5h7m3 0h1m-11 6h1m3 0h7"/><circle cx="11" cy="5" r="1.5"/><circle cx="5" cy="11" r="1.5"/></symbol><symbol id="i-layers" viewBox="0 0 16 16"><path d="M8 2.2 2.4 5 8 7.8 13.6 5Z"/><path d="m2.4 8 5.6 2.8L13.6 8m-11.2 3 5.6 2.8L13.6 11"/></symbol><symbol id="i-wrench" viewBox="0 0 16 16"><path d="M10.4 2.6a3.4 3.4 0 0 0-3.9 4.6l-4 4a1.3 1.3 0 0 0 1.9 1.9l4-4a3.4 3.4 0 0 0 4.6-3.9l-1.9 1.9-1.9-.5-.5-1.9Z"/></symbol></svg>
+  <h5>Start here</h5>
+  <ul>
+    <li><a href="../guide/getting-started.html"><svg class="ic" aria-hidden="true"><use href="#i-rocket"/></svg><span>Getting started</span></a></li>
+    <li><a href="../guide/ai-assistants.html"><svg class="ic" aria-hidden="true"><use href="#i-spark"/></svg><span>AI assistants</span></a></li>
+    <li class="has-sub">
+      <details>
+        <summary><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg><span>Tutorials</span></summary>
+        <ul>
+        <li><a href="../guide/tutorial.html"><svg class="ic" aria-hidden="true"><use href="#i-play"/></svg><span>A first API</span></a></li>
+        <li><a href="../guide/tutorial-orders.html"><svg class="ic" aria-hidden="true"><use href="#i-cart"/></svg><span>Orders &amp; stock</span></a></li>
+        </ul>
+      </details>
+    </li>
+    <li><a href="../guide/vs-nestjs.html"><svg class="ic" aria-hidden="true"><use href="#i-scales"/></svg><span>Compared with NestJS</span></a></li>
+  </ul>
+  <h5>Guide</h5>
+  <ul>
+    <li><a href="../guide/models.html"><svg class="ic" aria-hidden="true"><use href="#i-box"/></svg><span>Models &amp; fields</span></a></li>
+    <li><a href="../guide/from-params.html"><svg class="ic" aria-hidden="true"><use href="#i-transform"/></svg><span>fromParams</span></a></li>
+    <li><a href="../guide/acl.html"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg><span>Permissions &amp; ACL</span></a></li>
+    <li><a href="../guide/queries.html"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg><span>Queries</span></a></li>
+    <li><a href="../guide/relations.html"><svg class="ic" aria-hidden="true"><use href="#i-link"/></svg><span>Relationships</span></a></li>
+    <li><a href="../guide/users.html"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg><span>Users &amp; auth</span></a></li>
+    <li><a href="../guide/files.html"><svg class="ic" aria-hidden="true"><use href="#i-image"/></svg><span>Files &amp; images</span></a></li>
+    <li><a href="../guide/endpoints.html"><svg class="ic" aria-hidden="true"><use href="#i-signpost"/></svg><span>Endpoints &amp; routing</span></a></li>
+    <li><a href="../guide/triggers.html"><svg class="ic" aria-hidden="true"><use href="#i-bolt"/></svg><span>Triggers</span></a></li>
+    <li><a href="../guide/live-query.html"><svg class="ic" aria-hidden="true"><use href="#i-broadcast"/></svg><span>Real-time</span></a></li>
+    <li><a href="../guide/transactions.html"><svg class="ic" aria-hidden="true"><use href="#i-exchange"/></svg><span>Transactions</span></a></li>
+    <li><a href="../guide/optimistic-locking.html"><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg><span>Optimistic locking</span></a></li>
+    <li><a href="../guide/seeding.html"><svg class="ic" aria-hidden="true"><use href="#i-sprout"/></svg><span>Seeding data</span></a></li>
+    <li><a href="../guide/dashboard.html"><svg class="ic" aria-hidden="true"><use href="#i-gauge"/></svg><span>Parse Dashboard</span></a></li>
+    <li><a href="../guide/errors.html"><svg class="ic" aria-hidden="true"><use href="#i-alert"/></svg><span>Errors</span></a></li>
+    <li><a href="../guide/cli.html"><svg class="ic" aria-hidden="true"><use href="#i-terminal"/></svg><span>The psk CLI</span></a></li>
+    <li><a href="../guide/troubleshooting.html"><svg class="ic" aria-hidden="true"><use href="#i-lifebuoy"/></svg><span>Troubleshooting</span></a></li>
+  </ul>
+  <h5>Reference</h5>
+  <ul>
+    <li><a href="../reference/decorators.html"><svg class="ic" aria-hidden="true"><use href="#i-at"/></svg><span>Decorators</span></a></li>
+    <li><a href="../reference/configuration.html"><svg class="ic" aria-hidden="true"><use href="#i-sliders"/></svg><span>Configuration</span></a></li>
+    <li><a href="../reference/middleware.html"><svg class="ic" aria-hidden="true"><use href="#i-layers"/></svg><span>Middleware</span></a></li>
+    <li><a href="../reference/utilities.html"><svg class="ic" aria-hidden="true"><use href="#i-wrench"/></svg><span>Utilities</span></a></li>
+  </ul>
+</aside>
+
+<main class="content">
+  <p class="eyebrow">Guide</p>
+  <h1>Parse Dashboard</h1>
+  <p class="lede">An admin console over every class, query, user and role — the thing you would otherwise build or buy. It is one install away and already wired into the generated project, but it is not bundled, and the reason is worth understanding before you expose it.</p>
+
+  <h2 id="what">What you get</h2>
+  <p>
+    Parse Dashboard is the official web console for a Parse Server. It is a real
+    application, not a table viewer:
+  </p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Area</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td>Browser</td><td>Every class as a spreadsheet — read, edit, add and delete rows, including pointers and files</td></tr>
+        <tr><td>Query editor</td><td>Constraint builder plus raw queries, saved for reuse</td></tr>
+        <tr><td>Users &amp; roles</td><td>Inspect accounts, see role membership, reset a password, log a session out</td></tr>
+        <tr><td>Schema</td><td>Add and remove classes, fields and indexes, and see the CLP for each class</td></tr>
+        <tr><td>Cloud code</td><td>Read the deployed cloud code and job status</td></tr>
+        <tr><td>Push</td><td>Compose and send a push notification, with delivery stats</td></tr>
+        <tr><td>Config</td><td>Edit <code>Parse.Config</code> values live, without a deploy</td></tr>
+        <tr><td>Logs</td><td>Server logs, filtered by level</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    For a decorator-driven project the browser and the schema view are the useful pair:
+    your <code>@ParseClass</code> and <code>@ParseField</code> declarations become the schema
+    at boot, and the dashboard is where you confirm that what you declared is what the
+    database actually has.
+  </p>
+
+  <h2 id="install">Getting it</h2>
+  <p>Two commands. Nothing to configure.</p>
+<pre class="code-block"><code>npm install parse-dashboard
+npm run dev</code></pre>
+  <p>
+    It appears at <code>http://localhost:1337/dashboard</code>. The generated
+    <code>app.ts</code> already looks for it:
+  </p>
+<pre class="code-block"><code><span class="t-com">/**
+ * Mount Parse Dashboard at /dashboard, if it is installed.
+ *
+ * It is NOT a dependency of this project. The dashboard is a bundled React
+ * app and pulls in a lot for something plenty of services never expose, so it
+ * is opt-in - the same treatment node-cron and swagger-ui-express get.
+ *
+ * Returns what happened, so the startup banner can tell the truth about it.
+ */</span>
+<span class="t-key">function</span> mountDashboard(app: express.Express): <span class="t-str">'mounted'</span> | <span class="t-str">'absent'</span> | <span class="t-str">'unsafe'</span> {
+  <span class="t-key">let</span> ParseDashboard;
+  <span class="t-key">try</span> {
+    ParseDashboard = <span class="t-key">require</span>(<span class="t-str">'parse-dashboard'</span>);
+  } <span class="t-key">catch</span> {
+    <span class="t-key">return</span> <span class="t-str">'absent'</span>;   <span class="t-com">// not installed: hint, do not fail</span>
+  }
+
+  <span class="t-com">// The dashboard holds the master key. Unauthenticated, it is a full read</span>
+  <span class="t-com">// and write console for your entire database, reachable by anyone who</span>
+  <span class="t-com">// finds the URL - so credentials are not optional.</span>
+  <span class="t-key">const</span> user = process.env.DASHBOARD_USER || <span class="t-str">'admin'</span>;
+  <span class="t-key">const</span> pass = process.env.DASHBOARD_PASS || (IS_PRODUCTION ? <span class="t-str">''</span> : <span class="t-str">'change-me-now'</span>);
+
+  <span class="t-com">// Refuse rather than expose. A dashboard that did not start is a bug</span>
+  <span class="t-com">// report; one that started wide open is an incident.</span>
+  <span class="t-key">if</span> (!pass) <span class="t-key">return</span> <span class="t-str">'unsafe'</span>;
+
+  <span class="t-key">const</span> dashboard = <span class="t-key">new</span> ParseDashboard(
+    {
+      apps: [{ serverURL: SERVER_URL, appId: APP_ID, masterKey: MASTER_KEY,
+               appName: <span class="t-str">'my-api'</span> }],
+      users: [{ user, pass }],
+    },
+    {
+      <span class="t-com">// It refuses to serve over plain HTTP unless told to, which is the</span>
+      <span class="t-com">// right default - the master key would be in flight.</span>
+      allowInsecureHTTP: !IS_PRODUCTION,
+    }
+  );
+
+  app.use(<span class="t-str">'/dashboard'</span>, dashboard);
+  <span class="t-key">return</span> <span class="t-str">'mounted'</span>;
+}</code></pre>
+
+  <p>The startup banner reports which of the three states you are in:</p>
+<pre class="code-block"><code>  Docs        http://localhost:1337/api-docs
+  Dashboard   http://localhost:1337/dashboard             <span class="t-com"># installed and mounted</span>
+  Dashboard   npm install parse-dashboard, then restart   <span class="t-com"># not installed</span>
+  Dashboard   not mounted: set DASHBOARD_PASS             <span class="t-com"># production, no password</span></code></pre>
+
+  <h2 id="why-not-bundled">Why it is not bundled</h2>
+  <p>
+    Three reasons, in order of how much they matter:
+  </p>
+  <ul>
+    <li>
+      <b>It is a large install.</b> The dashboard is a bundled React application with its
+      own dependency tree — a few hundred packages that every generated project would pay
+      for whether or not it ever opens the console.
+    </li>
+    <li>
+      <b>Plenty of services never want one.</b> A backend behind a mobile app may have no
+      human operators at all, and an admin console is then only an attack surface.
+    </li>
+    <li>
+      <b>Exposing it is a decision.</b> It carries the master key. That should be an
+      explicit act, not something a scaffolder did on your behalf while you were reading
+      the README.
+    </li>
+  </ul>
+  <p>
+    So it follows the same rule this library applies to <code>node-cron</code> and
+    <code>swagger-ui-express</code>: detected if present, a one-line hint if not, never a
+    crash.
+  </p>
+
+  <h2 id="security">It holds the master key</h2>
+  <div class="note danger">
+    <span class="note-title">This is the whole security story in one sentence</span>
+    The dashboard authenticates to your API with the <b>master key</b>, which bypasses every
+    class-level permission and every row ACL. Whoever reaches the dashboard can read and
+    write everything — the CLP you wrote, the ACLs your triggers apply, none of it is in the
+    way. Treat the URL as you would a database root password.
+  </div>
+
+  <h3 id="credentials">Credentials</h3>
+<pre class="code-block"><code><span class="t-com"># .env</span>
+DASHBOARD_USER=admin
+DASHBOARD_PASS=something-long-and-unguessable</code></pre>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th><code>DASHBOARD_PASS</code></th><th>Development</th><th>Production</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>set</td>
+          <td class="yes">mounts, uses it</td>
+          <td class="yes">mounts, uses it</td>
+        </tr>
+        <tr>
+          <td>unset</td>
+          <td>mounts with <code>change-me-now</code>, warns every boot</td>
+          <td class="no">refuses to mount, says why</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    The asymmetry is deliberate. On a laptop, a console you have to configure before you can
+    look at your own data is friction for no benefit. In production, a console that silently
+    came up with a published default password is the worst outcome available, so it does not
+    come up at all.
+  </p>
+
+  <h3 id="https">HTTPS</h3>
+  <p>
+    Parse Dashboard refuses to serve over plain HTTP unless you pass
+    <code>allowInsecureHTTP</code>, because the master key would be travelling in clear. The
+    template passes it only when <code>NODE_ENV</code> is not <code>production</code>. If you
+    terminate TLS at a proxy and the dashboard sees HTTP behind it, that is what
+    <code>trustProxy</code> is for — do not reach for <code>allowInsecureHTTP</code> to make
+    the warning go away.
+  </p>
+
+  <h3 id="read-only">Read-only operators</h3>
+  <p>
+    Not everyone who needs to look at data needs to change it. Parse Server has a
+    <b>read-only master key</b>, and the dashboard has read-only users to go with it:
+  </p>
+<pre class="code-block"><code><span class="t-com">// ParseServer options</span>
+readOnlyMasterKey: process.env.READ_ONLY_MASTER_KEY,
+
+<span class="t-com">// ParseDashboard config</span>
+apps: [{
+  serverURL: SERVER_URL,
+  appId: APP_ID,
+  masterKey: MASTER_KEY,
+  readOnlyMasterKey: process.env.READ_ONLY_MASTER_KEY,
+  appName: <span class="t-str">'my-api'</span>,
+}],
+users: [
+  { user: <span class="t-str">'admin'</span>,   pass: process.env.DASHBOARD_PASS },
+  <span class="t-com">// Sees everything, can change nothing. Give support and analytics this</span>
+  <span class="t-com">// one rather than sharing the account that can drop a class.</span>
+  { user: <span class="t-str">'support'</span>, pass: process.env.SUPPORT_PASS, readOnly: <span class="t-key">true</span> },
+],</code></pre>
+  <div class="note warn">
+    <span class="note-title">A default is changing</span>
+    Parse Server 9 warns that <code>allowAggregationForReadOnlyMasterKey</code> will default
+    to <code>false</code> in a future version. Aggregation pipelines can contain
+    write-capable stages such as <code>$out</code> and <code>$merge</code>, so a read-only key
+    that may run them is not entirely read-only. Set it explicitly rather than inheriting
+    whichever default your version happens to have.
+  </div>
+
+  <h2 id="middleware">How it sits with the middleware</h2>
+  <p>
+    The dashboard is mounted at <code>/dashboard</code>, <em>outside</em>
+    <code>MOUNT_PATH</code>, so <code>restrictRoutes</code> never sees its requests. That is
+    not a loophole: the dashboard talks to the API with the master key, and the master key
+    bypasses <code>restrictRoutes</code> anyway.
+  </p>
+<pre class="code-block"><code>  <span class="t-com">// Everything under /api is gated by restrictRoutes.</span>
+  app.use(MOUNT_PATH, restrictRoutes);
+  app.use(MOUNT_PATH, parseServer.app);
+
+  <span class="t-com">// /dashboard is not, and does not need to be - it authenticates its own</span>
+  <span class="t-com">// users, and reaches the API as master.</span>
+  app.use(<span class="t-str">'/dashboard'</span>, dashboard);</code></pre>
+  <p>
+    Which also means the dashboard is unaffected by
+    <a href="../reference/configuration.html#allowauthroutes"><code>allowAuthRoutes</code></a>
+    and by any CLP you set — it will happily browse a class whose CLP denies everything, as
+    in the <a href="tutorial-orders.html#order-model">orders tutorial</a>. That is expected,
+    and it is a good way to confirm a CLP is doing its job: locked out through the API,
+    visible in the dashboard.
+  </p>
+
+  <h2 id="production">Exposing it in production</h2>
+  <p>In rough order of preference:</p>
+  <ul>
+    <li>
+      <b>Do not.</b> Run it locally against the production <code>serverURL</code> when you
+      need it, so there is no permanently reachable console at all.
+    </li>
+    <li>
+      <b>Behind a VPN or an auth proxy</b> — SSO, an allowlist, whatever your organisation
+      already uses. The dashboard's own credentials then become a second factor rather than
+      the only one.
+    </li>
+    <li>
+      <b>On its own host</b>, separate from the API, so a path on your public domain never
+      serves it.
+    </li>
+    <li>
+      <b>Exposed on the API host with a strong password.</b> Workable, and the option with
+      the least margin for error. Give operators <code>readOnly</code> accounts.
+    </li>
+  </ul>
+  <p>
+    For the first option, point a local dashboard at the deployed server — no code change,
+    and nothing extra listening in production:
+  </p>
+<pre class="code-block"><code>npx parse-dashboard \
+  --appId <span class="t-str">"$APP_ID"</span> \
+  --masterKey <span class="t-str">"$MASTER_KEY"</span> \
+  --serverURL <span class="t-str">"https://api.example.com/api"</span> \
+  --appName production</code></pre>
+
+  <h2 id="troubleshooting">When it does not appear</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Symptom</th><th>Cause</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Banner says <code>npm install parse-dashboard</code></td>
+          <td>Not installed, or installed without restarting</td>
+        </tr>
+        <tr>
+          <td>Banner says <code>not mounted: set DASHBOARD_PASS</code></td>
+          <td><code>NODE_ENV=production</code> with no password — set one</td>
+        </tr>
+        <tr>
+          <td><code>Parse Dashboard can only be remotely accessed via HTTPS</code></td>
+          <td>Serving over plain HTTP outside development; terminate TLS, or set <code>trustProxy</code> if a proxy already does</td>
+        </tr>
+        <tr>
+          <td>Login page loads, credentials rejected</td>
+          <td><code>DASHBOARD_USER</code> / <code>DASHBOARD_PASS</code> changed but the server was not restarted</td>
+        </tr>
+        <tr>
+          <td>Logs in, then "unable to connect"</td>
+          <td><code>serverURL</code> is not reachable <em>from the dashboard process</em> — check it includes your mount path, e.g. <code>/api</code>, not just the host</td>
+        </tr>
+        <tr>
+          <td>Classes list is empty</td>
+          <td>The models never registered. See <a href="troubleshooting.html">Troubleshooting</a> — usually <code>importFiles</code> pointed at <code>.ts</code> with the default <code>['.js']</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    Next: <a href="acl.html">Permissions &amp; ACL</a> for the rules the dashboard is
+    deliberately allowed to ignore, and <a href="seeding.html">Seeding data</a> for creating
+    the roles you will see in it.
+  </p>
+
+  <div class="pager">
+    <a href="seeding.html"><span>Back</span>Seeding data</a>
+    <a class="next" href="errors.html"><span>Next</span>Errors</a>
+  </div>
+</main>
+
+</div>
+
+<footer class="site-footer">
+  <div class="inner">
+    <span>MIT licensed</span>
+    <a href="https://www.npmjs.com/package/parse-server-kit">npm</a>
+    <a href="https://github.com/walhalabi-code/parse-server-kit">GitHub</a>
+    <span class="spacer">For Parse concepts, <a href="https://docs.parseplatform.org/">its docs</a> remain the reference.</span>
+  </div>
+</footer>
+
+<script src="../assets/docs.js"></script>
+</body>
+</html>

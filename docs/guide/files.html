@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data:; font-src 'self'; form-action 'none'; base-uri 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Files & images — parse-server-kit</title>
+<meta name="description" content="Uploading, storing and serving files — and the ACL problem that catches everyone the first time.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Files & images — parse-server-kit">
+<meta property="og:description" content="Uploading, storing and serving files — and the ACL problem that catches everyone the first time.">
+<meta property="og:url" content="https://walhalabi-code.github.io/parse-server-kit/guide/files.html">
+<meta property="og:site_name" content="parse-server-kit">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="../index.html"><svg class="brand-mark" viewBox="12 10 62 72" aria-hidden="true"><g transform="translate(18, 14)" fill="none" stroke-linecap="round" stroke-linejoin="round"><path class="logo-base" pathLength="1" d="M 40 24 C 40 14, 28 12, 20 22 C 12 32, 12 44, 22 52 C 32 60, 46 52, 46 36 C 46 20, 34 10, 20 10 C 7 10, 2 22, 2 38 C 2 54, 12 64, 28 64 C 38 64, 48 57, 52 48" stroke="var(--logo-base)" stroke-width="3" opacity="0.6"/><g class="logo-layer" transform="translate(-3, -4)"><path class="logo-kit-path" pathLength="1" d="M 40 20 C 40 10, 28 8, 20 18 C 12 28, 12 40, 22 48 C 32 56, 46 48, 46 32 C 46 16, 34 6, 20 6 C 7 6, 2 18, 2 34 C 2 50, 12 60, 28 60 C 38 60, 48 53, 52 44" stroke="var(--logo-kit)" stroke-width="3.5"/><circle class="logo-dot" cx="25" cy="28" r="3.5" fill="var(--logo-kit)" stroke="none"/></g></g></svg>parse-server-kit <span class="v">3.0</span></a>
+    <nav class="nav">
+      <button class="icon-btn menu-btn" data-menu-toggle aria-expanded="false" aria-label="Toggle navigation">≡</button>
+      <a class="nav-ai" href="../guide/ai-assistants.html"><svg class="ai-spark" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 2.4 6.9 5l2.6.9-2.6.9L6 9.4 5.1 6.8 2.5 5.9l2.6-.9Z"/><path d="m11.6 8.4.6 1.7 1.7.6-1.7.6-.6 1.7-.6-1.7-1.7-.6 1.7-.6Z"/></svg>AI</a>
+      <a class="hide-sm" href="../index.html">Home</a>
+      <a class="hide-sm" href="https://github.com/walhalabi-code/parse-server-kit">GitHub</a>
+      <button class="icon-btn" data-search-open aria-label="Search">⌕</button>
+      <button class="icon-btn" data-theme-toggle aria-label="Switch theme">◐</button>
+    </nav>
+  </div>
+</header>
+
+<div class="layout">
+
+<aside class="sidebar">
+  <svg class="icon-sprite" aria-hidden="true"><symbol id="i-rocket" viewBox="0 0 16 16"><path d="M6.5 9.5 3 8.8l2.2-2.6 2.6-.3M6.5 9.5 7.2 13l2.6-2.2.3-2.6M6.5 9.5 9.5 6.5m0 0a12 12 0 0 1 3.8-3.8 5 5 0 0 1-3.8 3.8ZM4.5 11.5 3 14l2.5-1.5"/></symbol><symbol id="i-book" viewBox="0 0 16 16"><path d="M2.5 3.5h4a2 2 0 0 1 2 2v7a1.5 1.5 0 0 0-1.5-1.5h-4.5Zm11 0h-4a2 2 0 0 0-2 2v7A1.5 1.5 0 0 1 9 11h4.5Z"/></symbol><symbol id="i-play" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><path d="m6.8 5.8 3.2 2.2-3.2 2.2Z"/></symbol><symbol id="i-cart" viewBox="0 0 16 16"><path d="M2 2.5h1.6l1.6 7.4h6.6l1.3-5.2H4.2"/><circle cx="6.3" cy="12.6" r="1"/><circle cx="11.4" cy="12.6" r="1"/></symbol><symbol id="i-scales" viewBox="0 0 16 16"><path d="M8 2.5v11M4.5 4.2h7M2 10a2.5 2.5 0 0 0 5 0L4.5 4.5Zm7 0a2.5 2.5 0 0 0 5 0L11.5 4.5ZM5.5 13.5h5"/></symbol><symbol id="i-box" viewBox="0 0 16 16"><path d="M8 2 2.5 4.8v6.4L8 14l5.5-2.8V4.8Z"/><path d="M2.5 4.8 8 7.6l5.5-2.8M8 7.6V14"/></symbol><symbol id="i-transform" viewBox="0 0 16 16"><path d="M2 5.5h7m-2.2-2.2L9 5.5 6.8 7.7M14 10.5H7m2.2-2.2L7 10.5l2.2 2.2"/></symbol><symbol id="i-shield" viewBox="0 0 16 16"><path d="M8 2 3.5 3.8v3.7c0 2.6 1.9 5 4.5 5.9 2.6-.9 4.5-3.3 4.5-5.9V3.8Z"/><path d="m6.2 7.9 1.4 1.4 2.4-2.6"/></symbol><symbol id="i-search" viewBox="0 0 16 16"><circle cx="7.2" cy="7.2" r="4"/><path d="m10.2 10.2 3 3"/></symbol><symbol id="i-link" viewBox="0 0 16 16"><path d="M6.6 9.4a2.6 2.6 0 0 0 3.7 0l2-2a2.6 2.6 0 0 0-3.7-3.7l-.9.9"/><path d="M9.4 6.6a2.6 2.6 0 0 0-3.7 0l-2 2a2.6 2.6 0 0 0 3.7 3.7l.9-.9"/></symbol><symbol id="i-user" viewBox="0 0 16 16"><circle cx="8" cy="6" r="2.6"/><path d="M3.4 13.2a4.8 4.8 0 0 1 9.2 0"/></symbol><symbol id="i-image" viewBox="0 0 16 16"><rect x="2.5" y="3.5" width="11" height="9" rx="1.5"/><circle cx="6" cy="6.7" r="1"/><path d="m3.2 11.4 3-2.6 2.4 2 2-1.6 2.2 1.9"/></symbol><symbol id="i-signpost" viewBox="0 0 16 16"><path d="M8 2v12M8 4h4.2l1.3 1.6L12.2 7.2H8Zm0 4.2H3.8L2.5 9.8l1.3 1.6H8Z"/></symbol><symbol id="i-bolt" viewBox="0 0 16 16"><path d="M9 2 4 9h3.4l-.4 5 5-7H8.6Z"/></symbol><symbol id="i-broadcast" viewBox="0 0 16 16"><circle cx="8" cy="8" r="1.6"/><path d="M5.2 10.8a4 4 0 0 1 0-5.6m5.6 0a4 4 0 0 1 0 5.6M3.2 12.8a6.8 6.8 0 0 1 0-9.6m9.6 0a6.8 6.8 0 0 1 0 9.6"/></symbol><symbol id="i-exchange" viewBox="0 0 16 16"><path d="M2.8 5.5h9.1l-2-2M13.2 10.5H4.1l2 2"/></symbol><symbol id="i-lock" viewBox="0 0 16 16"><rect x="3.2" y="7" width="9.6" height="6.3" rx="1.5"/><path d="M5.5 7V5.3a2.5 2.5 0 0 1 5 0V7"/><path d="M8 9.6v1.4"/></symbol><symbol id="i-sprout" viewBox="0 0 16 16"><path d="M8 13.5V7.8m0 0C8 6 6.6 4.6 4.8 4.6H3.3c0 1.8 1.4 3.2 3.2 3.2Zm0 0c0-1.8 1.4-3.2 3.2-3.2h1.5c0 1.8-1.4 3.2-3.2 3.2Z"/></symbol><symbol id="i-gauge" viewBox="0 0 16 16"><path d="M2.8 11.6a5.9 5.9 0 1 1 10.4 0"/><path d="M8 8.8 10.6 6"/><circle cx="8" cy="9.4" r="1"/></symbol><symbol id="i-spark" viewBox="0 0 16 16"><path d="M6 2.4 6.9 5l2.6.9-2.6.9L6 9.4 5.1 6.8 2.5 5.9l2.6-.9Z"/><path d="m11.6 8.4.6 1.7 1.7.6-1.7.6-.6 1.7-.6-1.7-1.7-.6 1.7-.6Z"/></symbol><symbol id="i-alert" viewBox="0 0 16 16"><path d="M8 2.8 2.6 12.4h10.8Z"/><path d="M8 6.4v2.8M8 10.8v.1"/></symbol><symbol id="i-terminal" viewBox="0 0 16 16"><rect x="2.2" y="3" width="11.6" height="10" rx="1.5"/><path d="m5 6.4 2 1.8-2 1.8M8.6 10.4h2.6"/></symbol><symbol id="i-lifebuoy" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><circle cx="8" cy="8" r="2.2"/><path d="m4.1 4.1 2.3 2.3m3.2 3.2 2.3 2.3m0-7.8-2.3 2.3M6.4 9.6l-2.3 2.3"/></symbol><symbol id="i-at" viewBox="0 0 16 16"><circle cx="8" cy="8" r="2.3"/><path d="M10.3 5.7v3a1.8 1.8 0 0 0 3.2 1.1A5.8 5.8 0 1 0 11 13"/></symbol><symbol id="i-sliders" viewBox="0 0 16 16"><path d="M2.5 5h7m3 0h1m-11 6h1m3 0h7"/><circle cx="11" cy="5" r="1.5"/><circle cx="5" cy="11" r="1.5"/></symbol><symbol id="i-layers" viewBox="0 0 16 16"><path d="M8 2.2 2.4 5 8 7.8 13.6 5Z"/><path d="m2.4 8 5.6 2.8L13.6 8m-11.2 3 5.6 2.8L13.6 11"/></symbol><symbol id="i-wrench" viewBox="0 0 16 16"><path d="M10.4 2.6a3.4 3.4 0 0 0-3.9 4.6l-4 4a1.3 1.3 0 0 0 1.9 1.9l4-4a3.4 3.4 0 0 0 4.6-3.9l-1.9 1.9-1.9-.5-.5-1.9Z"/></symbol></svg>
+  <h5>Start here</h5>
+  <ul>
+    <li><a href="../guide/getting-started.html"><svg class="ic" aria-hidden="true"><use href="#i-rocket"/></svg><span>Getting started</span></a></li>
+    <li><a href="../guide/ai-assistants.html"><svg class="ic" aria-hidden="true"><use href="#i-spark"/></svg><span>AI assistants</span></a></li>
+    <li class="has-sub">
+      <details>
+        <summary><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg><span>Tutorials</span></summary>
+        <ul>
+        <li><a href="../guide/tutorial.html"><svg class="ic" aria-hidden="true"><use href="#i-play"/></svg><span>A first API</span></a></li>
+        <li><a href="../guide/tutorial-orders.html"><svg class="ic" aria-hidden="true"><use href="#i-cart"/></svg><span>Orders &amp; stock</span></a></li>
+        </ul>
+      </details>
+    </li>
+    <li><a href="../guide/vs-nestjs.html"><svg class="ic" aria-hidden="true"><use href="#i-scales"/></svg><span>Compared with NestJS</span></a></li>
+  </ul>
+  <h5>Guide</h5>
+  <ul>
+    <li><a href="../guide/models.html"><svg class="ic" aria-hidden="true"><use href="#i-box"/></svg><span>Models &amp; fields</span></a></li>
+    <li><a href="../guide/from-params.html"><svg class="ic" aria-hidden="true"><use href="#i-transform"/></svg><span>fromParams</span></a></li>
+    <li><a href="../guide/acl.html"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg><span>Permissions &amp; ACL</span></a></li>
+    <li><a href="../guide/queries.html"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg><span>Queries</span></a></li>
+    <li><a href="../guide/relations.html"><svg class="ic" aria-hidden="true"><use href="#i-link"/></svg><span>Relationships</span></a></li>
+    <li><a href="../guide/users.html"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg><span>Users &amp; auth</span></a></li>
+    <li><a href="../guide/files.html"><svg class="ic" aria-hidden="true"><use href="#i-image"/></svg><span>Files &amp; images</span></a></li>
+    <li><a href="../guide/endpoints.html"><svg class="ic" aria-hidden="true"><use href="#i-signpost"/></svg><span>Endpoints &amp; routing</span></a></li>
+    <li><a href="../guide/triggers.html"><svg class="ic" aria-hidden="true"><use href="#i-bolt"/></svg><span>Triggers</span></a></li>
+    <li><a href="../guide/live-query.html"><svg class="ic" aria-hidden="true"><use href="#i-broadcast"/></svg><span>Real-time</span></a></li>
+    <li><a href="../guide/transactions.html"><svg class="ic" aria-hidden="true"><use href="#i-exchange"/></svg><span>Transactions</span></a></li>
+    <li><a href="../guide/optimistic-locking.html"><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg><span>Optimistic locking</span></a></li>
+    <li><a href="../guide/seeding.html"><svg class="ic" aria-hidden="true"><use href="#i-sprout"/></svg><span>Seeding data</span></a></li>
+    <li><a href="../guide/dashboard.html"><svg class="ic" aria-hidden="true"><use href="#i-gauge"/></svg><span>Parse Dashboard</span></a></li>
+    <li><a href="../guide/errors.html"><svg class="ic" aria-hidden="true"><use href="#i-alert"/></svg><span>Errors</span></a></li>
+    <li><a href="../guide/cli.html"><svg class="ic" aria-hidden="true"><use href="#i-terminal"/></svg><span>The psk CLI</span></a></li>
+    <li><a href="../guide/troubleshooting.html"><svg class="ic" aria-hidden="true"><use href="#i-lifebuoy"/></svg><span>Troubleshooting</span></a></li>
+  </ul>
+  <h5>Reference</h5>
+  <ul>
+    <li><a href="../reference/decorators.html"><svg class="ic" aria-hidden="true"><use href="#i-at"/></svg><span>Decorators</span></a></li>
+    <li><a href="../reference/configuration.html"><svg class="ic" aria-hidden="true"><use href="#i-sliders"/></svg><span>Configuration</span></a></li>
+    <li><a href="../reference/middleware.html"><svg class="ic" aria-hidden="true"><use href="#i-layers"/></svg><span>Middleware</span></a></li>
+    <li><a href="../reference/utilities.html"><svg class="ic" aria-hidden="true"><use href="#i-wrench"/></svg><span>Utilities</span></a></li>
+  </ul>
+</aside>
+
+<main class="content">
+  <p class="eyebrow">Guide</p>
+  <h1>Files &amp; images</h1>
+  <p class="lede">Uploading, storing and serving files — and the ACL problem that catches everyone the first time.</p>
+
+
+  <h2 id="parsefile">Parse.File</h2>
+  <p>A file is uploaded first and attached second. It has its own lifecycle and its own URL.</p>
+<pre class="code-block"><code><span class="t-key">const</span> file = <span class="t-key">new</span> Parse.File(<span class="t-str">'invoice.pdf'</span>, { base64 }, <span class="t-str">'application/pdf'</span>);
+<span class="t-key">await</span> file.save({ useMasterKey: <span class="t-key">true</span> });
+
+document.set(<span class="t-str">'attachment'</span>, file);
+<span class="t-key">await</span> document.save(<span class="t-key">null</span>, { sessionToken });
+
+file.url();   <span class="t-com">// where a client fetches it</span></code></pre>
+  <p>Accepted sources: <code>{base64}</code>, <code>{uri}</code>, a byte array, and on parse-server 9.5+ a <code>Buffer</code> or stream for large uploads that should not be held in memory.</p>
+
+  <h2 id="field">Declaring a file field</h2>
+<pre class="code-block"><code><span class="t-key">import</span> {
+  ParseField, implementACL, syncImageAcl, CloudFunction, catchError,
+  BeforeSaveFile, AfterDeleteFile, AfterDelete,
+} <span class="t-key">from</span> <span class="t-str">'parse-server-kit'</span>;
+
+<span class="t-dec">@ParseField</span>({ type: <span class="t-str">'File'</span> })
+<span class="t-key">declare</span> attachment: <span class="t-key">any</span>;
+
+<span class="t-com">// Or a pointer to your own wrapper class, which is usually better -</span>
+<span class="t-com">// it gives you somewhere to put dimensions, alt text and a thumbnail.</span>
+<span class="t-dec">@ParseField</span>({ type: <span class="t-str">'Pointer'</span>, targetClass: <span class="t-str">'IMG'</span> })
+<span class="t-key">declare</span> cover: <span class="t-key">any</span>;</code></pre>
+
+  <div class="note">
+    <span class="note-title">Why a wrapper class is usually worth it</span>
+    A bare <code>Parse.File</code> has a name and a URL and nothing else. A small
+    <code>IMG</code> class — file, width, height, alt text, blurhash, a generated thumbnail —
+    gives you a row you can attach an ACL to, run a trigger on, and reuse from several
+    parents. It is also what makes the ACL cascade below possible.
+  </div>
+
+  <h2 id="acl">The problem everyone hits</h2>
+  <p>
+    A file's URL is <b>not</b> protected by the parent record's ACL. Anyone holding the URL
+    can fetch the bytes. What the ACL protects is the <em>row that points at it</em>.
+  </p>
+  <div class="note danger">
+    <span class="note-title">A file URL is effectively a bearer token</span>
+    Hiding the parent record hides the reference, not the file. For genuinely private
+    documents, keep them out of public storage and serve them through an endpoint that
+    checks permissions, or use parse-server 9.8+'s <code>fileDownload</code> restriction.
+  </div>
+
+  <h2 id="cascade">Making images follow their parent</h2>
+  <p>
+    When you use a wrapper class, its row has its own ACL — and that ACL does not update
+    itself when the parent's visibility changes. Publish an article and its cover stays
+    invisible; archive it and the cover stays readable.
+  </p>
+<pre class="code-block"><code><span class="t-com">// After the parent has its FINAL ACL, before saving it.</span>
+article.setACL(implementACL({
+  roleRules: [{ role: <span class="t-str">'Admin'</span>, read: <span class="t-key">true</span>, write: <span class="t-key">true</span> }],
+  owner: [{ user: authorId, read: <span class="t-key">true</span>, write: <span class="t-key">true</span> }],
+  publicRead: status === <span class="t-str">'published'</span>,
+}));
+
+syncImageAcl(article, [<span class="t-str">'cover'</span>, <span class="t-str">'gallery'</span>]);
+
+<span class="t-key">await</span> article.save(<span class="t-key">null</span>, { sessionToken });</code></pre>
+  <p>
+    <code>syncImageAcl</code> copies the parent's ACL onto each pointed-to row — single
+    pointer or array — and marks them dirty so the parent's save cascades the change. An
+    ACL-only update does not re-process the file, so it is cheap.
+  </p>
+  <p>
+    Call it at <b>every</b> point the parent's ACL is set: create, approve, publish,
+    archive, restore. A cover image that is still public after its article was withdrawn is
+    almost always a transition that forgot this line.
+  </p>
+  <p>
+    Where visibility is derived inside <code>@BeforeSave</code>, pass that
+    <code>publicRead</code> into <code>implementACL</code> at the call site —
+    <code>syncImageAcl</code> runs before the trigger, so it would copy an ACL that is one
+    step out of date.
+  </p>
+
+  <h2 id="upload-endpoint">An upload endpoint</h2>
+<pre class="code-block"><code><span class="t-dec">@CloudFunction</span>({
+  methods: [<span class="t-str">'POST'</span>],
+  validation: { requireUser: <span class="t-key">true</span>, fields: {
+    base64:   { required: <span class="t-key">true</span> },
+    fileName: { required: <span class="t-key">true</span> },
+  } },
+})
+<span class="t-key">static async</span> uploadImage(req: Parse.Cloud.FunctionRequest) {
+  <span class="t-key">const</span> user = req.user!;
+
+  <span class="t-key">const</span> file = <span class="t-key">new</span> Parse.File(req.params.fileName, {
+    base64: req.params.base64,
+  });
+  <span class="t-key">const</span> [fileErr] = <span class="t-key">await</span> catchError(file.save({ useMasterKey: <span class="t-key">true</span> }));
+  <span class="t-key">if</span> (fileErr) <span class="t-key">throw</span> fileErr;
+
+  <span class="t-key">const</span> img = <span class="t-key">new</span> IMG();
+  img.set(<span class="t-str">'file'</span>, file);
+  img.set(<span class="t-str">'alt'</span>, req.params.alt ?? <span class="t-str">''</span>);
+  img.setACL(implementACL({
+    owner: [{ user: user.id, read: <span class="t-key">true</span>, write: <span class="t-key">true</span> }],
+    roleRules: [{ role: <span class="t-str">'Admin'</span>, read: <span class="t-key">true</span>, write: <span class="t-key">true</span> }],
+  }));
+
+  <span class="t-key">const</span> [err, saved] = <span class="t-key">await</span> catchError(
+    img.save(<span class="t-key">null</span>, { sessionToken: user.getSessionToken() })
+  );
+  <span class="t-key">if</span> (err) <span class="t-key">throw</span> err;
+  <span class="t-key">return</span> saved;
+}</code></pre>
+
+  <div class="note warn">
+    <span class="note-title">fromParams skips file pointers on purpose</span>
+    <code>BaseModel.fromParams()</code> ignores Pointer fields whose target is in
+    <code>excludedPointerClasses</code> — <code>IMG</code> and <code>File</code> by default.
+    An uploaded file needs saving and processing before it can be attached, so building a
+    bare pointer from request params would produce a reference to nothing. Handle files
+    explicitly, as above. The list is configurable through
+    <a href="../reference/configuration.html#configurekit"><code>configureKit</code></a>.
+  </div>
+
+  <h2 id="triggers">File triggers</h2>
+<pre class="code-block"><code><span class="t-dec">@BeforeSaveFile</span>()
+<span class="t-key">static async</span> onBeforeSaveFile(req: <span class="t-key">any</span>) {
+  <span class="t-key">const</span> { file, user } = req;
+  <span class="t-key">if</span> (!user) <span class="t-key">throw new</span> Parse.Error(<span class="t-num">119</span>, <span class="t-str">'Sign in to upload'</span>);
+
+  <span class="t-com">// Resize, strip EXIF, scan, or reject by type or size here.</span>
+  <span class="t-key">return</span> file;
+}
+
+<span class="t-dec">@AfterDeleteFile</span>()
+<span class="t-key">static async</span> onAfterDeleteFile(req: <span class="t-key">any</span>) {
+  <span class="t-com">// Clean up derived thumbnails.</span>
+}</code></pre>
+  <p>
+    File triggers pass the class rather than a name — parse-server removed the older
+    <code>beforeSaveFile()</code> style methods, and this library handles that translation,
+    so the decorators work unchanged across versions.
+  </p>
+
+  <h2 id="cleanup">Deleting</h2>
+  <p>
+    Deleting a row that points at a file does <b>not</b> delete the file. Storage keeps it
+    until something removes it.
+  </p>
+<pre class="code-block"><code><span class="t-dec">@AfterDelete</span>()
+<span class="t-key">static async</span> onAfterDelete(req: Parse.Cloud.AfterDeleteRequest&lt;IMG&gt;) {
+  <span class="t-key">const</span> file = req.object.get(<span class="t-str">'file'</span>) <span class="t-key">as</span> Parse.File | <span class="t-key">undefined</span>;
+  <span class="t-key">if</span> (file) <span class="t-key">await</span> catchError(file.destroy({ useMasterKey: <span class="t-key">true</span> }));
+}</code></pre>
+  <p>Put it on the wrapper class and every parent that removes an image gets the cleanup for free.</p>
+
+  <h2 id="storage">Where files actually live</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Adapter</th><th>Suits</th></tr></thead>
+    <tbody>
+      <tr><td>Filesystem (default)</td><td>Development. Lost on redeploy, not shared between instances</td></tr>
+      <tr><td>S3, Google Cloud Storage</td><td>Production</td></tr>
+      <tr><td>GridFS</td><td>Keeping files in MongoDB — simple, but grows the database</td></tr>
+    </tbody>
+  </table></div>
+  <p>
+    Configure it on Parse Server, not here. Note that <code>/files</code> is allowed through
+    <code>restrictRoutes</code> without authentication, so anything reachable by URL is
+    public unless the storage layer says otherwise.
+  </p>
+
+  <h2 id="mistakes">Common mistakes</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Symptom</th><th>Cause</th></tr></thead>
+    <tbody>
+      <tr><td>An image is invisible while its record is public</td><td><code>syncImageAcl</code> not called after the parent's ACL was set</td></tr>
+      <tr><td>An image stays visible after the record was hidden</td><td>Same, on the transition rather than on create</td></tr>
+      <tr><td>The file pointer is empty after <code>fromParams</code></td><td>Expected — file classes are excluded by design</td></tr>
+      <tr><td>Files vanish on deploy</td><td>Filesystem adapter in production</td></tr>
+      <tr><td>Storage grows and never shrinks</td><td>Rows deleted without destroying their files</td></tr>
+      <tr><td>A private document is reachable by URL</td><td>File URLs are not ACL-protected — serve them through an endpoint</td></tr>
+    </tbody>
+  </table></div>
+
+  <p>
+    For adapter configuration and the file API itself, see the
+    <a href="https://docs.parseplatform.org/js/guide/#files">Parse files guide</a>.
+  </p>
+
+
+  <div class="pager">
+    <a href="users.html"><span>Back</span>Users &amp; authentication</a>
+    <a class="next" href="endpoints.html"><span>Next</span>Endpoints &amp; routing</a>
+  </div>
+</main>
+
+</div>
+
+<footer class="site-footer">
+  <div class="inner">
+    <span>MIT licensed</span>
+    <a href="https://www.npmjs.com/package/parse-server-kit">npm</a>
+    <a href="https://github.com/walhalabi-code/parse-server-kit">GitHub</a>
+    <span class="spacer">For Parse concepts, <a href="https://docs.parseplatform.org/">its docs</a> remain the reference.</span>
+  </div>
+</footer>
+
+<script src="../assets/docs.js"></script>
+</body>
+</html>

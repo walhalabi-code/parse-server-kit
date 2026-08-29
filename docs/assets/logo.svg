@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="12 10 62 72" role="img" aria-label="parse-server-kit">
+  <title>parse-server-kit</title>
+  <!--
+    Two offset spirals: the muted one is Parse Server, the blue one is this
+    library sitting on top of it. The viewBox is cropped to the mark itself, so
+    it can be dropped inline at any size without carrying empty space.
+
+    Colours resolve in three steps, so this works everywhere it is used:
+      1. the page's own logo custom properties, when inlined into a document
+      2. the media query below, when loaded as an image or opened on its own
+      3. the literal fallbacks, if custom properties are unavailable
+
+    Note: an XML comment may not contain two consecutive hyphens, so the
+    property names are spelled out in the style block below rather than here.
+  -->
+  <style>
+    svg { --logo-base: #94A3B8; --logo-kit: #2563EB; }
+    @media (prefers-color-scheme: dark) {
+      svg { --logo-base: #8FA0B5; --logo-kit: #5B9DFF; }
+    }
+  </style>
+  <g transform="translate(18, 14)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 40 24 C 40 14, 28 12, 20 22 C 12 32, 12 44, 22 52 C 32 60, 46 52, 46 36 C 46 20, 34 10, 20 10 C 7 10, 2 22, 2 38 C 2 54, 12 64, 28 64 C 38 64, 48 57, 52 48"
+          stroke="var(--logo-base, #94A3B8)" stroke-width="3" opacity="0.6"/>
+    <g transform="translate(-3, -4)">
+      <path d="M 40 20 C 40 10, 28 8, 20 18 C 12 28, 12 40, 22 48 C 32 56, 46 48, 46 32 C 46 16, 34 6, 20 6 C 7 6, 2 18, 2 34 C 2 50, 12 60, 28 60 C 38 60, 48 53, 52 44"
+            stroke="var(--logo-kit, #2563EB)" stroke-width="3.5"/>
+      <circle cx="25" cy="28" r="3.5" fill="var(--logo-kit, #2563EB)" stroke="none"/>
+    </g>
+  </g>
+</svg>

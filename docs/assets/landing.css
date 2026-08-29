@@ -1,0 +1,357 @@
+/* ==========================================================================
+   Landing page only. Deliberately restrained: no gradients, no icon grid.
+   The code samples are the illustration.
+   ========================================================================== */
+
+.wrap {
+  max-width: 68rem;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* --- hero ---------------------------------------------------------------- */
+
+.hero {
+  padding: 5rem 0 3.5rem;
+  border-bottom: 1px solid var(--rule);
+}
+/* --- the typed line in the headline --------------------------------------
+   The rotating audience sits on a line of its own. Two reasons: the sentence
+   stays grammatical for every phrase, and nothing below it moves as characters
+   are added — a mid-sentence rotator reflows the whole paragraph on every
+   keystroke, which is what makes most of them feel cheap. */
+
+/* The headline sets its own line breaks, so it needs room for the longest of
+   them — "hackathons, sales pitches" at 25 characters — without wrapping. The
+   generic `.hero h1` measure is tuned for a sentence that wraps freely. */
+/* Mark and headline side by side. `start` rather than `center` so the mark
+   aligns to the first line of the headline — centred, it drifts down as the
+   typed line changes length and the headline reflows. */
+.hero-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.75rem;
+  margin-bottom: 1.4rem;
+}
+.hero-mark {
+  /* Scales with the headline rather than against a fixed pixel size, so the
+     two stay in proportion at every viewport. */
+  height: clamp(4.5rem, 11vw, 8.5rem);
+  width: auto;
+  flex: none;
+  overflow: visible;
+  /* Optically level with the cap height of the first line, which sits a little
+     below the text box's top edge. */
+  margin-top: 0.15em;
+}
+
+.hero-title {
+  max-width: 34ch;
+  /* The flex parent owns the spacing now. */
+  margin-bottom: 0;
+}
+
+/* The rotating audiences sit on a line of their own. Two reasons: the sentence
+   stays grammatical for every group, and nothing below moves as characters are
+   added — a mid-sentence rotator reflows the whole paragraph on every
+   keystroke, which is what makes most of them feel cheap. */
+.typed-line {
+  display: block;
+  color: var(--accent);
+  /* Hold the line open before any text exists, so the hero does not jump on
+     load or between groups. */
+  min-height: 1.12em;
+  /* Never break mid-group. A line that reflows halfway through typing moves
+     everything under it and undoes the point of giving it its own line. */
+  white-space: nowrap;
+  /* So it shrinks rather than wraps. The longest group — "startups,
+     hackathons, sales pitches" — is 35 characters, far more than a headline
+     line holds at full size, so this sits deliberately below it: a second
+     voice under the statement rather than part of it. */
+  font-size: clamp(1.2rem, 3.6vw, 0.68em);
+  /* Nudged back toward the headline's rhythm now that it is smaller. */
+  line-height: 1.5;
+  letter-spacing: -0.005em;
+}
+.caret {
+  display: inline-block;
+  width: 0.56ch;
+  /* Sized against the cap height rather than the full line, so it reads as a
+     terminal block rather than a stray rectangle. */
+  height: 0.86em;
+  margin-left: 0.08em;
+  vertical-align: -0.08em;
+  background: var(--accent);
+  opacity: 0.85;
+}
+/* Blink only while idle. A real terminal stops blinking as you type, and
+   copying that is most of why this reads as typing rather than as an effect. */
+.caret.blinking {
+  animation: caret-blink 1.05s steps(1, end) infinite;
+}
+@keyframes caret-blink {
+  0%, 45% { opacity: 0.85; }
+  50%, 100% { opacity: 0; }
+}
+
+/* No motion for anyone who asked for none: the first phrase stays put and the
+   caret disappears entirely rather than sitting there frozen. */
+@media (prefers-reduced-motion: reduce) {
+  .caret {
+    display: none;
+  }
+}
+
+.hero h1 {
+  font-size: clamp(2.1rem, 5vw, 3rem);
+  letter-spacing: -0.028em;
+  max-width: 20ch;
+  margin-bottom: 1rem;
+}
+.hero .sub {
+  font-size: 1.12rem;
+  color: var(--ink-2);
+  max-width: 54ch;
+  margin: 0 0 2rem;
+}
+.hero .sub strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+.btn {
+  display: inline-block;
+  padding: 0.62rem 1.15rem;
+  border-radius: var(--radius);
+  font-size: 0.94rem;
+  font-weight: 550;
+  border: 1px solid transparent;
+}
+.btn:hover {
+  text-decoration: none;
+}
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+.btn-primary:hover {
+  filter: brightness(1.08);
+}
+.btn-ghost {
+  border-color: var(--rule);
+  color: var(--ink-2);
+}
+.btn-ghost:hover {
+  border-color: var(--accent-line);
+  color: var(--accent);
+}
+
+.install {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: var(--mono);
+  font-size: 0.875rem;
+  background: var(--code-bg);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 0.55rem 0.85rem;
+  color: var(--code-ink);
+}
+.install .prompt {
+  color: var(--ink-4);
+  user-select: none;
+}
+.copy {
+  background: none;
+  border: 0;
+  color: var(--ink-4);
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-family: var(--sans);
+  padding: 0 0 0 0.25rem;
+}
+.copy:hover {
+  color: var(--accent);
+}
+
+/* --- generic section ----------------------------------------------------- */
+
+.section {
+  padding: 4rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+.section > h2 {
+  margin-top: 0;
+  font-size: 1.55rem;
+  letter-spacing: -0.015em;
+}
+.section > .kicker {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  font-weight: 650;
+  margin: 0 0 0.5rem;
+}
+.section > p {
+  max-width: 62ch;
+}
+
+/* --- two-column code/prose ----------------------------------------------- */
+
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: 2.5rem;
+  align-items: start;
+  margin-top: 2rem;
+}
+.split p:last-child {
+  margin-bottom: 0;
+}
+.split pre {
+  margin: 0;
+}
+/* Two code blocks being compared line for line — neither side gets more room. */
+.split.even {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1.25rem;
+}
+
+/* --- the "what you get" list --------------------------------------------- */
+
+.gets {
+  list-style: none;
+  padding: 0;
+  margin: 2rem 0 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 0 2.5rem;
+}
+.gets li {
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--rule);
+  color: var(--ink-2);
+  font-size: 0.94rem;
+  display: flex;
+  gap: 0.6rem;
+}
+.gets li b {
+  color: var(--ink);
+  font-weight: 600;
+}
+.gets .mark {
+  color: var(--good-ink);
+  flex: none;
+  font-weight: 700;
+}
+
+/* --- comparison ---------------------------------------------------------- */
+
+.compare td:not(:first-child),
+.compare th:not(:first-child) {
+  text-align: center;
+  width: 11rem;
+}
+.compare .yes {
+  color: var(--good-ink);
+  font-weight: 600;
+}
+.compare .no {
+  color: var(--ink-4);
+}
+.compare .own {
+  background: var(--accent-soft);
+}
+/* Section headers inside the table. They span all three columns, so the
+   "own" tint has to be re-applied by the cells below them, not inherited. */
+.compare th.group {
+  text-align: left;
+  width: auto;
+  padding-top: 1.4rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+  border-bottom: 1px solid var(--rule);
+}
+.compare tbody tr:first-child th.group {
+  padding-top: 0.6rem;
+}
+
+/* --- numbers ------------------------------------------------------------- */
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-top: 2rem;
+}
+.stats div {
+  background: var(--bg);
+  padding: 1.25rem 1.35rem;
+}
+.stats b {
+  display: block;
+  font-size: 1.6rem;
+  font-weight: 650;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.stats span {
+  font-size: 0.85rem;
+  color: var(--ink-3);
+}
+
+/* --- closing ------------------------------------------------------------- */
+
+.closing {
+  padding: 4.5rem 0;
+  text-align: center;
+}
+.closing h2 {
+  font-size: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+.closing p {
+  max-width: 46ch;
+  margin: 0 auto 1.75rem;
+}
+
+@media (max-width: 820px) {
+  .split {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+  }
+  .hero {
+    padding: 3.5rem 0 2.5rem;
+  }
+  .section {
+    padding: 3rem 0;
+  }
+
+  /* Side by side leaves the headline a column too narrow to read on a phone.
+     Stack, and let the mark sit above it at a size that still reads as a
+     statement rather than an afterthought. */
+  .hero-head {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .hero-mark {
+    height: 4.75rem;
+    margin-top: 0;
+  }
+}

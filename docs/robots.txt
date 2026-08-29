@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://walhalabi-code.github.io/parse-server-kit/sitemap.xml

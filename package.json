@@ -1,0 +1,95 @@
+{
+  "name": "parse-server-kit",
+  "version": "3.0.0",
+  "description": "Decorator-driven toolkit for Parse Server: models, cloud functions, triggers, cron, REST routing, ACL, transactions, optimistic locking and Swagger, from TypeScript decorators.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "psk": "dist/cli/index.js",
+    "parse-server-kit": "dist/cli/index.js"
+  },
+  "files": [
+    "dist",
+    "templates",
+    "CLAUDE.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "test:integration": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.integration.config.js",
+    "test:all": "npm test && npm run test:integration",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "parse-server",
+    "parse",
+    "decorators",
+    "typescript",
+    "backend",
+    "cloud-functions",
+    "cloud-code",
+    "mongodb",
+    "acl",
+    "swagger",
+    "openapi",
+    "cron",
+    "transactions",
+    "optimistic-locking",
+    "orm",
+    "rest-api",
+    "scaffolding",
+    "cli"
+  ],
+  "author": "Waseem Alhalabi",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/walhalabi-code/parse-server-kit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/walhalabi-code/parse-server-kit/issues"
+  },
+  "homepage": "https://github.com/walhalabi-code/parse-server-kit#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "peerDependencies": {
+    "@types/parse": ">=3.0.0",
+    "express": ">=4.0.0",
+    "node-cron": ">=3.0.0",
+    "parse": ">=5.0.0",
+    "parse-server": ">=8.3.0",
+    "reflect-metadata": ">=0.1.13",
+    "swagger-ui-express": ">=4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@types/parse": {
+      "optional": true
+    },
+    "node-cron": {
+      "optional": true
+    },
+    "swagger-ui-express": {
+      "optional": true
+    },
+    "parse-server": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.0.0",
+    "express": "^5.0.0",
+    "jest": "^29.7.0",
+    "mongodb-memory-server": "^11.2.0",
+    "node-cron": "^4.0.0",
+    "parse": "^8.6.0",
+    "parse-server": "^9.10.0",
+    "reflect-metadata": "^0.2.2",
+    "swagger-ui-express": "^5.0.1",
+    "ts-jest": "^29.2.0",
+    "typescript": "^5.5.0"
+  }
+}

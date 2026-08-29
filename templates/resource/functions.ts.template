@@ -1,0 +1,184 @@
+import {
+  CloudFunction,
+  Route,
+  catchError,
+  implementACL,
+  MAX_QUERY_LIMIT,
+} from 'parse-server-kit';
+import {{ClassName}} from '{{modelImportPath}}';
+
+/**
+ * {{ClassName}} endpoints.
+ *
+ * The method name IS the route. `create{{ClassName}}` is reachable at
+ * `POST /api/{{routePrefix}}/create{{ClassName}}`. Rename a method and its
+ * route follows; there is no route table to keep in step, and nothing to
+ * register - `importFiles` finds this file at boot.
+ */
+@Route({{ClassName}})
+class {{ClassName}}Functions {
+  // =========================================================================
+  //  CREATE - POST /api/{{routePrefix}}/create{{ClassName}}
+  // =========================================================================
+  @CloudFunction({
+    methods: ['POST'],
+    description: 'Create a {{instanceName}}',
+    validation: {
+      requireUser: true,
+      // Add the fields a caller must supply.
+      fields: {name: {required: true}},
+    },
+    // requireRoles: ['Admin'],
+    swagger: {tags: ['{{ClassName}}']},
+  })
+  static async create{{ClassName}}(req: Parse.Cloud.FunctionRequest) {
+    const user = req.user!;
+
+    // Reads @ParseField metadata to build a typed instance, converting
+    // pointers, arrays-of-pointers, dates and geopoints. Use this rather than
+    // a pile of .set() calls.
+    const {{instanceName}} = {{ClassName}}.fromParams(req.params);
+
+    // --- Set the ACL here, before saving --------------------------------
+    // {{instanceName}}.setACL(implementACL({
+    //   roleRules: [{role: 'Admin', read: true, write: true}],
+    //   owner: [{user: user.id, read: true, write: true}],
+    //   publicRead: false,
+    // }));
+
+    const [err, saved] = await catchError(
+      {{instanceName}}.save(null, {sessionToken: user.getSessionToken()})
+    );
+    if (err) throw err;
+    return saved;
+  }
+
+  // =========================================================================
+  //  LIST - GET /api/{{routePrefix}}/list{{ClassNamePlural}}
+  // =========================================================================
+  @CloudFunction({
+    methods: ['GET'],
+    description: 'List {{instanceName}} records',
+    // GET parameters arrive as STRINGS - the query string is merged into the
+    // body - so declare them as String and convert below.
+    validation: {
+      fields: {
+        limit: {type: String},
+        skip: {type: String},
+        search: {type: String},
+      },
+    },
+    swagger: {tags: ['{{ClassName}}']},
+  })
+  static async list{{ClassNamePlural}}(req: Parse.Cloud.FunctionRequest) {
+    const query = new Parse.Query({{ClassName}});
+
+    const limit = Math.min(Number(req.params.limit) || 20, MAX_QUERY_LIMIT);
+    query.limit(limit).skip(Number(req.params.skip) || 0);
+    query.descending('createdAt');
+
+    // --- Filters and search go here -------------------------------------
+    // if (req.params.status) query.equalTo('status', req.params.status);
+    // if (req.params.search) {
+    //   query.matches('name', new RegExp(req.params.search, 'i'));
+    // }
+    //
+    // To include a pointer's data rather than just its id:
+    // query.include('category');
+
+    const [err, results] = await catchError(
+      query.find({sessionToken: req.user?.getSessionToken()})
+    );
+    if (err) throw err;
+
+    const [countErr, count] = await catchError(
+      query.count({sessionToken: req.user?.getSessionToken()})
+    );
+
+    // Cast - Parse.Query returns Parse.Object, not the typed class, so without
+    // this the typed property access is unavailable.
+    return {results: results as {{ClassName}}[], count: countErr ? 0 : count};
+  }
+
+  // =========================================================================
+  //  GET ONE - GET /api/{{routePrefix}}/get{{ClassName}}
+  // =========================================================================
+  @CloudFunction({
+    methods: ['GET'],
+    description: 'Fetch one {{instanceName}}',
+    validation: {fields: {id: {type: String, required: true}}},
+    swagger: {tags: ['{{ClassName}}']},
+  })
+  static async get{{ClassName}}(req: Parse.Cloud.FunctionRequest) {
+    const query = new Parse.Query({{ClassName}});
+    // query.include('category');
+
+    const [err, {{instanceName}}] = await catchError(
+      query.get(req.params.id, {sessionToken: req.user?.getSessionToken()})
+    );
+    if (err) throw err;
+    return {{instanceName}} as {{ClassName}};
+  }
+
+  // =========================================================================
+  //  UPDATE - POST /api/{{routePrefix}}/update{{ClassName}}
+  // =========================================================================
+  @CloudFunction({
+    methods: ['POST'],
+    description: 'Update a {{instanceName}}',
+    validation: {requireUser: true, fields: {id: {required: true}}},
+    swagger: {tags: ['{{ClassName}}']},
+  })
+  static async update{{ClassName}}(req: Parse.Cloud.FunctionRequest) {
+    const user = req.user!;
+
+    // fromParams carries the id through, so this updates rather than creates.
+    const {{instanceName}} = {{ClassName}}.fromParams(req.params);
+
+    const [err, saved] = await catchError(
+      {{instanceName}}.save(null, {sessionToken: user.getSessionToken()})
+    );
+    if (err) throw err;
+    return saved;
+  }
+
+  // =========================================================================
+  //  DELETE - POST /api/{{routePrefix}}/delete{{ClassName}}
+  // =========================================================================
+  @CloudFunction({
+    methods: ['POST'],
+    description: 'Delete a {{instanceName}}',
+    validation: {requireUser: true, fields: {id: {required: true}}},
+    // requireRoles: ['Admin'],
+    swagger: {tags: ['{{ClassName}}']},
+  })
+  static async delete{{ClassName}}(req: Parse.Cloud.FunctionRequest) {
+    const user = req.user!;
+    const query = new Parse.Query({{ClassName}});
+
+    const [findErr, {{instanceName}}] = await catchError(
+      query.get(req.params.id, {sessionToken: user.getSessionToken()})
+    );
+    if (findErr) throw findErr;
+
+    // --- Referential integrity checks go here, before deleting ----------
+
+    const [delErr] = await catchError(
+      {{instanceName}}!.destroy({sessionToken: user.getSessionToken()})
+    );
+    if (delErr) throw delErr;
+
+    return {deleted: true, id: req.params.id};
+  }
+
+  // =========================================================================
+  //  YOUR OWN ENDPOINTS GO HERE - the method name becomes the route.
+  // =========================================================================
+  //
+  // @CloudFunction({methods: ['POST'], validation: {requireUser: true}})
+  // static async publish{{ClassName}}(req: Parse.Cloud.FunctionRequest) {
+  //   //  POST /api/{{routePrefix}}/publish{{ClassName}}
+  // }
+}
+
+export default {{ClassName}}Functions;

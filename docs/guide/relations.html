@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data:; font-src 'self'; form-action 'none'; base-uri 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Relationships — parse-server-kit</title>
+<meta name="description" content="Pointer, array of pointers, or Relation — three ways to connect records, and the one question that decides between them.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Relationships — parse-server-kit">
+<meta property="og:description" content="Pointer, array of pointers, or Relation — three ways to connect records, and the one question that decides between them.">
+<meta property="og:url" content="https://walhalabi-code.github.io/parse-server-kit/guide/relations.html">
+<meta property="og:site_name" content="parse-server-kit">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="../index.html"><svg class="brand-mark" viewBox="12 10 62 72" aria-hidden="true"><g transform="translate(18, 14)" fill="none" stroke-linecap="round" stroke-linejoin="round"><path class="logo-base" pathLength="1" d="M 40 24 C 40 14, 28 12, 20 22 C 12 32, 12 44, 22 52 C 32 60, 46 52, 46 36 C 46 20, 34 10, 20 10 C 7 10, 2 22, 2 38 C 2 54, 12 64, 28 64 C 38 64, 48 57, 52 48" stroke="var(--logo-base)" stroke-width="3" opacity="0.6"/><g class="logo-layer" transform="translate(-3, -4)"><path class="logo-kit-path" pathLength="1" d="M 40 20 C 40 10, 28 8, 20 18 C 12 28, 12 40, 22 48 C 32 56, 46 48, 46 32 C 46 16, 34 6, 20 6 C 7 6, 2 18, 2 34 C 2 50, 12 60, 28 60 C 38 60, 48 53, 52 44" stroke="var(--logo-kit)" stroke-width="3.5"/><circle class="logo-dot" cx="25" cy="28" r="3.5" fill="var(--logo-kit)" stroke="none"/></g></g></svg>parse-server-kit <span class="v">3.0</span></a>
+    <nav class="nav">
+      <button class="icon-btn menu-btn" data-menu-toggle aria-expanded="false" aria-label="Toggle navigation">≡</button>
+      <button class="icon-btn" data-search-open aria-label="Search">⌕</button>
+      <a class="nav-ai" href="../guide/ai-assistants.html"><svg class="ai-spark" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 2.4 6.9 5l2.6.9-2.6.9L6 9.4 5.1 6.8 2.5 5.9l2.6-.9Z"/><path d="m11.6 8.4.6 1.7 1.7.6-1.7.6-.6 1.7-.6-1.7-1.7-.6 1.7-.6Z"/></svg>AI</a>
+      <a class="hide-sm" href="../index.html">Home</a>
+      <a class="hide-sm" href="https://github.com/walhalabi-code/parse-server-kit">GitHub</a>
+      <button class="icon-btn" data-theme-toggle aria-label="Switch theme">◐</button>
+    </nav>
+  </div>
+</header>
+
+<div class="layout">
+
+<aside class="sidebar">
+  <svg class="icon-sprite" aria-hidden="true"><symbol id="i-rocket" viewBox="0 0 16 16"><path d="M6.5 9.5 3 8.8l2.2-2.6 2.6-.3M6.5 9.5 7.2 13l2.6-2.2.3-2.6M6.5 9.5 9.5 6.5m0 0a12 12 0 0 1 3.8-3.8 5 5 0 0 1-3.8 3.8ZM4.5 11.5 3 14l2.5-1.5"/></symbol><symbol id="i-book" viewBox="0 0 16 16"><path d="M2.5 3.5h4a2 2 0 0 1 2 2v7a1.5 1.5 0 0 0-1.5-1.5h-4.5Zm11 0h-4a2 2 0 0 0-2 2v7A1.5 1.5 0 0 1 9 11h4.5Z"/></symbol><symbol id="i-play" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><path d="m6.8 5.8 3.2 2.2-3.2 2.2Z"/></symbol><symbol id="i-cart" viewBox="0 0 16 16"><path d="M2 2.5h1.6l1.6 7.4h6.6l1.3-5.2H4.2"/><circle cx="6.3" cy="12.6" r="1"/><circle cx="11.4" cy="12.6" r="1"/></symbol><symbol id="i-scales" viewBox="0 0 16 16"><path d="M8 2.5v11M4.5 4.2h7M2 10a2.5 2.5 0 0 0 5 0L4.5 4.5Zm7 0a2.5 2.5 0 0 0 5 0L11.5 4.5ZM5.5 13.5h5"/></symbol><symbol id="i-box" viewBox="0 0 16 16"><path d="M8 2 2.5 4.8v6.4L8 14l5.5-2.8V4.8Z"/><path d="M2.5 4.8 8 7.6l5.5-2.8M8 7.6V14"/></symbol><symbol id="i-transform" viewBox="0 0 16 16"><path d="M2 5.5h7m-2.2-2.2L9 5.5 6.8 7.7M14 10.5H7m2.2-2.2L7 10.5l2.2 2.2"/></symbol><symbol id="i-shield" viewBox="0 0 16 16"><path d="M8 2 3.5 3.8v3.7c0 2.6 1.9 5 4.5 5.9 2.6-.9 4.5-3.3 4.5-5.9V3.8Z"/><path d="m6.2 7.9 1.4 1.4 2.4-2.6"/></symbol><symbol id="i-search" viewBox="0 0 16 16"><circle cx="7.2" cy="7.2" r="4"/><path d="m10.2 10.2 3 3"/></symbol><symbol id="i-link" viewBox="0 0 16 16"><path d="M6.6 9.4a2.6 2.6 0 0 0 3.7 0l2-2a2.6 2.6 0 0 0-3.7-3.7l-.9.9"/><path d="M9.4 6.6a2.6 2.6 0 0 0-3.7 0l-2 2a2.6 2.6 0 0 0 3.7 3.7l.9-.9"/></symbol><symbol id="i-user" viewBox="0 0 16 16"><circle cx="8" cy="6" r="2.6"/><path d="M3.4 13.2a4.8 4.8 0 0 1 9.2 0"/></symbol><symbol id="i-image" viewBox="0 0 16 16"><rect x="2.5" y="3.5" width="11" height="9" rx="1.5"/><circle cx="6" cy="6.7" r="1"/><path d="m3.2 11.4 3-2.6 2.4 2 2-1.6 2.2 1.9"/></symbol><symbol id="i-signpost" viewBox="0 0 16 16"><path d="M8 2v12M8 4h4.2l1.3 1.6L12.2 7.2H8Zm0 4.2H3.8L2.5 9.8l1.3 1.6H8Z"/></symbol><symbol id="i-bolt" viewBox="0 0 16 16"><path d="M9 2 4 9h3.4l-.4 5 5-7H8.6Z"/></symbol><symbol id="i-broadcast" viewBox="0 0 16 16"><circle cx="8" cy="8" r="1.6"/><path d="M5.2 10.8a4 4 0 0 1 0-5.6m5.6 0a4 4 0 0 1 0 5.6M3.2 12.8a6.8 6.8 0 0 1 0-9.6m9.6 0a6.8 6.8 0 0 1 0 9.6"/></symbol><symbol id="i-exchange" viewBox="0 0 16 16"><path d="M2.8 5.5h9.1l-2-2M13.2 10.5H4.1l2 2"/></symbol><symbol id="i-lock" viewBox="0 0 16 16"><rect x="3.2" y="7" width="9.6" height="6.3" rx="1.5"/><path d="M5.5 7V5.3a2.5 2.5 0 0 1 5 0V7"/><path d="M8 9.6v1.4"/></symbol><symbol id="i-sprout" viewBox="0 0 16 16"><path d="M8 13.5V7.8m0 0C8 6 6.6 4.6 4.8 4.6H3.3c0 1.8 1.4 3.2 3.2 3.2Zm0 0c0-1.8 1.4-3.2 3.2-3.2h1.5c0 1.8-1.4 3.2-3.2 3.2Z"/></symbol><symbol id="i-gauge" viewBox="0 0 16 16"><path d="M2.8 11.6a5.9 5.9 0 1 1 10.4 0"/><path d="M8 8.8 10.6 6"/><circle cx="8" cy="9.4" r="1"/></symbol><symbol id="i-spark" viewBox="0 0 16 16"><path d="M6 2.4 6.9 5l2.6.9-2.6.9L6 9.4 5.1 6.8 2.5 5.9l2.6-.9Z"/><path d="m11.6 8.4.6 1.7 1.7.6-1.7.6-.6 1.7-.6-1.7-1.7-.6 1.7-.6Z"/></symbol><symbol id="i-alert" viewBox="0 0 16 16"><path d="M8 2.8 2.6 12.4h10.8Z"/><path d="M8 6.4v2.8M8 10.8v.1"/></symbol><symbol id="i-terminal" viewBox="0 0 16 16"><rect x="2.2" y="3" width="11.6" height="10" rx="1.5"/><path d="m5 6.4 2 1.8-2 1.8M8.6 10.4h2.6"/></symbol><symbol id="i-lifebuoy" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><circle cx="8" cy="8" r="2.2"/><path d="m4.1 4.1 2.3 2.3m3.2 3.2 2.3 2.3m0-7.8-2.3 2.3M6.4 9.6l-2.3 2.3"/></symbol><symbol id="i-at" viewBox="0 0 16 16"><circle cx="8" cy="8" r="2.3"/><path d="M10.3 5.7v3a1.8 1.8 0 0 0 3.2 1.1A5.8 5.8 0 1 0 11 13"/></symbol><symbol id="i-sliders" viewBox="0 0 16 16"><path d="M2.5 5h7m3 0h1m-11 6h1m3 0h7"/><circle cx="11" cy="5" r="1.5"/><circle cx="5" cy="11" r="1.5"/></symbol><symbol id="i-layers" viewBox="0 0 16 16"><path d="M8 2.2 2.4 5 8 7.8 13.6 5Z"/><path d="m2.4 8 5.6 2.8L13.6 8m-11.2 3 5.6 2.8L13.6 11"/></symbol><symbol id="i-wrench" viewBox="0 0 16 16"><path d="M10.4 2.6a3.4 3.4 0 0 0-3.9 4.6l-4 4a1.3 1.3 0 0 0 1.9 1.9l4-4a3.4 3.4 0 0 0 4.6-3.9l-1.9 1.9-1.9-.5-.5-1.9Z"/></symbol></svg>
+  <h5>Start here</h5>
+  <ul>
+    <li><a href="../guide/getting-started.html"><svg class="ic" aria-hidden="true"><use href="#i-rocket"/></svg><span>Getting started</span></a></li>
+    <li><a href="../guide/ai-assistants.html"><svg class="ic" aria-hidden="true"><use href="#i-spark"/></svg><span>AI assistants</span></a></li>
+    <li class="has-sub">
+      <details>
+        <summary><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg><span>Tutorials</span></summary>
+        <ul>
+        <li><a href="../guide/tutorial.html"><svg class="ic" aria-hidden="true"><use href="#i-play"/></svg><span>A first API</span></a></li>
+        <li><a href="../guide/tutorial-orders.html"><svg class="ic" aria-hidden="true"><use href="#i-cart"/></svg><span>Orders &amp; stock</span></a></li>
+        </ul>
+      </details>
+    </li>
+    <li><a href="../guide/vs-nestjs.html"><svg class="ic" aria-hidden="true"><use href="#i-scales"/></svg><span>Compared with NestJS</span></a></li>
+  </ul>
+  <h5>Guide</h5>
+  <ul>
+    <li><a href="../guide/models.html"><svg class="ic" aria-hidden="true"><use href="#i-box"/></svg><span>Models &amp; fields</span></a></li>
+    <li><a href="../guide/from-params.html"><svg class="ic" aria-hidden="true"><use href="#i-transform"/></svg><span>fromParams</span></a></li>
+    <li><a href="../guide/acl.html"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg><span>Permissions &amp; ACL</span></a></li>
+    <li><a href="../guide/queries.html"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg><span>Queries</span></a></li>
+    <li><a href="../guide/relations.html"><svg class="ic" aria-hidden="true"><use href="#i-link"/></svg><span>Relationships</span></a></li>
+    <li><a href="../guide/users.html"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg><span>Users &amp; auth</span></a></li>
+    <li><a href="../guide/files.html"><svg class="ic" aria-hidden="true"><use href="#i-image"/></svg><span>Files &amp; images</span></a></li>
+    <li><a href="../guide/endpoints.html"><svg class="ic" aria-hidden="true"><use href="#i-signpost"/></svg><span>Endpoints &amp; routing</span></a></li>
+    <li><a href="../guide/triggers.html"><svg class="ic" aria-hidden="true"><use href="#i-bolt"/></svg><span>Triggers</span></a></li>
+    <li><a href="../guide/live-query.html"><svg class="ic" aria-hidden="true"><use href="#i-broadcast"/></svg><span>Real-time</span></a></li>
+    <li><a href="../guide/transactions.html"><svg class="ic" aria-hidden="true"><use href="#i-exchange"/></svg><span>Transactions</span></a></li>
+    <li><a href="../guide/optimistic-locking.html"><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg><span>Optimistic locking</span></a></li>
+    <li><a href="../guide/seeding.html"><svg class="ic" aria-hidden="true"><use href="#i-sprout"/></svg><span>Seeding data</span></a></li>
+    <li><a href="../guide/dashboard.html"><svg class="ic" aria-hidden="true"><use href="#i-gauge"/></svg><span>Parse Dashboard</span></a></li>
+    <li><a href="../guide/errors.html"><svg class="ic" aria-hidden="true"><use href="#i-alert"/></svg><span>Errors</span></a></li>
+    <li><a href="../guide/cli.html"><svg class="ic" aria-hidden="true"><use href="#i-terminal"/></svg><span>The psk CLI</span></a></li>
+    <li><a href="../guide/troubleshooting.html"><svg class="ic" aria-hidden="true"><use href="#i-lifebuoy"/></svg><span>Troubleshooting</span></a></li>
+  </ul>
+  <h5>Reference</h5>
+  <ul>
+    <li><a href="../reference/decorators.html"><svg class="ic" aria-hidden="true"><use href="#i-at"/></svg><span>Decorators</span></a></li>
+    <li><a href="../reference/configuration.html"><svg class="ic" aria-hidden="true"><use href="#i-sliders"/></svg><span>Configuration</span></a></li>
+    <li><a href="../reference/middleware.html"><svg class="ic" aria-hidden="true"><use href="#i-layers"/></svg><span>Middleware</span></a></li>
+    <li><a href="../reference/utilities.html"><svg class="ic" aria-hidden="true"><use href="#i-wrench"/></svg><span>Utilities</span></a></li>
+  </ul>
+</aside>
+
+<main class="content">
+  <p class="eyebrow">Guide</p>
+  <h1>Relationships</h1>
+  <p class="lede">Pointer, array of pointers, or Relation — three ways to connect records, and the one question that decides between them.</p>
+
+
+  <h2 id="three">Three options</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th></th><th>Holds</th><th>Good up to</th><th>Query from</th></tr></thead>
+    <tbody>
+      <tr><td><b>Pointer</b></td><td>one reference</td><td>—</td><td>either side</td></tr>
+      <tr><td><b>Array of pointers</b></td><td>a list, stored on the row</td><td>~100</td><td>either side</td></tr>
+      <tr><td><b>Relation</b></td><td>a list, stored separately</td><td>unbounded</td><td>the owning side</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="note">
+    <span class="note-title">The question that decides it</span>
+    <b>How many, and does it grow without limit?</b> One → Pointer. A handful that a human
+    curates (tags, contributors) → Array. Something that grows with usage (a user's orders,
+    a post's comments) → the other way round: put a Pointer on the many side.
+  </div>
+
+  <h2 id="pointer">Pointer — one reference</h2>
+<pre class="code-block"><code><span class="t-key">import</span> {
+  ParseField, ParseClass, BaseModel, BeforeSave, cloneAcl, AfterDelete,
+  catchError,
+} <span class="t-key">from</span> <span class="t-str">'parse-server-kit'</span>;
+
+<span class="t-dec">@ParseField</span>({ type: <span class="t-str">'Pointer'</span>, targetClass: <span class="t-str">'Category'</span>, required: <span class="t-key">true</span> })
+<span class="t-key">declare</span> category: <span class="t-key">any</span>;</code></pre>
+  <p><code>targetClass</code> is mandatory — omitting it throws at import, because there is nothing to point at.</p>
+<pre class="code-block"><code><span class="t-com">// Send it as an id</span>
+{ <span class="t-str">"category"</span>: { <span class="t-str">"objectId"</span>: <span class="t-str">"abc123"</span> } }
+
+<span class="t-com">// Filter by it</span>
+query.equalTo(<span class="t-str">'category'</span>, Category.pointer(id));
+
+<span class="t-com">// Fetch the related row with the result</span>
+query.include(<span class="t-str">'category'</span>);
+
+<span class="t-com">// Clear it</span>
+{ <span class="t-str">"category"</span>: <span class="t-key">null</span> }</code></pre>
+
+  <h3 id="one-to-many">One to many</h3>
+  <p>
+    Put the pointer on the <b>many</b> side. A project does not hold a list of tasks; each
+    task points at its project.
+  </p>
+<pre class="code-block"><code><span class="t-com">// Task</span>
+<span class="t-dec">@ParseField</span>({ type: <span class="t-str">'Pointer'</span>, targetClass: <span class="t-str">'Project'</span>, required: <span class="t-key">true</span> })
+<span class="t-key">declare</span> project: <span class="t-key">any</span>;
+
+<span class="t-com">// "tasks in this project" is then just a query</span>
+<span class="t-key">new</span> Parse.Query(Task).equalTo(<span class="t-str">'project'</span>, Project.pointer(projectId));</code></pre>
+  <p>
+    This scales without limit and needs no write to the project when a task is added. An
+    array on the project would have to be read, modified and saved on every change — and
+    two people adding tasks at once would overwrite each other.
+  </p>
+
+  <h2 id="array">Array of pointers — a small curated list</h2>
+<pre class="code-block"><code><span class="t-com">// targetClass is what makes fromParams convert the ids</span>
+<span class="t-dec">@ParseField</span>({ type: <span class="t-str">'Array'</span>, targetClass: <span class="t-str">'Tag'</span> })
+<span class="t-key">declare</span> tags: <span class="t-key">any</span>[];</code></pre>
+<pre class="code-block"><code>{ <span class="t-str">"tags"</span>: [{ <span class="t-str">"objectId"</span>: <span class="t-str">"t1"</span> }, { <span class="t-str">"objectId"</span>: <span class="t-str">"t2"</span> }] }
+
+query.equalTo(<span class="t-str">'tags'</span>, Tag.pointer(tagId));          <span class="t-com">// has this tag</span>
+query.containsAll(<span class="t-str">'tags'</span>, [Tag.pointer(a), Tag.pointer(b)]);
+query.include(<span class="t-str">'tags'</span>);                             <span class="t-com">// fetch them all</span></code></pre>
+  <div class="note warn">
+    <span class="note-title">Without targetClass the array stays raw</span>
+    <code>fromParams</code> has nothing to build pointers to, so it stores the plain objects
+    exactly as sent. The field appears to save and the relationships are not there. A
+    Pointer without a target throws at import; an Array cannot, because a plain array is
+    perfectly legitimate.
+  </div>
+  <p>
+    Keep it small. The whole array is read and written with the row, and two concurrent
+    edits overwrite one another — <a href="optimistic-locking.html">optimistic locking</a>
+    turns that silent loss into a refusal.
+  </p>
+
+  <h2 id="relation">Relation — a large list</h2>
+  <p>Stored outside the row, so size does not affect it and adding does not rewrite the parent.</p>
+<pre class="code-block"><code><span class="t-dec">@ParseField</span>({ type: <span class="t-str">'Relation'</span>, targetClass: <span class="t-str">'User'</span> })
+<span class="t-key">declare</span> members: <span class="t-key">any</span>;</code></pre>
+<pre class="code-block"><code><span class="t-com">// Add and remove</span>
+team.relation(<span class="t-str">'members'</span>).add(user);
+<span class="t-key">await</span> team.save(<span class="t-key">null</span>, { sessionToken });
+
+<span class="t-com">// Read - a relation gives you a query, never an array</span>
+<span class="t-key">const</span> members = <span class="t-key">await</span> team.relation(<span class="t-str">'members'</span>).query().find({ sessionToken });</code></pre>
+  <div class="note warn">
+    <span class="note-title">A Relation only queries one way</span>
+    You can ask "who is in this team". You cannot ask "which teams is this user in" without
+    a query per team. If you need both directions, use a join model instead.
+  </div>
+
+  <h2 id="join">A join model — when the link has its own data</h2>
+  <p>
+    The moment the relationship needs attributes of its own — a role, a joined-at date, an
+    order — it is a record, not a pointer.
+  </p>
+<pre class="code-block"><code><span class="t-dec">@ParseClass</span>(<span class="t-str">'Membership'</span>)
+<span class="t-key">export default class</span> Membership <span class="t-key">extends</span> BaseModel {
+  <span class="t-key">constructor</span>() { <span class="t-key">super</span>(<span class="t-str">'Membership'</span>); }
+
+  <span class="t-dec">@ParseField</span>({ type: <span class="t-str">'Pointer'</span>, targetClass: <span class="t-str">'Team'</span>, required: <span class="t-key">true</span>, index: <span class="t-key">true</span> })
+  <span class="t-key">declare</span> team: <span class="t-key">any</span>;
+
+  <span class="t-dec">@ParseField</span>({ type: <span class="t-str">'Pointer'</span>, targetClass: <span class="t-str">'_User'</span>, required: <span class="t-key">true</span>, index: <span class="t-key">true</span> })
+  <span class="t-key">declare</span> user: <span class="t-key">any</span>;
+
+  <span class="t-dec">@ParseField</span>({ type: <span class="t-str">'String'</span>, enum: [<span class="t-str">'owner'</span>, <span class="t-str">'editor'</span>, <span class="t-str">'viewer'</span>] })
+  <span class="t-key">declare</span> role: <span class="t-key">string</span>;
+}</code></pre>
+  <p>Both directions are now ordinary queries, and the pair can be made unique:</p>
+<pre class="code-block"><code>compoundIndexes: [{ fields: [<span class="t-str">'team'</span>, <span class="t-str">'user'</span>], unique: <span class="t-key">true</span> }]</code></pre>
+
+  <h2 id="querying">Querying across a relationship</h2>
+<pre class="code-block"><code><span class="t-com">// Tasks whose project is archived - a sub-query</span>
+<span class="t-key">const</span> archived = <span class="t-key">new</span> Parse.Query(Project).equalTo(<span class="t-str">'status'</span>, <span class="t-str">'archived'</span>);
+<span class="t-key">new</span> Parse.Query(Task).matchesQuery(<span class="t-str">'project'</span>, archived);
+
+<span class="t-com">// The inverse</span>
+<span class="t-key">new</span> Parse.Query(Task).doesNotMatchQuery(<span class="t-str">'project'</span>, archived);</code></pre>
+  <p>See <a href="queries.html#pointers">Queries</a> for <code>include</code>, <code>select</code> and the cost of each.</p>
+
+  <h2 id="acl">Permissions across a relationship</h2>
+  <p>
+    A related row has its own ACL. A task is not private because its project is — you have
+    to say so. The usual place is the child's <code>@BeforeSave</code>:
+  </p>
+<pre class="code-block"><code><span class="t-dec">@BeforeSave</span>()
+<span class="t-key">static async</span> onBeforeSave(req: Parse.Cloud.BeforeSaveRequest&lt;Task&gt;) {
+  <span class="t-key">const</span> task = req.object <span class="t-key">as</span> Task;
+  <span class="t-key">if</span> (!task.existed()) {
+    <span class="t-key">const</span> project = <span class="t-key">await</span> <span class="t-key">new</span> Parse.Query(Project)
+      .get(task.project.id, { useMasterKey: <span class="t-key">true</span> });
+    <span class="t-key">const</span> acl = project.getACL();
+    <span class="t-key">if</span> (acl) task.setACL(cloneAcl(acl));
+  }
+}</code></pre>
+  <p>For images and files specifically, <a href="files.html#cascade"><code>syncImageAcl</code></a> does this for you.</p>
+
+  <h2 id="deleting">Deleting</h2>
+  <p>Parse does not cascade. Deleting a project leaves its tasks pointing at nothing.</p>
+<pre class="code-block"><code><span class="t-dec">@AfterDelete</span>()
+<span class="t-key">static async</span> onAfterDelete(req: Parse.Cloud.AfterDeleteRequest&lt;Project&gt;) {
+  <span class="t-key">const</span> query = <span class="t-key">new</span> Parse.Query(Task);
+  query.equalTo(<span class="t-str">'project'</span>, req.object);
+  <span class="t-key">const</span> [err, orphans] = <span class="t-key">await</span> catchError(query.find({ useMasterKey: <span class="t-key">true</span> }));
+  <span class="t-key">if</span> (!err &amp;&amp; orphans?.length) {
+    <span class="t-key">await</span> catchError(Parse.Object.destroyAll(orphans, { useMasterKey: <span class="t-key">true</span> }));
+  }
+}</code></pre>
+  <p>
+    Or refuse the delete in <code>@BeforeDelete</code> while children exist. Either is fine;
+    doing neither leaves data that queries return and clients cannot resolve.
+  </p>
+
+  <h2 id="summary">Choosing, briefly</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Relationship</th><th>Use</th></tr></thead>
+    <tbody>
+      <tr><td>Task → its project</td><td>Pointer on the task</td></tr>
+      <tr><td>Project → its tasks</td><td>No field. Query tasks by project</td></tr>
+      <tr><td>Post → its tags</td><td>Array of pointers</td></tr>
+      <tr><td>Team → its members (many)</td><td>Relation, or a join model</td></tr>
+      <tr><td>Team ↔ member with a role</td><td>Join model</td></tr>
+    </tbody>
+  </table></div>
+
+
+  <div class="pager">
+    <a href="queries.html"><span>Back</span>Queries</a>
+    <a class="next" href="users.html"><span>Next</span>Users &amp; authentication</a>
+  </div>
+</main>
+
+</div>
+
+<footer class="site-footer">
+  <div class="inner">
+    <span>MIT licensed</span>
+    <a href="https://www.npmjs.com/package/parse-server-kit">npm</a>
+    <a href="https://github.com/walhalabi-code/parse-server-kit">GitHub</a>
+    <span class="spacer">For Parse concepts, <a href="https://docs.parseplatform.org/">its docs</a> remain the reference.</span>
+  </div>
+</footer>
+
+<script src="../assets/docs.js"></script>
+</body>
+</html>
