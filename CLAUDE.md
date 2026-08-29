@@ -836,7 +836,7 @@ output for `[Versioning]`.
 
 | | Requirement |
 |---|---|
-| Node | ≥ 18 for this package; **≥ 20.19** with parse-server 9 |
+| Node | **≥ 20.19** — the floor for parse-server 9, parse 8 and the test suite |
 | parse-server | ≥ 8.3 (optional peer) — `keepUnknownIndexes`, adapter internals |
 | MongoDB | ≥ 7.0.16 for parse-server 9; **replica set** for transactions |
 | Parse SDK | ≥ 5; verified on 5.3.0 and 8.6.0 |

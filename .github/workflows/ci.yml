@@ -14,9 +14,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # 18 is the declared floor; 20.19 is what parse-server 9 requires;
-        # 22 catches anything that breaks on the current LTS.
-        node: ['18', '20', '22']
+        # 20.19 is the declared floor and what parse-server 9, parse 8 and
+        # mongodb-memory-server all require; 22 catches anything that breaks
+        # on the current LTS. Node 18 is NOT tested and NOT claimed: none of
+        # those three run on it, so a job there could only pass vacuously.
+        node: ['20', '22']
 
     steps:
       - uses: actions/checkout@v4

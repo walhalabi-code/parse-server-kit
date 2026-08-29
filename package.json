@@ -52,7 +52,7 @@
   },
   "homepage": "https://github.com/walhalabi-code/parse-server-kit#readme",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.19.0"
   },
   "peerDependencies": {
     "@types/parse": ">=3.0.0",

@@ -299,7 +299,7 @@ It ships inside the package, so it's also available to coding agents at
 
 | | |
 |---|---|
-| Node | ≥ 18; **≥ 20.19** with parse-server 9 |
+| Node | **≥ 20.19** |
 | parse-server | ≥ 8.3 (optional peer) |
 | MongoDB | ≥ 7.0.16 for parse-server 9; **replica set** for transactions |
 | TypeScript | any, with `experimentalDecorators: true` |
