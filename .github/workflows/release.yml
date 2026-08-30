@@ -75,8 +75,11 @@ jobs:
 
     # Gate. Configure `npm` under Settings → Environments with yourself as a
     # required reviewer, and nothing reaches the registry until you approve it.
-    # This is also where the NPM_TOKEN secret should live rather than at repo
-    # level, so no other workflow can read it.
+    #
+    # The environment is also half the publishing credential now: npm's trusted
+    # publisher is configured for this repository, this workflow AND this
+    # environment, so a run that has not passed the gate cannot publish even if
+    # it reaches the step.
     environment:
       name: npm
       url: https://www.npmjs.com/package/parse-server-kit
@@ -103,7 +106,15 @@ jobs:
       # failure stops the run before the publish step is reached.
       - run: npm run build
 
+      # Trusted publishing is an OIDC exchange, and the npm CLI only learned it
+      # in 11.5.1 — Node 20 ships npm 10, which would silently fall back to
+      # looking for a token that no longer exists.
+      - name: Use an npm that can do OIDC
+        run: npm install -g npm@latest
+
+      # No NODE_AUTH_TOKEN. The `id-token: write` permission above lets npm
+      # verify this exact repository, workflow and environment against the
+      # trusted publisher configured on the package, so there is no long-lived
+      # credential to leak, rotate or forget to scope.
       - name: Publish
         run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
