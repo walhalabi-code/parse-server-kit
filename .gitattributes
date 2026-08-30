@@ -1,0 +1,17 @@
+# Normalise line endings, and check every text file out as LF on every platform.
+#
+# Without this, Git's core.autocrlf (on by default on Windows) rewrites text
+# files to CRLF at checkout. The blobs stay LF, so nothing looks wrong in a
+# diff, but the bytes on disk differ from the bytes CI sees. A test that
+# asserts on file content then fails only on Windows, only in a fresh clone.
+# That is exactly what happened: body.startsWith('---\n') in test/ai.test.ts
+# is false once the checkout produced ---\r\n.
+#
+# The templates are the other reason. psk new copies them verbatim into a
+# user's project, so their line endings should not depend on the platform
+# the package was built on.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.svg text eol=lf
