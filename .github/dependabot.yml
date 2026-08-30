@@ -23,6 +23,24 @@ updates:
       - dependency-name: parse
         update-types: [version-update:semver-major]
 
+      # TypeScript majors, because this library is built entirely on LEGACY
+      # decorators. TS 5 already defaults to the standard (TC39) ones and only
+      # `experimentalDecorators` keeps the legacy behaviour; TS 7 is the native
+      # rewrite. A major here can change the one language feature every
+      # @ParseClass, @ParseField and @CloudFunction depends on, and the failure
+      # mode is decorators quietly doing the wrong thing rather than a build
+      # error. Upgrade deliberately, with the suite watched.
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
+
+      # @types/node must track the Node FLOOR, not the newest release. The
+      # package declares engines >=20.19; typings from a much later major
+      # describe APIs that do not exist there, so the compiler would accept
+      # code that fails at runtime on a supported version — with nothing said
+      # at build time.
+      - dependency-name: "@types/node"
+        update-types: [version-update:semver-major]
+
   # Actions are executable code running with access to this repo and, in the
   # release workflow, to publishing rights. Keeping them current is the other
   # half of pinning them.
