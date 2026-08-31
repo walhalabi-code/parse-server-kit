@@ -105,6 +105,49 @@
     right place.
   </p>
 
+  <h2 id="options">Every option</h2>
+  <p><code>setupSwagger(app, config, path?)</code>. The third argument is where the docs mount; it defaults to <code>/api-docs</code>.</p>
+  <table>
+    <thead><tr><th>Option</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><code>title</code></td><td>required</td><td>Shown as the document title</td></tr>
+      <tr><td><code>version</code></td><td>required</td><td>Your API's version, not the library's</td></tr>
+      <tr><td><code>description</code></td><td><i>Auto-generated API documentation</i></td><td>Free text under the title</td></tr>
+      <tr><td><code>basePath</code></td><td>the configured <code>mountPath</code></td><td>The server URL requests are built against</td></tr>
+      <tr><td><code>appId</code></td><td>—</td><td>Shown in the Authorize dialog, so nobody has to guess it</td></tr>
+      <tr><td><code>restApiKey</code></td><td><code>false</code></td><td>Whether the docs require <code>X-Parse-REST-API-Key</code></td></tr>
+      <tr><td><code>host</code>, <code>schemes</code></td><td>—</td><td>Carried through for OpenAPI 2 style consumers</td></tr>
+      <tr><td><i>3rd argument</i></td><td><code>'/api-docs'</code></td><td>Mount path. The spec is always at <code>{path}/json</code></td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="turning-it-off">Turning it on and off</h2>
+  <p>
+    There is deliberately no <code>enabled</code> option. The way to not have documentation is to
+    not mount it, so the switch belongs to your project rather than to the library:
+  </p>
+<pre class="code-block"><code><span class="t-key">if</span> (DOCS_ENABLED) {
+  setupSwagger(app, {title, version, appId: APP_ID}, DOCS_PATH);
+}</code></pre>
+  <p>
+    The generated project already has this, reading <code>DOCS_ENABLED</code> and
+    <code>DOCS_PATH</code> from <code>.env</code> — so switching docs off is an environment
+    variable, not a code change, and the startup banner reports
+    <code>off (DOCS_ENABLED=false)</code> rather than advertising a URL that answers nothing.
+  </p>
+
+  <div class="note">
+    <span class="note-title">Docs are on in production by default</span>
+    <p>
+      That is a deliberate choice, not an oversight. The document lists only the endpoints you
+      declared, generated from the same decorators that enforce them, so it cannot drift into
+      describing something that is not there — and a public API benefits from published
+      documentation. Set <code>DOCS_ENABLED=false</code> if your API is private and you would
+      rather not publish its shape. It is not an access control either way: hiding the map is not
+      locking the door.
+    </p>
+  </div>
+
   <h2 id="where-it-comes-from">Where the content comes from</h2>
   <p>Nothing here is written twice. Every part of the document is read from something that already had to exist:</p>
   <table>
