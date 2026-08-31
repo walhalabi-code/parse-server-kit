@@ -1,6 +1,6 @@
 {
   "name": "parse-server-kit",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "description": "Decorator-driven toolkit for Parse Server: models, cloud functions, triggers, cron, REST routing, ACL, transactions, optimistic locking and Swagger, from TypeScript decorators.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
