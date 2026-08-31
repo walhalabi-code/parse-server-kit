@@ -109,8 +109,13 @@ jobs:
       # Trusted publishing is an OIDC exchange, and the npm CLI only learned it
       # in 11.5.1 — Node 20 ships npm 10, which would silently fall back to
       # looking for a token that no longer exists.
+      #
+      # Pinned to the 11 line rather than `@latest`, because `@latest` is a
+      # moving target that moved: npm 12 requires Node ^22.22 || ^24.15 ||
+      # >=26, so on this job's Node 20 it fails the install outright with
+      # EBADENGINE. npm 11 requires ^20.17.0 || >=22.9.0, which Node 20 meets.
       - name: Use an npm that can do OIDC
-        run: npm install -g npm@latest
+        run: npm install -g npm@^11.5.1
 
       # No NODE_AUTH_TOKEN. The `id-token: write` permission above lets npm
       # verify this exact repository, workflow and environment against the
