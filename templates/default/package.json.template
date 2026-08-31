@@ -17,7 +17,8 @@
     "parse": "^8.6.0",
     "parse-server": "^9.10.0",
     "parse-server-kit": "^{{KIT_VERSION}}",
-    "reflect-metadata": "^0.2.2"
+    "reflect-metadata": "^0.2.2",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
