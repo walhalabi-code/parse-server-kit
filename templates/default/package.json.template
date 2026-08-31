@@ -8,8 +8,8 @@
     "dev": "tsc && node build/src/app.js",
     "test": "tsc && node --test build/src/",
     "seed": "tsc && node build/src/seed.js",
-    "db:up": "docker compose up -d",
-    "db:down": "docker compose down"
+    "db:up": "node scripts/db.js up",
+    "db:down": "node scripts/db.js down"
   },
   "dependencies": {
     "dotenv": "^16.4.0",
