@@ -137,10 +137,9 @@ export enum Roles {OWNER = 'Owner', MEMBER = 'Member', BILLING = 'Billing'}
 ## Quickstart
 
 ```bash
-npx parse-server-kit new my-api
+npx parse-server-kit new my-api   # scaffolds and installs
 cd my-api
-docker compose up -d      # MongoDB as a replica set, so transactions work
-npm install
+npm run db:up             # MongoDB as a replica set, so transactions work
 npm run dev
 ```
 
@@ -149,7 +148,7 @@ mandatory tsconfig flags already set. The server prints a ready-to-paste `curl`
 on startup:
 
 ```
-✓ Created my-api — 10 files
+✓ Created my-api — 15 files
 
   Your API is running.
   Docs   http://localhost:1337/api-docs

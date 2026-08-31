@@ -135,8 +135,7 @@
   <h2 id="setup">1. Set up</h2>
 <pre class="code-block"><code>npx parse-server-kit new shop-api
 <span class="t-key">cd</span> shop-api
-docker compose up -d       <span class="t-com"># MongoDB as a replica set - transactions need one</span>
-npm install
+npm run db:up              <span class="t-com"># MongoDB as a replica set - transactions need one</span>
 npm run dev</code></pre>
   <p>
     The replica set matters. Transactions and <code>@ParseVersionField</code> are both

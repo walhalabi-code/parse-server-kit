@@ -96,15 +96,14 @@
       <tr><td><code>psk --version</code> / <code>--help</code></td><td></td></tr>
     </tbody>
   </table></div>
-  <p><code>generate</code> abbreviates to <code>g</code>; <code>-y</code> accepts defaults, <code>-f</code> overwrites existing files. Before installing anything, <code>npx parse-server-kit</code> works in place of <code>psk</code>.</p>
+  <p><code>generate</code> abbreviates to <code>g</code>; <code>-y</code> accepts defaults, <code>-f</code> overwrites existing files. <code>new</code> installs the generated project's dependencies for you — pass <code>--no-install</code> to skip that, for CI or a different package manager. Before installing anything, <code>npx parse-server-kit</code> works in place of <code>psk</code>.</p>
 
   <h2 id="new">Creating a project</h2>
 <pre class="code-block"><code>npx parse-server-kit new my-api
 cd my-api
-docker compose up -d
-npm install
+npm run db:up
 npm run dev</code></pre>
-  <p>Ten files, and every one of them removes a trap that is otherwise easy to hit:</p>
+  <p>Fifteen files, and every one of them removes a trap that is otherwise easy to hit:</p>
   <div class="table-wrap"><table>
     <thead><tr><th>What it sets</th><th>What that avoids</th></tr></thead>
     <tbody>
