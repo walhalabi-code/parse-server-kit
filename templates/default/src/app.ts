@@ -117,6 +117,9 @@ async function main() {
     title: '{{PROJECT_NAME}} API',
     version: '1.0.0',
     basePath: MOUNT_PATH,
+    // Shown in the Authorize dialog. Every request needs this header, and a
+    // wrong value comes back as a bare "unauthorized" that names nothing.
+    appId: APP_ID,
   });
   const dashboard = mountDashboard(app);
 

@@ -8,7 +8,32 @@ export interface SwaggerConfig {
   basePath?: string;
   host?: string;
   schemes?: string[];
-  /** If true, include Parse Server CRUD endpoints (/classes/*, /login, /users, etc.). Defaults to false. */
+
+  /**
+   * This server's Parse application id, shown in the docs.
+   *
+   * Every request needs `X-Parse-Application-Id`, and a reader of the page has
+   * no way to know what to put there — so they guess, and a wrong guess comes
+   * back as a bare `{"error":"unauthorized"}` that names nothing. Passing it
+   * here puts the value in the security scheme's description, where the
+   * Authorize dialog shows it.
+   *
+   * It is not a secret: the app id is sent by every client on every request.
+   * The master key is the secret, and that is never rendered here.
+   */
+  appId?: string;
+
+  /**
+   * Whether this server requires `X-Parse-REST-API-Key`. Default `false`.
+   *
+   * Parse Server only enforces it when `restAPIKey` is configured, which most
+   * deployments — and every project `psk new` generates — do not. The spec used
+   * to demand it unconditionally, which put a dead header in every example the
+   * docs produced and implied a gate that was not there.
+   *
+   * Set it to `true` when you have configured one, and the docs will ask for it.
+   */
+  restApiKey?: boolean;
 }
 
 /**
@@ -131,13 +156,22 @@ export function generateSwaggerSpec(config: SwaggerConfig) {
       }
     }
 
-    // Build security requirements (applicationId and restApiKey are always required)
+    /*
+     * The application id is always sent. The REST API key is only added when
+     * the caller says this server has one — Parse ignores the header otherwise,
+     * so demanding it put a header that does nothing into every example on the
+     * page, and suggested a gate that was not there.
+     */
+    const base = config.restApiKey
+      ? {applicationId: [], restApiKey: []}
+      : {applicationId: []};
+
     const security = func.requiresAuth
       ? [
-          {applicationId: [], restApiKey: [], sessionToken: []},
-          {applicationId: [], restApiKey: [], masterKey: []},
+          {...base, sessionToken: []},
+          {...base, masterKey: []},
         ]
-      : [{applicationId: [], restApiKey: []}];
+      : [base];
 
     paths[path] = {
       ...paths[path],
@@ -183,7 +217,10 @@ export function generateSwaggerSpec(config: SwaggerConfig) {
           type: 'apiKey',
           in: 'header',
           name: 'X-Parse-Application-Id',
-          description: 'Parse Application ID',
+          // Naming the value turns "unauthorized" from a puzzle into a typo.
+          description: config.appId
+            ? `Parse Application ID. This server: ${config.appId}`
+            : 'Parse Application ID',
         },
         sessionToken: {
           type: 'apiKey',
@@ -197,15 +234,21 @@ export function generateSwaggerSpec(config: SwaggerConfig) {
           name: 'X-Parse-Master-Key',
           description: 'Master key for admin operations',
         },
+        // Declared either way, so a reader can see the header exists; only
+        // *required* when the server actually has a key.
         restApiKey: {
           type: 'apiKey',
           in: 'header',
           name: 'X-Parse-REST-API-Key',
-          description: 'REST API key for client requests',
+          description: config.restApiKey
+            ? 'REST API key for client requests'
+            : 'REST API key — this server does not require one',
         },
       },
     },
-    security: [{applicationId: []}, {restApiKey: []}],
+    security: config.restApiKey
+      ? [{applicationId: []}, {restApiKey: []}]
+      : [{applicationId: []}],
   };
 
   return spec;
