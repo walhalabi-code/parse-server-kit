@@ -8,8 +8,8 @@
     "dev": "tsc && node build/src/app.js",
     "test": "tsc && node --test build/src/",
     "seed": "tsc && node build/src/seed.js",
-    "db:up": "docker compose up -d",
-    "db:down": "docker compose down"
+    "db:up": "node scripts/db.js up",
+    "db:down": "node scripts/db.js down"
   },
   "dependencies": {
     "dotenv": "^16.4.0",
@@ -17,7 +17,8 @@
     "parse": "^8.6.0",
     "parse-server": "^9.10.0",
     "parse-server-kit": "^{{KIT_VERSION}}",
-    "reflect-metadata": "^0.2.2"
+    "reflect-metadata": "^0.2.2",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
