@@ -63,7 +63,7 @@ jobs:
       # Downloads a MongoDB binary on first run; cached between runs so the
       # suite does not re-fetch it on every push.
       - name: Cache MongoDB binaries
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.cache/mongodb-binaries
           key: mongodb-binaries-${{ runner.os }}
