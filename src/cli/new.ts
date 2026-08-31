@@ -1,4 +1,6 @@
-import {basename, resolve} from 'node:path';
+import {existsSync} from 'node:fs';
+import {basename, dirname, join, resolve} from 'node:path';
+import {spawnSync} from 'node:child_process';
 import {
   generateKey,
   isUsableTarget,
@@ -17,6 +19,8 @@ export interface NewCommandOptions {
   kitVersion: string;
   /** From `--ai=claude,cursor`. `undefined` means ask; `[]` means none. */
   ai?: string[];
+  /** `--no-install`. Skips the dependency install after scaffolding. */
+  skipInstall?: boolean;
 }
 
 /**
@@ -98,19 +102,23 @@ export async function runNew(options: NewCommandOptions): Promise<number> {
     info();
     for (const file of ai.written) info(`    ${cyan(file)}`);
     info();
-    info(dim('  These describe the mistakes this library fails silently on —'));
+    info(dim('  These cover the mistakes Parse Server does not warn you about —'));
     info(dim('  shadowed fields, decorator order, the implementACL signature.'));
   }
   for (const file of ai.skipped) {
     warn(`${file} ${dim('(exists, left alone — pass --force to replace)')}`);
   }
 
+  warnIfNested(targetDir, folder);
+
+  const installed = options.skipInstall ? false : installDependencies(targetDir);
+
   info();
   info(bold('  Next:'));
   info();
   info(`    cd ${folder}`);
-  info(`    docker compose up -d      ${dim('# MongoDB (replica set, so transactions work)')}`);
-  info('    npm install');
+  info(`    npm run db:up             ${dim('# MongoDB (replica set, so transactions work)')}`);
+  if (!installed) info('    npm install');
   info('    npm run dev');
   info();
   info(dim('  The server prints a ready-to-paste curl on startup,'));
@@ -120,6 +128,56 @@ export async function runNew(options: NewCommandOptions): Promise<number> {
   info();
 
   return 0;
+}
+
+/**
+ * Install the generated project's dependencies.
+ *
+ * Scaffolding a project that cannot run until the user reads the next line of
+ * output is a needless step, and every other `create-*` tool in the ecosystem
+ * does this. `--no-install` opts out, for CI and for anyone on a different
+ * package manager.
+ *
+ * A failure here is reported and then ignored: the project on disk is complete
+ * and correct either way, and `npm install` is a thing the user can run
+ * themselves. Returning `false` puts that line back in the next steps.
+ */
+function installDependencies(targetDir: string): boolean {
+  info();
+  info(dim('  Installing dependencies…'));
+
+  const result = spawnSync('npm', ['install', '--no-audit', '--no-fund'], {
+    cwd: targetDir,
+    stdio: 'ignore',
+    // npm is a shell script on Windows, so it is not directly executable.
+    shell: process.platform === 'win32',
+  });
+
+  if (result.status === 0) {
+    ok('Dependencies installed');
+    return true;
+  }
+
+  warn('Could not install dependencies automatically — run `npm install` yourself.');
+  return false;
+}
+
+/**
+ * Say so when the new project lands inside another npm project.
+ *
+ * `npm install` in the parent will not install the child, and a `node_modules`
+ * one level up resolves for imports while being invisible in the project's own
+ * package.json. Nothing here is broken, but the arrangement is confusing enough
+ * to be worth one line rather than left to be discovered.
+ */
+function warnIfNested(targetDir: string, folder: string): void {
+  const parent = dirname(targetDir);
+  if (!existsSync(join(parent, 'package.json'))) return;
+
+  info();
+  warn(`${folder} is inside another npm project.`);
+  info(dim('  It is a separate project with its own package.json and its own'));
+  info(dim('  dependencies — install and run it from inside the folder.'));
 }
 
 /**

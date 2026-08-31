@@ -5,8 +5,7 @@ A Parse Server API built with [parse-server-kit](https://www.npmjs.com/package/p
 ## Run it
 
 ```bash
-docker compose up -d     # MongoDB (replica set, so transactions work)
-npm install
+npm run db:up            # MongoDB (replica set, so transactions work)
 npm run dev
 ```
 
@@ -58,6 +57,7 @@ there is nothing to wire.
 src/
   app.ts              boot order — the sequence is load-bearing
   seed.ts             roles, the first admin, and sample rows
+  note.test.ts        a starting point for tests
   models/Note.ts      @ParseClass + @ParseField + a @BeforeSave trigger
   functions/note.ts   @Route + @CloudFunction — the method name is the route
 ```
@@ -91,6 +91,22 @@ Both are already set in `tsconfig.json`, and **both fail silently** if removed:
   decorators, which are a different feature.
 - `useDefineForClassFields: false` — otherwise every `@ParseField` reads as
   `undefined` while `.get('field')` still returns the value.
+
+## Tests
+
+```bash
+npm test
+```
+
+Node's own test runner — nothing to install, no config file. `src/note.test.ts`
+checks the things that go wrong without raising an error: that a field written
+on a model actually reaches Parse (rather than landing on a shadowed class
+field), that `save()` would really send it, and that the rules declared on the
+schema are enforced by the trigger.
+
+When you want tests that hit the database, the hard part is already done: the
+`docker-compose.yml` here starts a replica set, which is what Parse needs for
+transactions.
 
 ## Adding a model
 

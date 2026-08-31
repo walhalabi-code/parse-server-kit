@@ -33,7 +33,7 @@ class NoteFunctions {
 
   @CloudFunction({
     methods: ['GET'],
-    description: 'List notes, newest first',
+    description: 'List notes, newest first, paginated',
     // GET params arrive as STRINGS — the query string is merged into the body.
     validation: {
       fields: {limit: {type: String}, skip: {type: String}, status: {type: String}},
@@ -43,15 +43,49 @@ class NoteFunctions {
   static async listNotes(req: Parse.Cloud.FunctionRequest) {
     const query = new Parse.Query(Note);
 
+    // Cap the page size. Without a ceiling, `?limit=999999` is a denial of
+    // service anyone can type into a browser.
     const limit = Math.min(Number(req.params.limit) || 20, MAX_QUERY_LIMIT);
-    query.limit(limit).skip(Number(req.params.skip) || 0);
+    const skip = Number(req.params.skip) || 0;
+
+    query.limit(limit).skip(skip).descending('createdAt');
     if (req.params.status) query.equalTo('status', req.params.status);
 
-    const [err, results] = await catchError(query.find({useMasterKey: true}));
+    /*
+     * `withCount()` is what makes this pagination rather than a page of rows.
+     *
+     * It returns the TOTAL number of rows matching the filter alongside this
+     * page, in one round trip. The obvious alternative — returning
+     * `results.length` — is the size of the page you already have, which tells
+     * a client nothing: it cannot draw "page 3 of 12", or know whether to
+     * enable the next button. The other alternative, a second `count()` query,
+     * pays for two trips and can disagree with the first under concurrent
+     * writes.
+     */
+    query.withCount();
+
+    const [err, page] = await catchError(query.find({useMasterKey: true}));
     if (err) throw err;
 
-    // Cast — Parse.Query returns Parse.Object, not the typed class.
-    return {results: results as Note[], count: results!.length};
+    /*
+     * The cast is unavoidable: `withCount()` changes what `find()` resolves to
+     * — `{results, count}` instead of an array — and the type definitions do
+     * not model that. Two casts in one line, for two different reasons: the
+     * shape, and the fact that Parse.Query yields Parse.Object rather than the
+     * typed subclass.
+     */
+    const {results, count} = page as unknown as {
+      results: Parse.Object[];
+      count: number;
+    };
+
+    return {
+      results: results as Note[],
+      count,
+      limit,
+      skip,
+      hasMore: skip + results.length < count,
+    };
   }
 
   @CloudFunction({

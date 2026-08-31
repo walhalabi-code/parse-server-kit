@@ -38,12 +38,13 @@ ${bold('Usage')}
 ${bold('Options')}
   -y, --yes                   Accept the defaults, ask nothing      ${dim('(new)')}
   -f, --force                 Overwrite files that already exist
+  --no-install                Skip installing dependencies          ${dim('(new)')}
   --ai=<list>                 Assistants to write for, or ${cyan('none')}    ${dim('(new)')}
                               ${dim(AI_TARGETS.map(t => t.id).join(', '))}
 
 ${bold('Examples')}
   ${cyan('npx parse-server-kit new my-api')}
-  ${cyan('cd my-api && docker compose up -d && npm install && npm run dev')}
+  ${cyan('cd my-api && npm run db:up && npm run dev')}
 
   ${cyan('psk g resource Product')}
   ${dim('  → src/models/Product.ts     and  src/functions/product.ts')}
@@ -52,7 +53,7 @@ ${bold('Examples')}
 
   ${cyan('psk ai claude cursor')}
   ${dim('  → CLAUDE.md, .claude/skills/, .claude/agents/, .cursor/rules/')}
-  ${dim('  The traps this library fails silently on, in the dialect your tool reads.')}
+  ${dim('  The mistakes Parse Server does not warn you about, in the dialect your tool reads.')}
 
   ${cyan('psk new my-api --ai=none -y')}
   ${dim('  Unattended, no assistant files.')}
@@ -108,6 +109,7 @@ export async function main(argv: string[]): Promise<number> {
       name,
       yes: flags.has('--yes') || flags.has('-y'),
       force: flags.has('--force') || flags.has('-f'),
+      skipInstall: flags.has('--no-install'),
       kitVersion: kitVersion(),
       ai,
     });
@@ -187,7 +189,7 @@ async function runAi(args: string[]): Promise<number> {
   }
 
   info();
-  info(dim('  These describe the mistakes this library fails silently on —'));
+  info(dim('  These cover the mistakes Parse Server does not warn you about —'));
   info(dim('  shadowed fields, decorator order, the implementACL signature.'));
   info();
 

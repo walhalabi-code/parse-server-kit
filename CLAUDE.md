@@ -84,13 +84,26 @@ You may still pin the flag explicitly, and `psk new` does:
 `psk new` generates models with `declare` **and** pins the flag.
 
 **`Parse` is a global.** The library never imports `parse`; it reads
-`global.Parse` the way cloud code sees it. Install `@types/parse` for the
-type declarations. Do not declare your own global `Parse` namespace — it will
-collide.
+`global.Parse` the way cloud code sees it. Do not declare your own global
+`Parse` namespace — it will collide with `@types/parse`.
 
-**Peers:** `parse >=5`, `express >=4`, `reflect-metadata >=0.1.13`.
-**Optional:** `parse-server >=8.3`, `node-cron >=3`, `swagger-ui-express >=4`,
-`@types/parse >=3`.
+**`@types/parse` is required for TypeScript.** The shipped declarations refer
+to the global `Parse` namespace — `BaseModel` is declared as extending
+`Parse.Object` — so without it nothing resolves, and the errors point at your
+own code rather than at the missing package:
+
+```
+Cannot find namespace 'Parse'.                    ts(2503)
+Property 'save' does not exist on type 'Note'.
+```
+
+The second follows from the first: `BaseModel` loses its base type, so every
+model loses `save`, `get` and `set`. It was declared an optional peer until
+3.0.1, which is why the failure looked like a bug in the model.
+
+**Peers:** `parse >=5`, `express >=4`, `reflect-metadata >=0.1.13`,
+`@types/parse >=3` (TypeScript only).
+**Optional:** `parse-server >=8.3`, `node-cron >=3`, `swagger-ui-express >=4`.
 
 ---
 
