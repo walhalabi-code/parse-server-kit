@@ -2,8 +2,24 @@ import {test, describe} from 'node:test';
 import assert from 'node:assert/strict';
 
 import './env';
-import Parse from 'parse/node';
-(global as unknown as {Parse: typeof Parse}).Parse = Parse;
+
+/*
+ * `require`, not `import`.
+ *
+ * The SDK has to be on the global before a model is imported, because
+ * `@ParseClass` registers the subclass while the module is being evaluated.
+ *
+ * A typed `import Parse from 'parse/node'` would do that too — but it also
+ * pulls in the type definitions the `parse` package ships, which disagree with
+ * `@types/parse` that the rest of the project uses. `getSessionToken()` is
+ * `string` in one and `string | null` in the other, and having both in a
+ * project produces errors that point at your code rather than at the clash.
+ *
+ * Requiring it sets the global without introducing a second source of types,
+ * so `Parse` here means the same thing it means everywhere else.
+ */
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+(global as unknown as {Parse: unknown}).Parse = require('parse/node');
 
 import Note from './models/Note';
 
