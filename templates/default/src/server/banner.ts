@@ -6,7 +6,7 @@ import {
   MOUNT_PATH,
   PORT,
   SEED_ON_BOOT,
-} from './env';
+} from '../env';
 
 /**
  * What the server prints once it is up.

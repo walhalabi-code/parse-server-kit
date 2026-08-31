@@ -34,6 +34,10 @@ export interface ScaffoldOptions {
 const RENAMES: Record<string, string> = {
   gitignore: '.gitignore',
   'package.json.template': 'package.json',
+  // Named .template so an editor does not treat templates/default as a
+  // TypeScript project: there is no node_modules beneath it, so every import
+  // fails to resolve and the files light up red for whoever is editing them.
+  'tsconfig.json.template': 'tsconfig.json',
   'env.example': '.env.example',
 };
 

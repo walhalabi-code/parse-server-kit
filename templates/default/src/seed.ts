@@ -10,6 +10,7 @@ import {
   SERVER_URL,
 } from './env';
 import Note from './models/Note';
+import {ALL_ROLES, ROLE_HIERARCHY, Roles, type Role} from './roles';
 
 /**
  * Seed data, in two halves.
@@ -25,8 +26,6 @@ import Note from './models/Note';
  *
  * Run with `npm run seed` (server must be up), or let `app.ts` call it at boot.
  */
-
-const ROLES = ['Editor', 'Admin'] as const;
 
 export interface SeedSummary {
   rolesCreated: string[];
@@ -64,7 +63,7 @@ async function findOrCreateUser(
   username: string,
   password: string,
   email: string,
-  roleNames: string[]
+  roleNames: Role[]
 ): Promise<{user: Parse.User; created: boolean}> {
   const existing = await new Parse.Query(Parse.User)
     .equalTo('username', username)
@@ -98,18 +97,20 @@ async function findOrCreateUser(
  * Admin is just refused by Editor-gated endpoints, with no log saying why.
  */
 async function linkRoleHierarchy(): Promise<void> {
-  const {role: editor} = await findOrCreateRole('Editor');
-  const {role: admin} = await findOrCreateRole('Admin');
+  for (const [childName, parentName] of ROLE_HIERARCHY) {
+    const {role: child} = await findOrCreateRole(childName);
+    const {role: parent} = await findOrCreateRole(parentName);
 
-  const alreadyLinked = await editor
-    .getRoles()
-    .query()
-    .equalTo('objectId', admin.id)
-    .first({useMasterKey: true});
-  if (alreadyLinked) return;
+    const alreadyLinked = await parent
+      .getRoles()
+      .query()
+      .equalTo('objectId', child.id)
+      .first({useMasterKey: true});
+    if (alreadyLinked) continue;
 
-  editor.getRoles().add(admin);
-  await editor.save(null, {useMasterKey: true});
+    parent.getRoles().add(child);
+    await parent.save(null, {useMasterKey: true});
+  }
 }
 
 /** Roles, the hierarchy between them, and the first admin. Safe in production. */
@@ -117,7 +118,7 @@ export async function seed(): Promise<SeedSummary> {
   const summary: SeedSummary = {rolesCreated: [], usersCreated: [], notesCreated: 0};
 
   // Roles first — a user cannot be assigned to a role that does not exist.
-  for (const name of ROLES) {
+  for (const name of ALL_ROLES) {
     const {created} = await findOrCreateRole(name);
     if (created) summary.rolesCreated.push(name);
   }
@@ -131,7 +132,7 @@ export async function seed(): Promise<SeedSummary> {
     ADMIN_USERNAME,
     ADMIN_PASSWORD,
     ADMIN_EMAIL,
-    ['Admin']
+    [Roles.ADMIN]
   );
   if (created) summary.usersCreated.push(ADMIN_USERNAME);
 
@@ -147,15 +148,15 @@ export async function seedSampleData(summary: SeedSummary): Promise<SeedSummary>
     DEMO_USERNAME,
     DEMO_PASSWORD,
     'demo@example.com',
-    ['Editor']
+    [Roles.EDITOR]
   );
   if (created) summary.usersCreated.push(DEMO_USERNAME);
 
   // Keyed by slug, which is `unique: true` on the model — so this lookup is the
   // same one the database index enforces, and cannot duplicate under a race.
   const samples = [
-    {slug: 'welcome', title: 'Welcome', body: 'Your API is running.', status: 'published'},
-    {slug: 'drafts-are-private', title: 'Drafts are private', body: 'Only Editors see this.', status: 'draft'},
+    {slug: 'welcome', title: 'Welcome', body: 'Your API is running.', status: Note.STATUS.PUBLISHED},
+    {slug: 'drafts-are-private', title: 'Drafts are private', body: 'Only Editors see this.', status: Note.STATUS.DRAFT},
   ];
 
   for (const sample of samples) {
@@ -175,8 +176,8 @@ export async function seedSampleData(summary: SeedSummary): Promise<SeedSummary>
     // living in whatever query happens to load it.
     note.setACL(
       implementACL({
-        publicRead: sample.status === 'published',
-        roleRules: [{role: 'Editor', read: true, write: true}],
+        publicRead: sample.status === Note.STATUS.PUBLISHED,
+        roleRules: [{role: Roles.EDITOR, read: true, write: true}],
         owner: [{user: demo, read: true, write: true}],
       })
     );

@@ -56,11 +56,20 @@ there is nothing to wire.
 ```
 src/
   app.ts              boot order — the sequence is load-bearing
+  roles.ts            your roles, declared once
+  env.ts              every setting, in one place
   seed.ts             roles, the first admin, and sample rows
   note.test.ts        a starting point for tests
   models/Note.ts      @ParseClass + @ParseField + a @BeforeSave trigger
   functions/note.ts   @Route + @CloudFunction — the method name is the route
+  server/             plumbing: startup banner, dashboard mount
 ```
+
+`src/roles.ts` is where your role names live. Declaring them once matters more
+than it looks: a role name has to agree in four places — the schema, the seed,
+every model's CLP and every endpoint's `requireRoles` — and a typo grants
+nothing at all rather than failing. `roleKey(Roles.EDITOR)` makes a misspelling
+a compile error.
 
 `src/models/Note.ts` is worth reading first. That one class produces the
 database schema, a unique index on `slug`, a MongoDB validator enforcing the

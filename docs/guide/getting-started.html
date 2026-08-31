@@ -65,6 +65,7 @@
     <li><a href="../guide/transactions.html"><svg class="ic" aria-hidden="true"><use href="#i-exchange"/></svg><span>Transactions</span></a></li>
     <li><a href="../guide/optimistic-locking.html"><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg><span>Optimistic locking</span></a></li>
     <li><a href="../guide/seeding.html"><svg class="ic" aria-hidden="true"><use href="#i-sprout"/></svg><span>Seeding data</span></a></li>
+    <li><a href="../guide/api-docs.html"><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg><span>API documentation</span></a></li>
     <li><a href="../guide/dashboard.html"><svg class="ic" aria-hidden="true"><use href="#i-gauge"/></svg><span>Parse Dashboard</span></a></li>
     <li><a href="../guide/errors.html"><svg class="ic" aria-hidden="true"><use href="#i-alert"/></svg><span>Errors</span></a></li>
     <li><a href="../guide/cli.html"><svg class="ic" aria-hidden="true"><use href="#i-terminal"/></svg><span>The psk CLI</span></a></li>
@@ -130,9 +131,11 @@ npm run dev</code></pre>
 ├── .env
 └── src/
     ├── app.ts             <span class="t-com"># boot order — the sequence matters</span>
+    ├── roles.ts           <span class="t-com"># your roles, declared once</span>
     ├── seed.ts            <span class="t-com"># roles, first admin, sample rows</span>
     ├── models/Note.ts     <span class="t-com"># @ParseClass + @ParseField + a trigger</span>
-    └── functions/note.ts  <span class="t-com"># @Route + five endpoints</span></code></pre>
+    ├── functions/note.ts  <span class="t-com"># @Route + five endpoints</span>
+    └── server/            <span class="t-com"># plumbing: banner, dashboard mount</span></code></pre>
 
   <p>Your API is at <code>/api/notes/*</code> and its documentation at <code>/api-docs</code>.</p>
 

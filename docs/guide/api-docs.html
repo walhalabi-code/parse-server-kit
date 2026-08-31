@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data:; font-src 'self'; form-action 'none'; base-uri 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Configuration — parse-server-kit</title>
-<meta name="description" content="Settings, schema generation, indexes and the optional role cache.">
+<title>API documentation — parse-server-kit</title>
+<meta name="description" content="An OpenAPI 3.0 document generated from your decorators - what it contains, how auth is represented, and the appId and restApiKey options.">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Configuration — parse-server-kit">
-<meta property="og:description" content="Settings, schema generation, indexes and the optional role cache.">
-<meta property="og:url" content="https://walhalabi-code.github.io/parse-server-kit/reference/configuration.html">
+<meta property="og:title" content="API documentation — parse-server-kit">
+<meta property="og:description" content="An OpenAPI 3.0 document generated from your decorators, with no annotations to write.">
+<meta property="og:url" content="https://walhalabi-code.github.io/parse-server-kit/guide/api-docs.html">
 <meta property="og:site_name" content="parse-server-kit">
 <meta name="twitter:card" content="summary">
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
@@ -22,10 +22,10 @@
     <a class="brand" href="../index.html"><svg class="brand-mark" viewBox="12 10 62 72" aria-hidden="true"><g transform="translate(18, 14)" fill="none" stroke-linecap="round" stroke-linejoin="round"><path class="logo-base" pathLength="1" d="M 40 24 C 40 14, 28 12, 20 22 C 12 32, 12 44, 22 52 C 32 60, 46 52, 46 36 C 46 20, 34 10, 20 10 C 7 10, 2 22, 2 38 C 2 54, 12 64, 28 64 C 38 64, 48 57, 52 48" stroke="var(--logo-base)" stroke-width="3" opacity="0.6"/><g class="logo-layer" transform="translate(-3, -4)"><path class="logo-kit-path" pathLength="1" d="M 40 20 C 40 10, 28 8, 20 18 C 12 28, 12 40, 22 48 C 32 56, 46 48, 46 32 C 46 16, 34 6, 20 6 C 7 6, 2 18, 2 34 C 2 50, 12 60, 28 60 C 38 60, 48 53, 52 44" stroke="var(--logo-kit)" stroke-width="3.5"/><circle class="logo-dot" cx="25" cy="28" r="3.5" fill="var(--logo-kit)" stroke="none"/></g></g></svg>parse-server-kit <span class="v">3.0</span></a>
     <nav class="nav">
       <button class="icon-btn menu-btn" data-menu-toggle aria-expanded="false" aria-label="Toggle navigation">≡</button>
+      <button class="icon-btn" data-search-open aria-label="Search">⌕</button>
       <a class="nav-ai" href="../guide/ai-assistants.html"><svg class="ai-spark" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 2.4 6.9 5l2.6.9-2.6.9L6 9.4 5.1 6.8 2.5 5.9l2.6-.9Z"/><path d="m11.6 8.4.6 1.7 1.7.6-1.7.6-.6 1.7-.6-1.7-1.7-.6 1.7-.6Z"/></svg>AI</a>
       <a class="hide-sm" href="../index.html">Home</a>
       <a class="hide-sm" href="https://github.com/walhalabi-code/parse-server-kit">GitHub</a>
-      <button class="icon-btn" data-search-open aria-label="Search">⌕</button>
       <button class="icon-btn" data-theme-toggle aria-label="Switch theme">◐</button>
     </nav>
   </div>
@@ -65,8 +65,7 @@
     <li><a href="../guide/transactions.html"><svg class="ic" aria-hidden="true"><use href="#i-exchange"/></svg><span>Transactions</span></a></li>
     <li><a href="../guide/optimistic-locking.html"><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg><span>Optimistic locking</span></a></li>
     <li><a href="../guide/seeding.html"><svg class="ic" aria-hidden="true"><use href="#i-sprout"/></svg><span>Seeding data</span></a></li>
-    <li><a href="../guide/api-docs.html"><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg><span>API documentation</span></a></li>
-    <li><a href="../guide/dashboard.html"><svg class="ic" aria-hidden="true"><use href="#i-gauge"/></svg><span>Parse Dashboard</span></a></li>
+    <li><a href="../guide/api-docs.html"><svg class="ic" aria-hidden="true"><use href="#i-gauge"/></svg><span>Parse Dashboard</span></a></li>
     <li><a href="../guide/errors.html"><svg class="ic" aria-hidden="true"><use href="#i-alert"/></svg><span>Errors</span></a></li>
     <li><a href="../guide/cli.html"><svg class="ic" aria-hidden="true"><use href="#i-terminal"/></svg><span>The psk CLI</span></a></li>
     <li><a href="../guide/troubleshooting.html"><svg class="ic" aria-hidden="true"><use href="#i-lifebuoy"/></svg><span>Troubleshooting</span></a></li>
@@ -81,125 +80,133 @@
 </aside>
 
 <main class="content">
-  <p class="eyebrow">Reference</p>
-  <h1>Configuration</h1>
-  <p class="lede">Settings, schema generation, indexes and the optional role cache.</p>
+  <p class="eyebrow">Guide</p>
+  <h1>API documentation</h1>
+  <p class="lede">
+    An OpenAPI 3.0 document, generated from the decorators you already wrote. No annotations,
+    no separate spec file to keep in step, and nothing to remember when an endpoint changes.
+  </p>
 
-
-  <h2 id="configurekit">configureKit</h2>
-  <p>Optional. Every default reproduces what the library did before these became settings, so a project that never calls it is unaffected. Values resolve when they are used, not at import, so calling it after <code>dotenv</code> still works.</p>
-<pre class="code-block"><code>configureKit({
-  mountPath: <span class="t-str">'/api'</span>,                      <span class="t-com">// default: process.env.mountPath, then '/parse'</span>
-  masterKey: process.env.MASTER_KEY,      <span class="t-com">// default: process.env.masterKey</span>
-  adminRole: <span class="t-str">'Owner'</span>,                     <span class="t-com">// default: 'SuperAdmin'</span>
-  allowAuthRoutes: <span class="t-key">false</span>,                 <span class="t-com">// default: false</span>
-  excludedPointerClasses: [<span class="t-str">'Attachment'</span>], <span class="t-com">// default: ['IMG', 'File']</span>
+  <h2 id="what-you-get">What you get</h2>
+  <p>
+    <code>setupSwagger</code> serves two things. The spec itself is always available at
+    <code>{path}/json</code>; the browser UI at <code>{path}</code> needs
+    <code>swagger-ui-express</code>, which the generated project installs for you.
+  </p>
+<pre class="code-block"><code>setupSwagger(app, {
+  title: <span class="t-str">'my-api API'</span>,
+  version: <span class="t-str">'1.0.0'</span>,
+  basePath: MOUNT_PATH,
+  appId: APP_ID,
 });</code></pre>
-  <div class="note warn">
-    <span class="note-title">masterKey is worth setting explicitly</span>
-    <code>restrictRoutes</code> compares against it to let privileged callers past the
-    route restrictions. With nothing configured there is nothing to compare against, so a
-    caller presenting a perfectly valid master key is refused — and nothing says why.
-  </div>
-
-  <h3 id="allowauthroutes">allowAuthRoutes</h3>
   <p>
-    <code>restrictRoutes</code> closes Parse's generic REST API so clients go through the
-    cloud functions you declared. Its auth endpoints are closed along with everything else,
-    and the documented approach is to expose the ones you want yourself:
+    Call it <b>after</b> the registries have run, or the spec is generated before the endpoints
+    exist and comes back nearly empty. The generated <code>app.ts</code> already has it in the
+    right place.
   </p>
-<pre class="code-block"><code><span class="t-key">import</span> {
-  configureKit, Route, CloudFunction, createSchemaConfig, applyAllIndexes,
-  applyMongoValidators, configureRoleCache, invalidateRoles,
-} <span class="t-key">from</span> <span class="t-str">'parse-server-kit'</span>;
 
-<span class="t-dec">@Route</span>(User)
-<span class="t-key">class</span> UserFunctions {
-  <span class="t-com">// POST /api/users/logIn - your endpoint, so you can rate limit it,</span>
-  <span class="t-com">// lock accounts out, and log attempts.</span>
-  <span class="t-dec">@CloudFunction</span>({ methods: [<span class="t-str">'POST'</span>] })
-  <span class="t-key">static async</span> logIn(req: Parse.Cloud.FunctionRequest) { ... }
-}</code></pre>
+  <h2 id="where-it-comes-from">Where the content comes from</h2>
+  <p>Nothing here is written twice. Every part of the document is read from something that already had to exist:</p>
+  <table>
+    <thead><tr><th>In the spec</th><th>Comes from</th></tr></thead>
+    <tbody>
+      <tr><td>Schemas</td><td><code>@ParseClass</code> and every <code>@ParseField</code> — type, <code>required</code>, <code>description</code></td></tr>
+      <tr><td>Paths</td><td><code>@Route</code> + the method name. <code>createNote</code> becomes <code>POST /api/notes/createNote</code></td></tr>
+      <tr><td>Parameters or request body</td><td><code>validation.fields</code></td></tr>
+      <tr><td>Security</td><td><code>requiresAuth</code>, <code>requireRoles</code>, <code>validation.requireUser</code></td></tr>
+      <tr><td>Summaries, tags, responses</td><td>the <code>swagger</code> block on <code>@CloudFunction</code></td></tr>
+    </tbody>
+  </table>
   <p>
-    That is the right default for a REST client you control, and the <b>wrong</b> one if your
-    client is a Parse SDK. <code>Parse.User.logIn()</code> in the browser, on iOS or on
-    Android calls <code>/login</code> directly and cannot be pointed at a cloud function, so
-    those apps need this on:
+    A model with no <code>@ParseClass</code> is absent from the schemas, and a function with no
+    <code>@Route</code> is documented at its <code>/functions/{name}</code> path instead. Both are
+    worth knowing when something you expected is missing.
   </p>
-<pre class="code-block"><code>configureKit({ allowAuthRoutes: <span class="t-key">true</span> });</code></pre>
-  <p>It opens exactly these, and only with the method that makes sense:</p>
-  <div class="table-wrap">
-    <table>
-      <thead><tr><th>Route</th><th>Method</th><th>What it is</th></tr></thead>
-      <tbody>
-        <tr><td><code>/login</code></td><td>GET, POST</td><td>Log in</td></tr>
-        <tr><td><code>/logout</code></td><td>POST</td><td>End the session</td></tr>
-        <tr><td><code>/users</code></td><td>POST only</td><td>Sign up</td></tr>
-        <tr><td><code>/users/me</code></td><td>GET</td><td>The current user</td></tr>
-        <tr><td><code>/sessions/me</code></td><td>GET</td><td>The current session</td></tr>
-        <tr><td><code>/requestPasswordReset</code></td><td>POST</td><td>Send a reset email</td></tr>
-        <tr><td><code>/verificationEmailRequest</code></td><td>POST</td><td>Resend verification</td></tr>
-      </tbody>
-    </table>
-  </div>
+
   <div class="note">
-    <span class="note-title">GET /users stays blocked either way</span>
-    <code>POST /users</code> signs somebody up; <code>GET /users</code> queries the whole
-    user table. The method is part of the match, so turning this on never opens the second
-    one. <code>PUT /users/&lt;id&gt;</code> stays blocked too — expose a profile-update cloud
-    function instead.
+    <span class="note-title">GET and HEAD get query parameters, not a body</span>
+    <p>
+      A browser cannot send a body on a GET, so those methods emit
+      <code>parameters: [{in: 'query'}]</code> and everything else emits a JSON
+      <code>requestBody</code>. This matches how <code>validateEntityRoutes</code> merges the query
+      string into the body — which is also why GET parameters arrive as <b>strings</b> and need
+      converting in your handler.
+    </p>
   </div>
+
+  <h2 id="app-id">Tell the page your application id</h2>
   <p>
-    Leaving it off is not a dead end: the 403 names the setting and suggests the cloud
-    function alternative, so whichever route you meant to take is discoverable from the
-    response.
+    Every request needs <code>X-Parse-Application-Id</code>, and a docs page that does not say which
+    value is a guessing game. A wrong guess comes back as a bare
+    <code>{"error":"unauthorized"}</code> that names nothing — so the endpoint looks broken when the
+    only problem is the header.
+  </p>
+<pre class="code-block"><code>setupSwagger(app, {title, version, appId: APP_ID});</code></pre>
+  <p>
+    The Authorize dialog then reads <code>Parse Application ID. This server: my-api</code>. The
+    application id is not a secret — every client sends it on every request. The master key is the
+    secret, and it is never rendered into the page.
   </p>
 
-  <h2 id="schema">createSchemaConfig</h2>
-<pre class="code-block"><code><span class="t-key">const</span> schema = createSchemaConfig({ adminRole: <span class="t-str">'Owner'</span> });
-<span class="t-com">// pass as the `schema` option to ParseServer</span></code></pre>
-  <div class="table-wrap"><table>
-    <thead><tr><th>Option</th><th>Default</th><th>Effect</th></tr></thead>
+  <h2 id="rest-api-key">The REST API key is opt-in</h2>
+  <p>
+    Parse only enforces <code>X-Parse-REST-API-Key</code> when <code>restAPIKey</code> is configured
+    on the server, which most deployments — and every project <code>psk new</code> generates — do
+    not do. The spec therefore does <b>not</b> require it by default. Turn it on when you have one:
+  </p>
+<pre class="code-block"><code>setupSwagger(app, {title, version, restApiKey: <span class="t-key">true</span>});</code></pre>
+  <p>
+    Before 3.0.3 it was asserted unconditionally, which put a header that did nothing into every
+    example the page produced and implied a gate that was not there.
+  </p>
+
+  <h2 id="security">How auth appears in the document</h2>
+  <p>
+    An endpoint that declares <code>requiresAuth</code> or <code>requireRoles</code> is documented
+    as needing a session token or the master key. One that declares neither is documented as open,
+    because it is.
+  </p>
+  <table>
+    <thead><tr><th>Declared</th><th>Documented as</th></tr></thead>
     <tbody>
-      <tr><td><code>adminRole</code></td><td>from <code>configureKit</code></td><td>Role permitted to manage <code>_Role</code></td></tr>
-      <tr><td><code>lockSchemas</code></td><td><code>false</code></td><td>Reject new classes and fields</td></tr>
-      <tr><td><code>strict</code></td><td><code>true</code></td><td>Create missing classes and fields at boot</td></tr>
-      <tr><td><code>recreateModifiedFields</code></td><td><code>false</code></td><td><b>Destructive</b> — drops and recreates a field whose type changed</td></tr>
-      <tr><td><code>deleteExtraFields</code></td><td><code>false</code></td><td><b>Destructive</b> — removes fields not in the schema</td></tr>
-      <tr><td><code>keepUnknownIndexes</code></td><td><code>true</code></td><td>Keeps indexes the schema does not describe</td></tr>
+      <tr><td>nothing</td><td>application id only</td></tr>
+      <tr><td><code>requiresAuth: true</code></td><td>application id + session token, or + master key</td></tr>
+      <tr><td><code>requireRoles: [...]</code></td><td>the same — the role check happens after authentication</td></tr>
+      <tr><td><code>validation: {requireUser: true}</code></td><td>the same, via Parse Server's own validator</td></tr>
     </tbody>
-  </table></div>
-  <p><code>keepUnknownIndexes</code> defaults to <code>true</code> because <code>applyAllIndexes</code> creates indexes by talking to MongoDB directly, so parse-server's schema sync has never heard of them. Its own default removes indexes it cannot account for — taking your uniqueness constraints with it. Requires parse-server 8.3+.</p>
+  </table>
+  <p>
+    The document describes what the decorators enforce. It is not itself a control: a padlock in
+    the page means an endpoint said it needed a session, not that anything checked.
+  </p>
 
-  <h2 id="indexes">Indexes</h2>
-<pre class="code-block"><code><span class="t-key">await</span> applyAllIndexes(parseServer);       <span class="t-com">// after listen()</span>
-<span class="t-key">await</span> applyMongoValidators(parseServer);</code></pre>
-  <div class="table-wrap"><table>
-    <thead><tr><th>Declared as</th><th>Creates</th></tr></thead>
-    <tbody>
-      <tr><td><code>@ParseField({unique: true})</code></td><td>Unique index — drops a conflicting non-unique one first</td></tr>
-      <tr><td><code>@ParseField({index: true | 1 | -1})</code></td><td>B-tree, ascending or descending</td></tr>
-      <tr><td><code>@ParseField({geo: true})</code></td><td>2dsphere</td></tr>
-      <tr><td><code>@ParseField({ttlSeconds: N})</code></td><td>TTL</td></tr>
-      <tr><td><code>@ParseClass({compoundIndexes})</code></td><td>Compound, optionally unique, sparse, partial or text</td></tr>
-    </tbody>
-  </table></div>
-  <p>An index that already exists is reported, not treated as an error. If the adapter cannot be reached, the equivalent <code>db.collection.createIndex(…)</code> commands are printed so you can run them yourself. MongoDB permits only one text index per collection.</p>
+  <h2 id="without-the-ui">Without swagger-ui-express</h2>
+  <p>
+    The UI package is optional. Without it, <code>setupSwagger</code> logs a warning, skips the
+    browser page, and still serves the spec:
+  </p>
+<pre class="code-block"><code><span class="t-com"># works either way</span>
+curl http://localhost:1337/api-docs/json</code></pre>
+  <p>
+    That is enough for anything that consumes a spec rather than reads one — client generation, a
+    contract test, an API gateway. If <code>/api-docs</code> returns <code>Cannot GET</code> while
+    <code>/api-docs/json</code> works, the package is simply not installed.
+  </p>
 
-  <h2 id="role-cache">Role cache</h2>
-  <p><b>Off by default.</b> <code>requireRoles</code> and <code>getUserRoles()</code> each cost a database round-trip. Role membership rarely changes, so it caches well — but a revoked role keeps working until the entry expires, and that trade belongs to whoever runs the deployment.</p>
-<pre class="code-block"><code>configureRoleCache({ ttlMs: <span class="t-num">30_000</span> });          <span class="t-com">// global</span>
-invalidateRoles(userId);                        <span class="t-com">// on grant or revoke</span>
-configureRoleCache(<span class="t-key">false</span>);                      <span class="t-com">// off, and cleared</span>
+  <h2 id="caching">It is generated once</h2>
+  <p>
+    The document is built on the first request and reused until something registers, keyed on the
+    registry's revision rather than a flag — so a late registration still invalidates it and nothing
+    has to remember to. Endpoints added at boot are always included.
+  </p>
 
-<span class="t-dec">@CloudFunction</span>({ requireRoles: [<span class="t-str">'Admin'</span>], roleCacheMs: <span class="t-num">0</span> })  <span class="t-com">// never cached</span></code></pre>
-  <p>Wire <code>invalidateRoles</code> into your own grant and revoke paths and the TTL only ever covers changes made outside your code. Entries expire when read and the map is bounded by <code>maxUsers</code>; there is no timer.</p>
-
-
-  <div class="pager">
-    <a href="decorators.html"><span>Back</span>Decorators</a>
-    <a class="next" href="middleware.html"><span>Next</span>Middleware</a>
-  </div>
+  <h2 id="next">Next</h2>
+  <ul>
+    <li><a href="../guide/endpoints.html">Endpoints</a> — the decorator whose options this page renders</li>
+    <li><a href="../guide/models.html">Models</a> — where the schemas come from</li>
+    <li><a href="../reference/decorators.html">Decorator reference</a> — every option, including the <code>swagger</code> block</li>
+  </ul>
+</main>
 </main>
 
 </div>

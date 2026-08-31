@@ -29,8 +29,9 @@ import {
   SEED_ON_BOOT,
   SERVER_URL,
 } from './env';
-import {mountDashboard} from './dashboard';
-import {printBanner} from './banner';
+import {mountDashboard} from './server/dashboard';
+import {printBanner} from './server/banner';
+import {SCHEMA_ADMIN_ROLE} from './roles';
 import {seed, seedSampleData} from './seed';
 
 /**
@@ -91,7 +92,10 @@ async function main() {
     // internal HTTP request that lands in a fresh async context and writes
     // OUTSIDE the transaction, with no error.
     directAccess: true,
-    schema: createSchemaConfig({adminRole: 'Editor'}),
+    // Who may manage the _Role class itself - create roles, change who is in
+    // them. This must be your most privileged role: granting it to Editor
+    // would let any content editor add themselves to Admin.
+    schema: createSchemaConfig({adminRole: SCHEMA_ADMIN_ROLE}),
   });
 
   await parseServer.start();
