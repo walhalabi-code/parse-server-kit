@@ -1,5 +1,6 @@
 import {CloudFunction, Route, catchError, MAX_QUERY_LIMIT} from 'parse-server-kit';
 import Note from '../models/Note';
+import {Roles} from '../roles';
 
 /**
  * The method name IS the route.
@@ -105,6 +106,11 @@ class NoteFunctions {
   @CloudFunction({
     methods: ['POST'],
     description: 'Update a note',
+    // Editing someone else's note is a privileged act, so it is gated the same
+    // way the model's CLP gates it. Both checks are worth having: this one
+    // refuses the call, the CLP refuses the write.
+    requiresAuth: true,
+    requireRoles: [Roles.EDITOR],
     validation: {requireUser: true, fields: {id: {required: true}}},
     swagger: {tags: ['Notes']},
   })
@@ -117,9 +123,32 @@ class NoteFunctions {
     return saved;
   }
 
+  /**
+   * Deleting is the destructive one, so it is the one that shows the rest of
+   * what `@CloudFunction` accepts:
+   *
+   *   requiresAuth          refuse anyone without a session. Enforced before
+   *                         your body runs; a master-key call still passes.
+   *   requireRoles          refuse anyone outside these roles. ANY of them by
+   *                         default; add `requireAllRoles: true` to demand all.
+   *   customErrorMessage    what the caller sees instead of the default
+   *                         "Access denied. Required one of these roles: ...".
+   *   rateLimit             a token bucket, per process. Applies whether the
+   *                         caller comes through this route or straight at
+   *                         /functions/deleteNote.
+   *
+   * Add `@Transactional()` BELOW `@CloudFunction` — never above — when a
+   * function writes more than once and the writes must land together.
+   * Decorators apply bottom-up, so reversed, the registry keeps the unwrapped
+   * method and the transaction never opens, with no error.
+   */
   @CloudFunction({
     methods: ['POST'],
     description: 'Delete a note',
+    requiresAuth: true,
+    requireRoles: [Roles.EDITOR],
+    customErrorMessage: 'Only an Editor may delete a note.',
+    rateLimit: {windowMs: 60_000, max: 20},
     validation: {requireUser: true, fields: {id: {required: true}}},
     swagger: {tags: ['Notes']},
   })

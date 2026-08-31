@@ -6,6 +6,7 @@ import {
   validateOrThrow,
   roleKey,
 } from 'parse-server-kit';
+import {Roles} from '../roles';
 
 /**
  * A note.
@@ -34,13 +35,22 @@ import {
     find: {requiresAuthentication: true},
     get: {requiresAuthentication: true},
     count: {requiresAuthentication: true},
-    create: {[roleKey('Editor')]: true},
-    update: {[roleKey('Editor')]: true},
-    delete: {[roleKey('Editor')]: true},
+    create: {[roleKey(Roles.EDITOR)]: true},
+    update: {[roleKey(Roles.EDITOR)]: true},
+    delete: {[roleKey(Roles.EDITOR)]: true},
   },
   compoundIndexes: [{fields: ['status', 'createdAt']}],
 })
 export default class Note extends BaseModel {
+  /**
+   * The states a note can be in.
+   *
+   * On the model rather than a shared constants file, because they belong to
+   * this class alone. enum on the field below enforces the same list at the
+   * database, so the two cannot drift.
+   */
+  static readonly STATUS = {DRAFT: 'draft', PUBLISHED: 'published'} as const;
+
   constructor() {
     super('Note');
   }
@@ -56,7 +66,7 @@ export default class Note extends BaseModel {
 
   @ParseField({
     type: 'String',
-    enum: ['draft', 'published'],
+    enum: [Note.STATUS.DRAFT, Note.STATUS.PUBLISHED],
     description: 'Only published notes are readable by the public',
   })
   declare status: string;
@@ -68,7 +78,7 @@ export default class Note extends BaseModel {
   static async onBeforeSave(req: Parse.Cloud.BeforeSaveRequest<Note>) {
     const note = req.object as Note;
 
-    if (!note.status) note.status = 'draft';
+    if (!note.status) note.status = Note.STATUS.DRAFT;
     if (note.views === undefined) note.views = 0;
 
     // Derive the slug rather than trusting the caller with a unique field.

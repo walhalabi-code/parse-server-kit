@@ -21,6 +21,8 @@ import {
 import {
   APP_ID,
   DATABASE_URI,
+  DOCS_ENABLED,
+  DOCS_PATH,
   IS_PRODUCTION,
   MAINTENANCE_KEY,
   MASTER_KEY,
@@ -29,8 +31,9 @@ import {
   SEED_ON_BOOT,
   SERVER_URL,
 } from './env';
-import {mountDashboard} from './dashboard';
-import {printBanner} from './banner';
+import {mountDashboard} from './server/dashboard';
+import {printBanner} from './server/banner';
+import {SCHEMA_ADMIN_ROLE} from './roles';
 import {seed, seedSampleData} from './seed';
 
 /**
@@ -38,8 +41,8 @@ import {seed, seedSampleData} from './seed';
  *
  * The order below is load-bearing: each step depends on the one before it, and
  * getting it wrong mostly fails silently rather than throwing. Settings live in
- * `env.ts`, the admin console in `dashboard.ts`, and the startup output in
- * `banner.ts`, so that this file stays readable as a sequence.
+ * `env.ts`, the admin console in `server/dashboard.ts`, and the output in
+ * `server/banner.ts`, so this file stays readable as a sequence.
  */
 
 // Tell the kit both, rather than relying on it to read your environment.
@@ -91,7 +94,10 @@ async function main() {
     // internal HTTP request that lands in a fresh async context and writes
     // OUTSIDE the transaction, with no error.
     directAccess: true,
-    schema: createSchemaConfig({adminRole: 'Editor'}),
+    // Who may manage the _Role class itself - create roles, change who is in
+    // them. This must be your most privileged role: granting it to Editor
+    // would let any content editor add themselves to Admin.
+    schema: createSchemaConfig({adminRole: SCHEMA_ADMIN_ROLE}),
   });
 
   await parseServer.start();
@@ -113,14 +119,26 @@ async function main() {
   CronRegistry.initialize();
 
   // 6. Docs, and the admin console if it is installed.
-  setupSwagger(app, {
-    title: '{{PROJECT_NAME}} API',
-    version: '1.0.0',
-    basePath: MOUNT_PATH,
-    // Shown in the Authorize dialog. Every request needs this header, and a
-    // wrong value comes back as a bare "unauthorized" that names nothing.
-    appId: APP_ID,
-  });
+  // There is no `enabled` option — the way to not have docs is to not mount
+  // them. DOCS_ENABLED is this project's switch, so turning them off is an
+  // environment variable rather than an edit.
+  if (DOCS_ENABLED) {
+    setupSwagger(
+      app,
+      {
+        title: '{{PROJECT_NAME}} API',
+        version: '1.0.0',
+        basePath: MOUNT_PATH,
+        // Shown in the Authorize dialog. Every request needs this header, and a
+        // wrong value comes back as a bare "unauthorized" that names nothing.
+        appId: APP_ID,
+        // Set to true only if you configure restAPIKey on Parse Server;
+        // otherwise the docs would ask for a header Parse ignores.
+        restApiKey: false,
+      },
+      DOCS_PATH
+    );
+  }
   const dashboard = mountDashboard(app);
 
   const server = app.listen(PORT, async () => {

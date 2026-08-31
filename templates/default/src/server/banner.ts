@@ -6,7 +6,9 @@ import {
   MOUNT_PATH,
   PORT,
   SEED_ON_BOOT,
-} from './env';
+  DOCS_ENABLED,
+  DOCS_PATH,
+} from '../env';
 
 /**
  * What the server prints once it is up.
@@ -25,7 +27,7 @@ export function printBanner(options: {
   console.log('');
   console.log('  Your API is running.');
   console.log('');
-  console.log(`  Docs        ${base}/api-docs`);
+  console.log(`  Docs        ${DOCS_ENABLED ? `${base}${DOCS_PATH}` : 'off (DOCS_ENABLED=false)'}`);
   console.log(`  Dashboard   ${dashboardLine(options.dashboard, base)}`);
   console.log('');
   console.log('  Try it:');

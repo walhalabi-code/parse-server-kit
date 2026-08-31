@@ -6,7 +6,7 @@ import {
   IS_PRODUCTION,
   MASTER_KEY,
   SERVER_URL,
-} from './env';
+} from '../env';
 
 /** What happened when we tried to mount it, so the banner can tell the truth. */
 export type DashboardState = 'mounted' | 'absent' | 'unsafe';

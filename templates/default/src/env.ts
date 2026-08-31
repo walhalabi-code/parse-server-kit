@@ -30,6 +30,24 @@ export const SERVER_URL =
 export const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
 /**
+ * Whether to serve the OpenAPI docs at `/api-docs`.
+ *
+ * On by default, including in production — the document describes only the
+ * endpoints you declared, and it is generated from the same decorators that
+ * enforce them, so it cannot drift into revealing something that is not there.
+ *
+ * Turn it off if your API is not public and you would rather not publish its
+ * shape. The spec is not an access control either way: hiding it hides the map,
+ * not the door.
+ */
+export const DOCS_ENABLED = process.env.DOCS_ENABLED
+  ? process.env.DOCS_ENABLED === 'true'
+  : true;
+
+/** Where the docs are mounted. The spec is always at `${DOCS_PATH}/json`. */
+export const DOCS_PATH = process.env.DOCS_PATH || '/api-docs';
+
+/**
  * Seeding at boot is convenient in development and a liability in production,
  * where a deploy pipeline should run `npm run seed` as its own step and fail
  * loudly if it fails. On outside production; `SEED_ON_BOOT` overrides either
