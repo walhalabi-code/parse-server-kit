@@ -38,6 +38,38 @@ function buildPointer(targetClass: string, value: any, field: string): Parse.Obj
   return pointer;
 }
 
+/**
+ * Say — once, and only outside production — that a field was thrown away.
+ *
+ * The discard itself is silent by design. Refusing the request would tell an
+ * attacker exactly which fields are protected, and would break a client that is
+ * merely out of date; neither is worth it, and the value does not land either
+ * way.
+ *
+ * But there is a third caller, and silence serves them badly: the developer who
+ * wired a form to send `status`, watched the request return 200, and cannot see
+ * why the value never arrives. This is for them, which is why it is gated on
+ * NODE_ENV rather than switched off entirely.
+ *
+ * Once per class and field, because a busy dev server would otherwise print it
+ * on every request until the log is useless.
+ */
+const warnedDiscards = new Set<string>();
+
+function warnDiscarded(className: string, field: string): void {
+  if (process.env.NODE_ENV === 'production') return;
+
+  const key = `${className}.${field}`;
+  if (warnedDiscards.has(key)) return;
+  warnedDiscards.add(key);
+
+  console.warn(
+    `[fromParams] Ignored '${field}' from the request body: ${key} is declared ` +
+      'clientWritable: false. Set it in your own code if the server should ' +
+      'choose it. (Development only — this is silent in production.)'
+  );
+}
+
 const ParseObject = Parse.Object as unknown as new (className?: string) => Parse.Object;
 
 export class BaseModel extends ParseObject {
@@ -74,10 +106,29 @@ export class BaseModel extends ParseObject {
     this: T,
     params: any
   ): InstanceType<T> {
+    const fieldsMeta = Reflect.getMetadata('parse:fields', this) || {};
+
+    /*
+     * Strip anything the client is not allowed to set, BEFORE building the
+     * object.
+     *
+     * This has to happen here rather than in the loop below, because
+     * `Parse.Object.fromJSON` assigns every key it is given. Filtering
+     * afterwards would only skip re-setting a value that was already on the
+     * object — which looks like protection and is not.
+     */
+    const source: Record<string, unknown> = {};
+    for (const key of Object.keys(params ?? {})) {
+      if (fieldsMeta[key]?.clientWritable === false) {
+        warnDiscarded(this.name, key);
+        continue;
+      }
+      source[key] = params[key];
+    }
     // A copy, so this never writes `className` into the caller's `req.params`.
     // Mutating the request object meant a second call — a retried transaction,
     // say — saw an input the first call had already altered.
-    const source = {...params, className: new this().className};
+    source.className = new this().className;
 
     const raw = Parse.Object.fromJSON(source, true);
     Object.setPrototypeOf(raw, this.prototype);
@@ -85,7 +136,6 @@ export class BaseModel extends ParseObject {
 
     if (params.id) obj.id = params.id;
 
-    const fieldsMeta = Reflect.getMetadata('parse:fields', this) || {};
     const excluded = this.excludedPointerClasses();
 
     for (const field in fieldsMeta) {
@@ -95,6 +145,25 @@ export class BaseModel extends ParseObject {
       const value = params[field];
 
       if (value === undefined) {
+        continue;
+      }
+
+      /*
+       * A field the client is not allowed to choose.
+       *
+       * Without this, every declared field is settable from the request body —
+       * which is mass assignment. `createNote` accepting `{"title": "…"}` also
+       * accepts `{"title": "…", "status": "published", "views": 9999}`, and
+       * nothing objects: the row saves with values the caller was never meant
+       * to pick, no error, no log.
+       *
+       * Silently skipped rather than rejected, deliberately. A client that
+       * sends a field it should not is usually a stale app or a hopeful one,
+       * not something worth failing a request over — and the outcome is the
+       * same either way: the value is not used. Your own code is untouched;
+       * this governs `fromParams`, not the field.
+       */
+      if (fieldMeta.clientWritable === false) {
         continue;
       }
 

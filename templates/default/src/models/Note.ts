@@ -71,7 +71,15 @@ export default class Note extends BaseModel {
   })
   declare status: string;
 
-  @ParseField({type: 'Number', min: 0})
+  /**
+   * A counter the server owns.
+   *
+   * Without `clientWritable: false`, `fromParams` would accept `{"views":
+   * 9999}` from anyone reaching `createNote` — no error, no log, just a number
+   * nobody chose. The flag governs `fromParams` only; your own code still
+   * writes it freely.
+   */
+  @ParseField({type: 'Number', min: 0, clientWritable: false})
   declare views: number;
 
   @BeforeSave()

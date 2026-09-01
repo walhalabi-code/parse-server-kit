@@ -88,28 +88,62 @@ const order = Order.fromParams(req.params);
 It does **not** handle nested objects carrying extra data (line items, for
 example) — write that loop explicitly.
 
-### 6. Never let the client decide identity or money
+### 6. Never let the client decide identity, money or status
 
-`fromParams` decodes whatever the body contains, including fields that are
-really the server's business. Overwrite them **after** the call:
+`fromParams` sets every declared field the body carries. A field the server
+owns — a price, a status, an owner, a counter — is therefore settable by anyone
+who can reach the endpoint. Nothing throws; the row just saves with a value
+nobody chose.
+
+Mark those fields on the **model**, so it holds wherever `fromParams` is used:
+
+```ts
+@ParseField({type: 'Number', min: 0, clientWritable: false})
+declare totalCents: number;
+
+@ParseField({type: 'Pointer', targetClass: '_User', clientWritable: false})
+declare customer: Parse.User;
+```
+
+`fromParams` then discards those keys whatever the request contains. Your own
+code is unaffected — the flag governs that one function, not the field:
 
 ```ts
 const order = Order.fromParams(req.params);
-order.customer = req.user!;          // not req.params.customer
-order.totalCents = await priceIt();  // never req.params.totalCents
+order.customer = req.user!;          // your code, still fine
+order.totalCents = await priceIt();
 ```
 
-### 7. GET parameters arrive as strings
+Overwriting after the call also works and is still correct, but it depends on
+remembering, in every endpoint, forever. The declaration does not.
+
+### 7. Paginate with `paginate`, not by hand
+
+```ts
+const query = new Parse.Query(Order).descending('createdAt');
+return paginate<Order>(query, req.params, {useMasterKey: true});
+// → {results, count, limit, skip, hasMore}
+```
+
+`count` is the **total matching rows**, not the size of this page. The
+hand-written version that returns `results.length` runs perfectly and gives a
+client a number it cannot paginate with.
+
+**Sort the query.** Pagination over an unsorted query is unstable — MongoDB
+guarantees no order without one, so rows can appear on two pages or none.
+
+### 8. GET parameters arrive as strings
 
 `validateEntityRoutes` merges the query string into the body. Declare them as
 `{type: String}` and convert:
 
 ```ts
-const limit = Number(req.params.limit) || 20;
 const active = req.params.isActive === 'true';
 ```
 
-### 8. Cast query results to the typed model
+`paginate` already reads `limit` and `skip` this way.
+
+### 9. Cast query results to the typed model
 
 `Parse.Query` returns `Parse.Object`, so `row.title` is unavailable until you
 say what it is:
@@ -119,13 +153,13 @@ const rows = await query.find({useMasterKey: true});
 return rows as Product[];
 ```
 
-### 9. Pointer and Relation fields require `targetClass`
+### 10. Pointer and Relation fields require `targetClass`
 
 Without it the decorator throws at import — which is the good case. An **Array**
 field without `targetClass` fails quietly instead: the values stay as the client
 sent them, so a list of ids stays a list of strings that no query will match.
 
-### 10. `@ParseVersionField` declares its own field
+### 11. `@ParseVersionField` declares its own field
 
 No `@ParseField` above it.
 
@@ -136,7 +170,7 @@ declare version: number;
 
 ---
 
-### 11. `requiresAuth` and `rateLimit` are enforced — so mean them
+### 12. `requiresAuth` and `rateLimit` are enforced — so mean them
 
 ```ts
 @CloudFunction({
