@@ -1,4 +1,4 @@
-import {CloudFunction, Route, catchError, MAX_QUERY_LIMIT} from 'parse-server-kit';
+import {CloudFunction, Route, catchError, paginate} from 'parse-server-kit';
 import Note from '../models/Note';
 import {Roles} from '../roles';
 
@@ -43,50 +43,28 @@ class NoteFunctions {
   })
   static async listNotes(req: Parse.Cloud.FunctionRequest) {
     const query = new Parse.Query(Note);
-
-    // Cap the page size. Without a ceiling, `?limit=999999` is a denial of
-    // service anyone can type into a browser.
-    const limit = Math.min(Number(req.params.limit) || 20, MAX_QUERY_LIMIT);
-    const skip = Number(req.params.skip) || 0;
-
-    query.limit(limit).skip(skip).descending('createdAt');
     if (req.params.status) query.equalTo('status', req.params.status);
 
     /*
-     * `withCount()` is what makes this pagination rather than a page of rows.
+     * Order it, and order it by something stable.
      *
-     * It returns the TOTAL number of rows matching the filter alongside this
-     * page, in one round trip. The obvious alternative — returning
-     * `results.length` — is the size of the page you already have, which tells
-     * a client nothing: it cannot draw "page 3 of 12", or know whether to
-     * enable the next button. The other alternative, a second `count()` query,
-     * pays for two trips and can disagree with the first under concurrent
-     * writes.
+     * Pagination over an unsorted query is not stable: MongoDB guarantees no
+     * order without a sort, so as rows are written a record can appear on two
+     * pages or on none. Nothing errors; the list is just quietly wrong.
+     * `paginate` deliberately does not choose an order for you, because the
+     * right one belongs to the endpoint.
      */
-    query.withCount();
-
-    const [err, page] = await catchError(query.find({useMasterKey: true}));
-    if (err) throw err;
+    query.descending('createdAt');
 
     /*
-     * The cast is unavoidable: `withCount()` changes what `find()` resolves to
-     * — `{results, count}` instead of an array — and the type definitions do
-     * not model that. Two casts in one line, for two different reasons: the
-     * shape, and the fact that Parse.Query yields Parse.Object rather than the
-     * typed subclass.
+     * `paginate` caps the limit, reads limit/skip as the strings a GET sends,
+     * asks for the TOTAL rather than the page size, and works out `hasMore`.
+     *
+     * The version people write by hand returns `results.length` as the count —
+     * the size of the page you already have, which no client can paginate
+     * with — and it runs perfectly while doing so.
      */
-    const {results, count} = page as unknown as {
-      results: Parse.Object[];
-      count: number;
-    };
-
-    return {
-      results: results as Note[],
-      count,
-      limit,
-      skip,
-      hasMore: skip + results.length < count,
-    };
+    return paginate<Note>(query, req.params, {useMasterKey: true});
   }
 
   @CloudFunction({

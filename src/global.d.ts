@@ -75,7 +75,11 @@ declare namespace Parse {
     select(...keys: string[]): this;
     ascending(...keys: string[]): this;
     descending(...keys: string[]): this;
+    addAscending(...keys: string[]): this;
+    addDescending(...keys: string[]): this;
     limit(n: number): this;
+    /** Return {results, count} from find() instead of an array. */
+    withCount(value?: boolean): this;
     skip(n: number): this;
     find(options?: any): Promise<any[]>;
     first(options?: any): Promise<any>;

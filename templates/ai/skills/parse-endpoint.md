@@ -61,7 +61,15 @@ export default OrderFunctions;
   `req.params.flag === 'true'`.
 - **Cast query results.** `Parse.Query` returns `Parse.Object`;
   `rows as Product[]` before touching typed properties.
-- **Cap `limit`.** `Math.min(Number(req.params.limit) || 20, MAX_QUERY_LIMIT)`.
+- **Use `paginate` for any list.** It caps the limit, reads the string params a
+  GET sends, and returns the TOTAL rather than the page size:
+  ```ts
+  const query = new Parse.Query(Product).descending('createdAt');
+  return paginate<Product>(query, req.params, {useMasterKey: true});
+  // → {results, count, limit, skip, hasMore}
+  ```
+  Sort the query yourself — pagination over an unsorted query repeats and drops
+  rows as data changes, without erroring.
 - **Use `catchError`**, not `try/catch` around `await`.
 - **Set an ACL on anything you create** that is not meant to be world-readable.
   `implementACL` takes a description and **returns** an ACL — it does not take
@@ -70,7 +78,14 @@ export default OrderFunctions;
 ## NEVER
 
 - Never trust the body for identity, price, status or ownership. `fromParams`
-  decodes every declared field, including those. Overwrite them after the call.
+  sets every declared field the request carries, so any of those is settable by
+  the caller. Declare them `clientWritable: false` on the model — that holds
+  wherever `fromParams` is used, rather than depending on every endpoint
+  remembering to overwrite them afterwards.
+- Never hand-roll pagination. `paginate(query, req.params)` returns
+  `{results, count, limit, skip, hasMore}` with `count` as the total, caps the
+  limit, and reads the string params a GET sends. Sort the query first — an
+  unsorted paginated list repeats and drops rows without erroring.
 - Never use `useMasterKey` to make a permission problem go away. It bypasses
   every CLP and ACL. Pass `sessionToken` so the caller's own permissions apply,
   and reach for the master key only when the operation genuinely is the

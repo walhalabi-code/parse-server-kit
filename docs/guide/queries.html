@@ -216,6 +216,42 @@ query.limit(limit).skip((page - <span class="t-num">1</span>) * limit);</code></
     "page 2" is not guaranteed to exclude what was on page 1.
   </p>
 
+  <h3 id="paginate">Or use <code>paginate</code></h3>
+  <p>
+    The code above is what every list endpoint ends up writing, and the obvious version of
+    it is wrong in a way that runs. <code>paginate</code> does the whole job:
+  </p>
+<pre class="code-block"><code><span class="t-key">const</span> query = <span class="t-key">new</span> Parse.Query(Product).descending(<span class="t-str">'createdAt'</span>);
+<span class="t-key">return</span> paginate&lt;Product&gt;(query, req.params, {useMasterKey: <span class="t-key">true</span>});
+
+<span class="t-com">// → {results, count, limit, skip, hasMore}</span></code></pre>
+  <p>
+    It reads <code>limit</code> and <code>skip</code> as the strings a GET sends, caps the
+    limit, and asks the database for the <b>total</b> matching rows in the same round trip
+    via <code>withCount()</code>.
+  </p>
+
+  <div class="note">
+    <span class="note-title">Why <code>count</code> is the total, not the page size</span>
+    <p>
+      The hand-written version usually returns <code>results.length</code>. That is the size
+      of the page you already have: a client cannot draw "page 3 of 12" from it, or decide
+      whether to enable a next button. Nothing fails — the endpoint answers 200 with
+      plausible JSON, and the list is quietly unusable.
+    </p>
+    <p>
+      A second <code>count()</code> query is the other common answer. It costs two round
+      trips and can disagree with the first under concurrent writes, which shows up as a
+      page count that flickers.
+    </p>
+  </div>
+
+  <p>
+    <code>paginate</code> deliberately does not sort for you — the right order belongs to the
+    endpoint. It is still required: an unsorted paginated list repeats and drops rows as
+    data changes underneath it.
+  </p>
+
   <h3 id="deep-paging">Paging deeply</h3>
   <p><code>skip</code> gets slower the further in you go, because the database still walks the skipped rows. For a large export, page on a sort key instead:</p>
 <pre class="code-block"><code><span class="t-key">let</span> cursor: Date | <span class="t-key">undefined</span>;

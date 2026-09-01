@@ -69,6 +69,37 @@ interface ParseFieldBaseOptions {
   geo?: boolean;
   /** Create a TTL index that expires documents N seconds after this Date field. Only valid for Date. */
   ttlSeconds?: number;
+  /**
+   * Whether a client may set this field through `Model.fromParams()`.
+   * Defaults to `true`.
+   *
+   * `fromParams` builds an object from request parameters, and by default it
+   * will set **any** field declared on the model. That is convenient and it is
+   * also mass assignment: an endpoint that does
+   *
+   * ```ts
+   * const note = Note.fromParams(req.params);
+   * ```
+   *
+   * accepts `{"title": "…", "status": "published", "views": 9999}` just as
+   * readily as it accepts a title. Nothing is thrown and nothing is logged —
+   * the row simply saves with values the caller was never meant to choose.
+   *
+   * Mark server-owned fields `clientWritable: false` and `fromParams` ignores
+   * them, whatever the request contains. Your own code is unaffected: this
+   * governs one function, not the field. Set it directly when you mean to:
+   *
+   * ```ts
+   * @ParseField({type: 'Number', clientWritable: false}) declare views: number;
+   *
+   * note.views += 1;              // fine — this is your code
+   * Note.fromParams(req.params);  // `views` in the body is discarded
+   * ```
+   *
+   * Parse's own `protectedFields` is the mirror of this and does not replace
+   * it: that hides fields on the way **out**, this refuses them on the way in.
+   */
+  clientWritable?: boolean;
 }
 
 interface ParseFieldWithIndex extends ParseFieldBaseOptions {
@@ -96,7 +127,7 @@ export type ParseFieldOptions =
 export function ParseField(options: ParseFieldOptions) {
   const {
     type, required = false, targetClass, description, indexName,
-    min, max, minLength, maxLength, geo, ttlSeconds,
+    min, max, minLength, maxLength, geo, ttlSeconds, clientWritable,
   } = options;
   const enumValues = 'enum' in options ? options.enum : undefined;
   const pattern = 'pattern' in options ? options.pattern : undefined;
@@ -223,6 +254,8 @@ export function ParseField(options: ParseFieldOptions) {
       ...(pattern !== undefined && {pattern}),
       ...(geo && {geo: true}),
       ...(ttlSeconds !== undefined && {ttlSeconds}),
+      // Stored only when false: absent means writable, which is the default.
+      ...(clientWritable === false && {clientWritable: false}),
     };
 
     existingFields[propertyKey as string] = fieldMeta;

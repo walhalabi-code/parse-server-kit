@@ -244,6 +244,7 @@ interface ParseFieldOptions {
   pattern?: string;          // String only, valid RegExp
   geo?: boolean;             // GeoPoint only → 2dsphere index
   ttlSeconds?: number;       // Date only → TTL index
+  clientWritable?: boolean;  // default true; false = fromParams ignores it
   index?: boolean | 1 | -1;  // mutually exclusive with `unique`
   unique?: boolean;          // mutually exclusive with `index`
 }
@@ -274,6 +275,27 @@ class BaseModel extends Parse.Object {
     **skipped** (`IMG`, `File` need their own handling).
   - An Array field converts to pointers **only if `targetClass` is set**.
   - A Pointer given `null` or `{}` is set to `null` (explicit clear).
+  - Fields declared `clientWritable: false` are **skipped**, whatever the body
+    contains — see below.
+
+**`fromParams` sets every declared field the request carries.** That is mass
+assignment: an endpoint accepting `{"title": "…"}` also accepts
+`{"title": "…", "status": "published", "views": 9999}`, and the row saves with
+values the caller was never meant to choose. Nothing throws; nothing is logged.
+
+Mark server-owned fields on the model and the rule holds wherever `fromParams`
+is used, rather than depending on every endpoint remembering to overwrite them:
+
+```ts
+@ParseField({type: 'Number', min: 0, clientWritable: false})
+declare views: number;
+
+note.views += 1;              // your code — unaffected
+Note.fromParams(req.params);  // `views` in the body is discarded
+```
+
+It is the mirror of Parse's `protectedFields`, which hides fields on the way
+**out**; this refuses them on the way **in**.
 
 `Parse.Query` returns `Parse.Object`, not your typed class — cast the result
 (`row as Product`) or direct property access is unavailable.
@@ -720,7 +742,31 @@ function generateRandomString(length?: number): string;
 function generateRandomInteger(length: number): string;
 function sleep(ms: number): Promise<unknown>;
 function formatCount(num: any, locale?: string): string;   // compact notation
+
+function paginate<T>(
+  query: Parse.Query,
+  params: {limit?: unknown; skip?: unknown},
+  options?: {defaultLimit?: number; maxLimit?: number; useMasterKey?: boolean; sessionToken?: string}
+): Promise<{results: T[]; count: number; limit: number; skip: number; hasMore: boolean}>;
 ```
+
+**`paginate` is how to write a list endpoint.** It reads `limit` and `skip` as
+the strings a GET sends, caps the limit (`MAX_QUERY_LIMIT` by default), calls
+`withCount()` so `count` is the **total matching rows** rather than the size of
+this page, and computes `hasMore`.
+
+```ts
+const query = new Parse.Query(Product).descending('createdAt');
+return paginate<Product>(query, req.params, {useMasterKey: true});
+```
+
+The hand-written version returns `results.length` as the count — the length of
+an array the client already has, which no paginator can use — and it runs
+perfectly while doing so.
+
+**Sort the query yourself.** `paginate` does not choose an order, because the
+right one belongs to the endpoint. Without one, MongoDB guarantees nothing:
+rows appear on two pages or on none as data changes, and nothing errors.
 
 **`catchError` is the error convention** — use it for all async work rather than
 `try/catch` around `await`:

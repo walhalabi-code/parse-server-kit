@@ -40,7 +40,9 @@ export default class Product extends BaseModel {
   @ParseField({type: 'String', required: true, unique: true})
   declare sku: string;
 
-  @ParseField({type: 'Number', required: true, min: 0})
+  // Server-owned: `clientWritable: false` makes `fromParams` discard it,
+  // whatever the request body says. Your own code still sets it freely.
+  @ParseField({type: 'Number', required: true, min: 0, clientWritable: false})
   declare priceCents: number;
 
   @BeforeSave()

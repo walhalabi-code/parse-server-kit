@@ -215,14 +215,45 @@ Product.fromParams({ id: <span class="t-str">'prod789'</span>, name: <span class
   <p>
     If a field is declared, a caller can set it. A <code>status</code>,
     <code>isApproved</code> or <code>ownerId</code> that your server means to own will be
-    taken from the body if it is there.
+    taken from the body if it is there — with no error, and no log. That is mass
+    assignment, and it is the reason <code>clientWritable</code> exists.
+  </p>
+
+  <p>
+    Declare it on the <b>model</b>, and <code>fromParams</code> discards the field whatever
+    the request contains:
+  </p>
+
+<pre class="code-block"><code><span class="t-dec">@ParseField</span>({type: <span class="t-str">'String'</span>, enum: [<span class="t-str">'pending'</span>, <span class="t-str">'approved'</span>], clientWritable: <span class="t-key">false</span>})
+<span class="t-key">declare</span> status: string;
+
+<span class="t-dec">@ParseField</span>({type: <span class="t-str">'Pointer'</span>, targetClass: <span class="t-str">'_User'</span>, clientWritable: <span class="t-key">false</span>})
+<span class="t-key">declare</span> owner: Parse.User;</code></pre>
+
+  <p>
+    It governs <code>fromParams</code> only, not the field. Your own code writes it as
+    freely as ever:
   </p>
 
 <pre class="code-block"><code><span class="t-key">const</span> product = Product.fromParams(req.params);
 
-<span class="t-com">// Overwrite anything the caller must not decide.</span>
-product.set(<span class="t-str">'status'</span>, <span class="t-str">'pending'</span>);
-product.set(<span class="t-str">'owner'</span>, req.user!);</code></pre>
+<span class="t-com">// Ignored if the body sent them; yours to set here.</span>
+product.status = <span class="t-str">'pending'</span>;
+product.owner = req.user!;</code></pre>
+
+  <div class="note">
+    <span class="note-title">Why declare it rather than overwrite it</span>
+    <p>
+      Overwriting after the call works, and it is still correct. But it has to be done in
+      every endpoint that builds this model, and remembered by everyone who adds the next
+      one. Forgetting is silent — the value is simply the caller's. Declared on the field,
+      the rule holds wherever <code>fromParams</code> is used.
+    </p>
+    <p>
+      This is the mirror of Parse's <code>protectedFields</code>, which hides fields on the
+      way <b>out</b>. <code>clientWritable</code> refuses them on the way <b>in</b>.
+    </p>
+  </div>
 
   <p>
     A <code>@BeforeSave</code> trigger is the stronger place for this, because it applies on

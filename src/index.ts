@@ -54,6 +54,8 @@ export type { RoleString } from './utils/constants';
 export { catchError, getUserRoles, getUsersRoles, formatCount,
   generateRandomPassword, generateRandomInteger, generateRandomString, sleep } from './utils/helper';
 export { importFiles } from './utils/dynamicImport';
+export { paginate } from './utils/pagination';
+export type { Page, PaginateOptions } from './utils/pagination';
 
 // ── Role cache (opt-in) ──
 export { configureRoleCache, invalidateRoles, roleCacheEnabled, roleCacheStats } from './utils/roleCache';
